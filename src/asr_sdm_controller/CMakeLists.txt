@@ -7,9 +7,27 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
+
+find_library(MRAA_LIB NAMES mraa PATHS /usr/local/include)
+
+include_directories(
+  include
+  # /usr/local/include
+)
+
+add_executable(asr_sdm_controller src/asr_sdm_controller.cpp)
+target_link_libraries(asr_sdm_controller ${MRAA_LIB})
+ament_target_dependencies(asr_sdm_controller rclcpp std_msgs)
+
+install(TARGETS
+  asr_sdm_controller
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
