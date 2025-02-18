@@ -16,6 +16,8 @@
 // #include "usr_sdm_controller/can_protocol.hpp"
 
 #define SPI_PORT 3
+#define SPI_CS   0
+#define SPI_FREQUENCY   1000000
 
 using namespace std::chrono_literals;
 
@@ -25,10 +27,11 @@ class ASRSDM : public rclcpp::Node
     ASRSDM()
     : Node("usr_sdm_controller")
     , count_(0)
-    , spi_(SPI_PORT)
+    , spi_(SPI_PORT, SPI_CS)
     {
     	// can.reset(new amp::ASRSDM::CANProtocol);
     	// can->interfaceSetup();
+      spi_.frequency(SPI_FREQUENCY);
 
     	publisher_ = this->create_publisher<std_msgs::msg::String>("topic", 10);
     	timer_ = this->create_wall_timer(1000ms, std::bind(&ASRSDM::timer_callback, this));
@@ -37,6 +40,7 @@ class ASRSDM : public rclcpp::Node
   private:
     void timer_callback()
     {
+      // RCLCPP_INFO("Publishing");
     	RCLCPP_INFO(this->get_logger(), "Publishing");
 //      auto message = std_msgs::msg::String();
 //      message.data = "Hello, world! " + std::to_string(count_++);
@@ -56,6 +60,9 @@ class ASRSDM : public rclcpp::Node
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
+
+  // mraa::Spi spi_(3, 0);
+
   rclcpp::spin(std::make_shared<ASRSDM>());
   rclcpp::shutdown();
   return 0;
