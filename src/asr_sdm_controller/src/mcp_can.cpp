@@ -6,8 +6,9 @@
 *********************************************************************************************************/
 void MCP_CAN::spiTransfer(uint8_t byte_number, unsigned char *buf)
 {
-    digitalWrite(this->gpio_can_cs, LOW);
-    wiringPiSPIDataRW(this->spi_channel, buf, byte_number);
+    // digitalWrite(this->gpio_can_cs, LOW);
+    // wiringPiSPIDataRW(this->spi_channel, buf, byte_number);
+    spi_.write(buf, byte_number);
 //    nanosleep(&delay_spi_can, (struct timespec *)NULL);
 //    digitalWrite(gpio_can_cs, HIGH);
 }
@@ -17,63 +18,63 @@ void MCP_CAN::spiTransfer(uint8_t byte_number, unsigned char *buf)
 ** Function name:           setupInterruptGpio
 ** Descriptions:            Setups interrupt GPIO pin as input on Raspberry Pi (using wiringPi)
 *********************************************************************************************************/
-bool MCP_CAN::setupInterruptGpio()
-{
-	wiringPiSetup();
-    int result = wiringPiSetupGpio();
-    if (!result)
-    {
-        printf("Gpio started\n");
-    }
-    else
-    {
-        printf("Gpio startup fail\n");
-        return false;
-    }
+// bool MCP_CAN::setupInterruptGpio()
+// {
+// 	wiringPiSetup();
+//     int result = wiringPiSetupGpio();
+//     if (!result)
+//     {
+//         printf("Gpio started\n");
+//     }
+//     else
+//     {
+//         printf("Gpio startup fail\n");
+//         return false;
+//     }
 
-    pinMode(this->gpio_can_interrupt, INPUT);
-//    wiringPiSetupGpio();
-    pinMode(this->gpio_can_cs, OUTPUT);//(8, OUTPUT);//
-    digitalWrite(this->gpio_can_cs, LOW);//(8, LOW);//HIGH
+//     pinMode(this->gpio_can_interrupt, INPUT);
+// //    wiringPiSetupGpio();
+//     pinMode(this->gpio_can_cs, OUTPUT);//(8, OUTPUT);//
+//     digitalWrite(this->gpio_can_cs, LOW);//(8, LOW);//HIGH
 
-    struct timespec req;
-    req.tv_sec = 0;        // seconds
-    req.tv_nsec = 500000L; // nanoseconds
-    nanosleep(&req, nullptr);
-//    nanosleep((const struct timespec[]){ { 0, 500000L } }, NULL);
+//     struct timespec req;
+//     req.tv_sec = 0;        // seconds
+//     req.tv_nsec = 500000L; // nanoseconds
+//     nanosleep(&req, nullptr);
+// //    nanosleep((const struct timespec[]){ { 0, 500000L } }, NULL);
 
-    return true;
-}
+//     return true;
+// }
 
 
 /*********************************************************************************************************
 ** Function name:           setupSpi
 ** Descriptions:            Setups spi communication on Raspberry Pi (using wiringPi)
 *********************************************************************************************************/
-bool MCP_CAN::setupSpi()
-{
-//    int result_spi = wiringPiSPISetup(spi_channel, spi_baudrate);
-//    printf("Started SPI : %d\n", result_spi);
-//    if (result_spi < 0)
-//    {
-//        return false;
-//    }
-//	digitalWrite(gpio_can_cs, LOW);
-	if (wiringPiSPISetup(this->spi_channel, this->spi_baudrate) < 0)
-	{
-		fprintf(stderr, "Can't open the SPI bus: %s\n", strerror(errno));
-		exit(EXIT_FAILURE);
-	}
+// bool MCP_CAN::setupSpi()
+// {
+// //    int result_spi = wiringPiSPISetup(spi_channel, spi_baudrate);
+// //    printf("Started SPI : %d\n", result_spi);
+// //    if (result_spi < 0)
+// //    {
+// //        return false;
+// //    }
+// //	digitalWrite(gpio_can_cs, LOW);
+// 	if (wiringPiSPISetup(this->spi_channel, this->spi_baudrate) < 0)
+// 	{
+// 		fprintf(stderr, "Can't open the SPI bus: %s\n", strerror(errno));
+// 		exit(EXIT_FAILURE);
+// 	}
 
-    struct timespec req;
-    req.tv_sec = 0;        // seconds
-    req.tv_nsec = 500000L; // nanoseconds
-    nanosleep(&req, nullptr);
-//    nanosleep((const struct timespec[]){ { 0, 500000L } }, NULL);
-//    digitalWrite(gpio_can_cs, LOW);
+//     struct timespec req;
+//     req.tv_sec = 0;        // seconds
+//     req.tv_nsec = 500000L; // nanoseconds
+//     nanosleep(&req, nullptr);
+// //    nanosleep((const struct timespec[]){ { 0, 500000L } }, NULL);
+// //    digitalWrite(gpio_can_cs, LOW);
 
-    return true;
-}
+//     return true;
+// }
 
 
 /*********************************************************************************************************
@@ -864,22 +865,34 @@ uint8_t MCP_CAN::mcp2515_getNextFreeTXBuf(uint8_t *txbuf_n)                 /* g
 ** Function name:           MCP_CAN
 ** Descriptions:            Public function to declare CAN class and the /CS pin.
 *********************************************************************************************************/
-void MCP_CAN::init_Para(int spi_channel, int spi_baudrate, uint8_t gpio_can_interrupt, uint8_t gpio_can_cs)
-{
-    this->spi_channel        = spi_channel;
-    this->spi_baudrate       = spi_baudrate;
-    this->gpio_can_interrupt = gpio_can_interrupt;
-    this->gpio_can_cs = gpio_can_cs;
+// void MCP_CAN::init_Para(int spi_channel, int spi_baudrate, uint8_t gpio_can_interrupt, uint8_t gpio_can_cs)
+// {
+//     this->spi_channel        = spi_channel;
+//     this->spi_baudrate       = spi_baudrate;
+//     this->gpio_can_interrupt = gpio_can_interrupt;
+//     this->gpio_can_cs = gpio_can_cs;
 
-    delay_spi_can.tv_sec  = 0;
-    delay_spi_can.tv_nsec = 5000L; // wait 5 microseconds between 2 spi transfers
-}
+//     delay_spi_can.tv_sec  = 0;
+//     delay_spi_can.tv_nsec = 5000L; // wait 5 microseconds between 2 spi transfers
+// }
 
 
 /*********************************************************************************************************
 ** Function name:           begin
 ** Descriptions:            Public function to declare controller initialization parameters.
 *********************************************************************************************************/
+uint8_t mcp_can_init(void)
+{
+    uint8_t res;
+
+    res = mcp2515_init(idmodeset, speedset, clockset);
+    if (res == MCP2515_OK)
+    {
+        return CAN_OK;
+    }
+
+    return CAN_FAILINIT;
+}
 uint8_t MCP_CAN::begin(uint8_t idmodeset, uint8_t speedset, uint8_t clockset)
 {
     uint8_t res;

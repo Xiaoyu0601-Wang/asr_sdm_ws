@@ -1,8 +1,9 @@
 #ifndef MCP_CAN_HPP_
 #define MCP_CAN_HPP_
 
-#include <wiringPi.h>
-#include <wiringPiSPI.h>
+/* mraa headers */
+#include "mraa/common.hpp"
+#include "mraa/spi.hpp"
 
 #include <iostream>
 #include <memory>
@@ -11,11 +12,15 @@
 #include <cstdlib> // For malloc and free
 #include <ctime>
 
-#include "usr_sdm_controller/mcp_can_dfs_rpi.h"
+#include "usr_sdm_controller/mcp_can_dfs.h"
 
 #define MAX_CHAR_IN_MESSAGE    8
 
 #define CAN_MODEL_NUMBER       10000
+
+#define SPI_PORT        3
+#define SPI_CS          0
+#define SPI_FREQUENCY   1000000
 
 class MCP_CAN
 {
@@ -35,6 +40,8 @@ private:
     int spi_baudrate;
     uint8_t gpio_can_interrupt;
     uint8_t gpio_can_cs;
+
+    mraa::Spi spi_;
 
 /*********************************************************************************************************
 *  mcp2515 driver function
@@ -102,7 +109,8 @@ private:
     uint8_t sendMsg();                                                        // Send message
 
 public:
-    void init_Para(int spi_channel, int spi_baudrate, uint8_t gpio_can_interrupt, uint8_t gpio_can_cs);
+    // void init_Para(int spi_channel, int spi_baudrate, uint8_t gpio_can_interrupt, uint8_t gpio_can_cs);
+    uint8_t mcp_can_init(void);
     uint8_t begin(uint8_t idmodeset, uint8_t speedset, uint8_t clockset);     // Initilize controller prameters
     uint8_t init_Mask(uint8_t num, uint8_t ext, uint32_t ulData);             // Initilize Mask(s)
     uint8_t init_Mask(uint8_t num, uint32_t ulData);                        // Initilize Mask(s)
@@ -124,8 +132,8 @@ public:
     uint8_t queryCharger(float voltage, float current, int address, int charge);   // Start charging
     uint8_t queryBMS(int moduleID, int shuntVoltageMillivolts);         // Query BMS
 
-    bool setupInterruptGpio();
-    bool setupSpi();
+    // bool setupInterruptGpio();
+    // bool setupSpi();
     bool canReadData();
 
     typedef std::unique_ptr<MCP_CAN> Ptr;
