@@ -4,13 +4,12 @@
 ** Function name:           spiTransfer
 ** Descriptions:            Performs a spi transfer on Raspberry Pi (using wiringPi)
 *********************************************************************************************************/
-void MCP_CAN::spiTransfer(uint8_t byte_number, unsigned char *buf)
+uint8_t MCP_CAN::spiTransfer(uint8_t byte_number, unsigned char *buf)
 {
-    // digitalWrite(this->gpio_can_cs, LOW);
-    // wiringPiSPIDataRW(this->spi_channel, buf, byte_number);
-    spi_.write(buf, byte_number);
-//    nanosleep(&delay_spi_can, (struct timespec *)NULL);
-//    digitalWrite(gpio_can_cs, HIGH);
+    uint8_t buf[1];
+    buf = spi_.write(buf, byte_number);
+
+    return buf[0];
 }
 
 
@@ -94,13 +93,8 @@ bool MCP_CAN::canReadData()
 void MCP_CAN::resetMCP2515(void)
 {
     unsigned char cmd[1] = { MCP_RESET };
-    spiTransfer(1, cmd);
+    spi_.write(cmd, 1);
     rclcpp::sleep_for(std::chrono::milliseconds(100));
-    // struct timespec req;
-    // req.tv_sec = 0;        // seconds
-    // req.tv_nsec = 10000L; // nanoseconds
-    // nanosleep(&req, nullptr);
-//    nanosleep((const struct timespec[]){ { 0, 10000L } }, NULL);
 }
 
 
@@ -592,7 +586,7 @@ uint8_t MCP_CAN::initMCP2515(const uint8_t canIDMode, const uint8_t canSpeed, co
 
     resetMCP2515();
 
-    this->mcpMode = MCP_LOOPBACK;
+    this->mcpMode = MCP_NORMAL;
 
     res = mcp2515_setCANCTRL_Mode(MODE_CONFIG);
     if (res > 0)
