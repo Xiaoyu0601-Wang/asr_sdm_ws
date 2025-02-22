@@ -1,10 +1,13 @@
 #ifndef MCP_CAN_HPP_
 #define MCP_CAN_HPP_
+/* ROS2 headers */
+#include <rclcpp/rclcpp.hpp>
 
 /* mraa headers */
 #include "mraa/common.hpp"
 #include "mraa/spi.hpp"
 
+#include <chrono>
 #include <iostream>
 #include <memory>
 #include <cstring>
@@ -21,6 +24,9 @@
 #define SPI_PORT        3
 #define SPI_CS          0
 #define SPI_FREQUENCY   1000000
+
+namespace amp
+{
 
 class MCP_CAN
 {
@@ -53,7 +59,7 @@ private:
 
     void spiTransfer(uint8_t byte_number, unsigned char *buf);
 
-    void mcp2515_reset(void);                                           // Soft Reset MCP2515
+    void resetMCP2515(void);                                           // Soft Reset MCP2515
 
     uint8_t mcp2515_readRegister(const uint8_t address);                    // Read MCP2515 register
 
@@ -79,7 +85,7 @@ private:
     uint8_t mcp2515_configRate(const uint8_t canSpeed,                      // Set baudrate
                              const uint8_t canClock);
 
-    uint8_t mcp2515_init(const uint8_t canIDMode,                           // Initialize Controller
+    uint8_t initMCP2515(const uint8_t canIDMode,                           // Initialize Controller
                        const uint8_t canSpeed,
                        const uint8_t canClock);
 
@@ -110,8 +116,8 @@ private:
 
 public:
     // void init_Para(int spi_channel, int spi_baudrate, uint8_t gpio_can_interrupt, uint8_t gpio_can_cs);
-    uint8_t mcp_can_init(void);
-    uint8_t begin(uint8_t idmodeset, uint8_t speedset, uint8_t clockset);     // Initilize controller prameters
+    uint8_t initCAN(uint8_t idmodeset, uint8_t speedset, uint8_t clockset);
+    // uint8_t begin(uint8_t idmodeset, uint8_t speedset, uint8_t clockset);     // Initilize controller prameters
     uint8_t init_Mask(uint8_t num, uint8_t ext, uint32_t ulData);             // Initilize Mask(s)
     uint8_t init_Mask(uint8_t num, uint32_t ulData);                        // Initilize Mask(s)
     uint8_t init_Filt(uint8_t num, uint8_t ext, uint32_t ulData);             // Initilize Filter(s)
@@ -138,5 +144,7 @@ public:
 
     typedef std::unique_ptr<MCP_CAN> Ptr;
 };
+
+} //amp
 
 #endif

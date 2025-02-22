@@ -88,19 +88,18 @@ bool MCP_CAN::canReadData()
 
 
 /*********************************************************************************************************
-** Function name:           mcp2515_reset
+** Function name:           resetMCP2515
 ** Descriptions:            Performs a software reset
 *********************************************************************************************************/
-void MCP_CAN::mcp2515_reset(void)
+void MCP_CAN::resetMCP2515(void)
 {
     unsigned char cmd[1] = { MCP_RESET };
-
     spiTransfer(1, cmd);
-
-    struct timespec req;
-    req.tv_sec = 0;        // seconds
-    req.tv_nsec = 10000L; // nanoseconds
-    nanosleep(&req, nullptr);
+    rclcpp::sleep_for(std::chrono::milliseconds(100));
+    // struct timespec req;
+    // req.tv_sec = 0;        // seconds
+    // req.tv_nsec = 10000L; // nanoseconds
+    // nanosleep(&req, nullptr);
 //    nanosleep((const struct timespec[]){ { 0, 10000L } }, NULL);
 }
 
@@ -111,14 +110,8 @@ void MCP_CAN::mcp2515_reset(void)
 *********************************************************************************************************/
 uint8_t MCP_CAN::mcp2515_readRegister(const uint8_t address)
 {
-    uint8_t ret;
-
-    unsigned char buf[3] = { MCP_READ, address, 0x00 };
-
-    spiTransfer(3, buf);
-    ret = buf[2];
-
-    return ret;
+    unsigned char buf[2] = { MCP_READ, address};
+    return spiTransfer(2, buf);
 }
 
 
@@ -590,23 +583,21 @@ void MCP_CAN::mcp2515_initCANBuffers(void)
 
 
 /*********************************************************************************************************
-** Function name:           mcp2515_init
+** Function name:           initMCP2515
 ** Descriptions:            Initialize the controller
 *********************************************************************************************************/
-uint8_t MCP_CAN::mcp2515_init(const uint8_t canIDMode, const uint8_t canSpeed, const uint8_t canClock)
+uint8_t MCP_CAN::initMCP2515(const uint8_t canIDMode, const uint8_t canSpeed, const uint8_t canClock)
 {
     uint8_t res;
 
-    mcp2515_reset();
+    resetMCP2515();
 
     this->mcpMode = MCP_LOOPBACK;
 
     res = mcp2515_setCANCTRL_Mode(MODE_CONFIG);
     if (res > 0)
     {
-#if DEBUG_MODE
-        printf("Entering Configuration Mode Failure...\r\n");
-#endif
+        RCLCPP_INFO(this->get_logger(), "Entering CAN Configuration Mode Failure...");
         return res;
     }
 #if DEBUG_MODE
@@ -881,30 +872,32 @@ uint8_t MCP_CAN::mcp2515_getNextFreeTXBuf(uint8_t *txbuf_n)                 /* g
 ** Function name:           begin
 ** Descriptions:            Public function to declare controller initialization parameters.
 *********************************************************************************************************/
-uint8_t mcp_can_init(void)
+uint8_t MCP_CAN::initCAN(uint8_t idmodeset, uint8_t speedset, uint8_t clockset)
 {
     uint8_t res;
 
-    res = mcp2515_init(idmodeset, speedset, clockset);
+    res = initMCP2515(idmodeset, speedset, clockset);
     if (res == MCP2515_OK)
     {
+        RCLCPP_INFO(this->get_logger(), "CAN is initialized");
         return CAN_OK;
     }
 
     return CAN_FAILINIT;
 }
-uint8_t MCP_CAN::begin(uint8_t idmodeset, uint8_t speedset, uint8_t clockset)
-{
-    uint8_t res;
 
-    res = mcp2515_init(idmodeset, speedset, clockset);
-    if (res == MCP2515_OK)
-    {
-        return CAN_OK;
-    }
+// uint8_t MCP_CAN::begin(uint8_t idmodeset, uint8_t speedset, uint8_t clockset)
+// {
+//     uint8_t res;
 
-    return CAN_FAILINIT;
-}
+//     res = initMCP2515(idmodeset, speedset, clockset);
+//     if (res == MCP2515_OK)
+//     {
+//         return CAN_OK;
+//     }
+
+//     return CAN_FAILINIT;
+// }
 
 
 /*********************************************************************************************************

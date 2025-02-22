@@ -6,18 +6,19 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+/* ROS2 headers */
+#include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/string.hpp>
+
 /* mraa headers */
 #include "mraa/common.hpp"
 #include "mraa/spi.hpp"
 
-#include "rclcpp/rclcpp.hpp"
-#include "std_msgs/msg/string.hpp"
+// #include "usr_sdm_controller/mcp_can.hpp"
 
-// #include "usr_sdm_controller/can_protocol.hpp"
-
-#define SPI_PORT 3
-#define SPI_CS   0
-#define SPI_FREQUENCY   1000000
+// #define SPI_PORT 3
+// #define SPI_CS   0
+// #define SPI_FREQUENCY   1000000
 
 using namespace std::chrono_literals;
 
@@ -27,14 +28,16 @@ class ASRSDM : public rclcpp::Node
     ASRSDM()
     : Node("usr_sdm_controller")
     , count_(0)
-    , spi_(SPI_PORT, SPI_CS)
+    // , spi_(SPI_PORT, SPI_CS)
     {
-    	// can.reset(new amp::ASRSDM::CANProtocol);
-    	// can->interfaceSetup();
+      // can.reset(new amp::ASRSDM::CANProtocol);
+      // can->interfaceSetup();can_
+    	// can_.reset(new MCP_CAN);
+    	// can_->initCAN(MCP_ANY, CAN_500KBPS, MCP_8MHZ);
       spi_.frequency(SPI_FREQUENCY);
 
-    	publisher_ = this->create_publisher<std_msgs::msg::String>("topic", 10);
-    	timer_ = this->create_wall_timer(1000ms, std::bind(&ASRSDM::timer_callback, this));
+    	pub_ros_info_ = this->create_publisher<std_msgs::msg::String>("topic", 10);
+    	timer_hardware_ = this->create_wall_timer(1000ms, std::bind(&ASRSDM::timer_callback, this));
     }
 
   private:
@@ -48,13 +51,14 @@ class ASRSDM : public rclcpp::Node
 //      publisher_->publish(message);
     }
 
-    rclcpp::TimerBase::SharedPtr timer_;
-    rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
+    rclcpp::TimerBase::SharedPtr timer_hardware_;
+    rclcpp::Publisher<std_msgs::msg::String>::SharedPtr pub_ros_info_;
     size_t count_;
 
-    mraa::Spi spi_;
+    // mraa::Spi spi_;
 
     // amp::ASRSDM::CANProtocol::Ptr can;
+    // amp::MCP_CAN::Ptr can_;
 };
 
 int main(int argc, char * argv[])
