@@ -20,7 +20,11 @@ include_directories(
   # /usr/local/include
 )
 
-add_executable(asr_sdm_controller src/asr_sdm_controller.cpp)
+# add_executable(mcp_can src/mcp_can.cpp)
+# target_link_libraries(mcp_can ${MRAA_LIB})
+# ament_target_dependencies(mcp_can rclcpp)
+
+add_executable(asr_sdm_controller src/asr_sdm_controller.cpp src/mcp_can.cpp)
 target_link_libraries(asr_sdm_controller ${MRAA_LIB})
 ament_target_dependencies(asr_sdm_controller rclcpp std_msgs)
 

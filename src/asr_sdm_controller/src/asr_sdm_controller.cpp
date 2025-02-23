@@ -33,8 +33,8 @@ class ASRSDM : public rclcpp::Node
       // can.reset(new amp::ASRSDM::CANProtocol);
       // can->interfaceSetup();can_
     	// can_.reset(new MCP_CAN);
-    	// can_->initCAN(MCP_STD, CAN_500KBPS, MCP_8MHZ);
-      spi_.frequency(SPI_FREQUENCY);
+    	// can_->initCAN(MCP_ANY, CAN_500KBPS, MCP_8MHZ);
+      // spi_.frequency(SPI_FREQUENCY);
 
     	pub_ros_info_ = this->create_publisher<std_msgs::msg::String>("topic", 10);
     	timer_hardware_ = this->create_wall_timer(1000ms, std::bind(&ASRSDM::timer_callback, this));

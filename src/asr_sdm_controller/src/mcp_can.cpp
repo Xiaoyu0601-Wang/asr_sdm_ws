@@ -1,15 +1,14 @@
-#include "usr_sdm_controller/mcp_can.hpp"
+#include "asr_sdm_controller/mcp_can.hpp"
 
+namespace amp
+{
 /*********************************************************************************************************
 ** Function name:           spiTransfer
 ** Descriptions:            Performs a spi transfer on Raspberry Pi (using wiringPi)
 *********************************************************************************************************/
-uint8_t MCP_CAN::spiTransfer(uint8_t byte_number, unsigned char *buf)
+uint8_t* MCP_CAN::spiTransfer(uint8_t byte_number, unsigned char *buf)
 {
-    uint8_t buf[1];
-    buf = spi_.write(buf, byte_number);
-
-    return buf[0];
+    return spi_.write(buf, byte_number);
 }
 
 
@@ -80,10 +79,10 @@ uint8_t MCP_CAN::spiTransfer(uint8_t byte_number, unsigned char *buf)
 ** Function name:           canReadData
 ** Descriptions:            Checks GPIO interrupt pin to see if data is available (using wiringPi)
 *********************************************************************************************************/
-bool MCP_CAN::canReadData()
-{
-    return !digitalRead(this->gpio_can_interrupt);
-}
+// bool MCP_CAN::canReadData()
+// {
+//     return !digitalRead(this->gpio_can_interrupt);
+// }
 
 
 /*********************************************************************************************************
@@ -93,7 +92,7 @@ bool MCP_CAN::canReadData()
 void MCP_CAN::resetMCP2515(void)
 {
     unsigned char cmd[1] = { MCP_RESET };
-    spi_.write(cmd, 1);
+    spiTransfer(1, cmd);
     rclcpp::sleep_for(std::chrono::milliseconds(100));
 }
 
@@ -102,7 +101,7 @@ void MCP_CAN::resetMCP2515(void)
 ** Function name:           mcp2515_readRegister
 ** Descriptions:            Read data register
 *********************************************************************************************************/
-uint8_t MCP_CAN::mcp2515_readRegister(const uint8_t address)
+uint8_t* MCP_CAN::mcp2515_readRegister(const uint8_t address)
 {
     unsigned char buf[2] = { MCP_READ, address};
     return spiTransfer(2, buf);
@@ -208,7 +207,7 @@ uint8_t MCP_CAN::mcp2515_readStatus(void)
 uint8_t MCP_CAN::setMode(const uint8_t opMode)
 {
 	this->mcpMode = opMode;
-	digitalWrite(this->gpio_can_cs, LOW);
+	// digitalWrite(this->gpio_can_cs, LOW);
     return mcp2515_setCANCTRL_Mode(this->mcpMode);
 }
 
@@ -219,19 +218,19 @@ uint8_t MCP_CAN::setMode(const uint8_t opMode)
 *********************************************************************************************************/
 uint8_t MCP_CAN::mcp2515_setCANCTRL_Mode(const uint8_t newmode)
 {
-    uint8_t i;
-
     mcp2515_modifyRegister(MCP_CANCTRL, MODE_MASK, newmode);
+    uint8_t value[1];
+    value = mcp2515_readRegister(MCP_CANCTRL);
+    value[0] &= MODE_MASK;
 
-    i  = mcp2515_readRegister(MCP_CANCTRL);
-    i &= MODE_MASK;
-
-    if (i == newmode)
+    if (value[0] == newmode)
     {
+        RCLCPP_INFO(logger_, "CAN Mode Configuration Successful!");
         return MCP2515_OK;
     }
     else
     {
+        RCLCPP_INFO(logger_, "CAN Mode Configuration Failure...");
         return MCP2515_FAIL;
     }
 }
@@ -591,24 +590,19 @@ uint8_t MCP_CAN::initMCP2515(const uint8_t canIDMode, const uint8_t canSpeed, co
     res = mcp2515_setCANCTRL_Mode(MODE_CONFIG);
     if (res > 0)
     {
-        RCLCPP_INFO(this->get_logger(), "Entering CAN Configuration Mode Failure...");
+        RCLCPP_INFO(logger_, "Entering CAN Configuration Mode Failure...");
         return res;
     }
-#if DEBUG_MODE
-    printf("Entering Configuration Mode Successful!\r\n");
-#endif
+    RCLCPP_INFO(logger_, "Entering CAN Configuration Mode Successful!");
+
 
     // Set Baudrate
     if (mcp2515_configRate(canSpeed, canClock))
     {
-#if DEBUG_MODE
-        printf("Setting Baudrate Failure...\r\n");
-#endif
+        RCLCPP_INFO(logger_, "Setting CAN Baudrate Failure...");
         return res;
     }
-#if DEBUG_MODE
-    printf("Setting Baudrate Successful!\r\n");
-#endif
+    RCLCPP_INFO(logger_, "Setting CAN Baudrate Successful!");
 
     if (res == MCP2515_OK)
     {
@@ -653,9 +647,7 @@ uint8_t MCP_CAN::initMCP2515(const uint8_t canIDMode, const uint8_t canSpeed, co
             break;
 
         default:
-#if DEBUG_MODE
-            printf("`Setting ID Mode Failure...\r\n");
-#endif
+            RCLCPP_INFO(logger_, "Setting ID Mode Failure...");
             return MCP2515_FAIL;
 
             break;
@@ -665,9 +657,7 @@ uint8_t MCP_CAN::initMCP2515(const uint8_t canIDMode, const uint8_t canSpeed, co
         res = mcp2515_setCANCTRL_Mode(this->mcpMode);
         if (res)
         {
-#if DEBUG_MODE
-            printf("Returning to Previous Mode Failure...\r\n");
-#endif
+            RCLCPP_INFO(logger_, "Returning to Previous Mode Failure...");
             return res;
         }
     }
@@ -795,16 +785,18 @@ void MCP_CAN::mcp2515_write_canMsg(const uint8_t buffer_sidh_addr)
 *********************************************************************************************************/
 void MCP_CAN::mcp2515_read_canMsg(const uint8_t buffer_sidh_addr)         /* read can msg                 */
 {
-    uint8_t mcp_addr, ctrl;
+    uint8_t* dlc, ctrl;
+    uint8_t mcp_addr;
 
     mcp_addr = buffer_sidh_addr;
 
     mcp2515_read_id(mcp_addr, &m_nExtFlg, &m_nID);
 
-    ctrl   = mcp2515_readRegister(mcp_addr - 1);
-    m_nDlc = mcp2515_readRegister(mcp_addr + 4);
+    ctrl = mcp2515_readRegister(mcp_addr - 1);
+    dlc = mcp2515_readRegister(mcp_addr + 4);
+    m_nDlc = dlc[0];
 
-    if (ctrl & 0x08)
+    if (ctrl[0] & 0x08)
     {
         m_nRtr = 1;
     }
@@ -873,10 +865,11 @@ uint8_t MCP_CAN::initCAN(uint8_t idmodeset, uint8_t speedset, uint8_t clockset)
     res = initMCP2515(idmodeset, speedset, clockset);
     if (res == MCP2515_OK)
     {
-        RCLCPP_INFO(this->get_logger(), "CAN is initialized");
+        RCLCPP_INFO(logger_, "CAN is initialized");
         return CAN_OK;
     }
 
+    RCLCPP_INFO(logger_, "CAN initializtion is failed");
     return CAN_FAILINIT;
 }
 
@@ -902,15 +895,11 @@ uint8_t MCP_CAN::init_Mask(uint8_t num, uint8_t ext, uint32_t ulData)
 {
     uint8_t res = MCP2515_OK;
 
-#if DEBUG_MODE
-    printf("Starting to Set Mask!\r\n");
-#endif
+    RCLCPP_INFO(logger_, "Starting to Set Mask!");
     res = mcp2515_setCANCTRL_Mode(MODE_CONFIG);
     if (res > 0)
     {
-#if DEBUG_MODE
-        printf("Entering Configuration Mode Failure...\r\n");
-#endif
+        RCLCPP_INFO(logger_, "Entering Configuration Mode Failure...");
         return res;
     }
 
@@ -930,14 +919,11 @@ uint8_t MCP_CAN::init_Mask(uint8_t num, uint8_t ext, uint32_t ulData)
     res = mcp2515_setCANCTRL_Mode(this->mcpMode);
     if (res > 0)
     {
-#if DEBUG_MODE
-        printf("Entering Previous Mode Failure...\r\nSetting Mask Failure...\r\n");
-#endif
+        RCLCPP_INFO(logger_, "Entering Previous Mode Failure...");
+        RCLCPP_INFO(logger_, "Setting Mask Failure...");
         return res;
     }
-#if DEBUG_MODE
-    printf("Setting Mask Successful!\r\n");
-#endif
+    RCLCPP_INFO(logger_, "Setting Mask Successful!");
     return res;
 }
 
@@ -951,15 +937,11 @@ uint8_t MCP_CAN::init_Mask(uint8_t num, uint32_t ulData)
     uint8_t res = MCP2515_OK;
     uint8_t ext = 0;
 
-#if DEBUG_MODE
-    printf("Starting to Set Mask!\r\n");
-#endif
+    RCLCPP_INFO(logger_, "Starting to Set Mask!");
     res = mcp2515_setCANCTRL_Mode(MODE_CONFIG);
     if (res > 0)
     {
-#if DEBUG_MODE
-        printf("Entering Configuration Mode Failure...\r\n");
-#endif
+        RCLCPP_INFO(logger_, "Enter Configuration Mode Failure...");
         return res;
     }
 
@@ -984,14 +966,11 @@ uint8_t MCP_CAN::init_Mask(uint8_t num, uint32_t ulData)
     res = mcp2515_setCANCTRL_Mode(this->mcpMode);
     if (res > 0)
     {
-#if DEBUG_MODE
-        printf("Entering Previous Mode Failure...\r\nSetting Mask Failure...\r\n");
-#endif
+        RCLCPP_INFO(logger_, "Entering Previous Mode Failure...");
+        RCLCPP_INFO(logger_, "Setting Mask Failure...");
         return res;
     }
-#if DEBUG_MODE
-    printf("Setting Mask Successful!\r\n");
-#endif
+    RCLCPP_INFO(logger_, "Setting Mask Successful!");
     return res;
 }
 
@@ -1004,15 +983,11 @@ uint8_t MCP_CAN::init_Filt(uint8_t num, uint8_t ext, uint32_t ulData)
 {
     uint8_t res = MCP2515_OK;
 
-#if DEBUG_MODE
-    printf("Starting to Set Filter!\r\n");
-#endif
+    RCLCPP_INFO(logger_, "Starting to Set Filter!");
     res = mcp2515_setCANCTRL_Mode(MODE_CONFIG);
     if (res > 0)
     {
-#if DEBUG_MODE
-        printf("Enter Configuration Mode Failure...\r\n");
-#endif
+        RCLCPP_INFO(logger_, "Enter Configuration Mode Failure...");
         return res;
     }
 
@@ -1049,15 +1024,11 @@ uint8_t MCP_CAN::init_Filt(uint8_t num, uint8_t ext, uint32_t ulData)
     res = mcp2515_setCANCTRL_Mode(this->mcpMode);
     if (res > 0)
     {
-#if DEBUG_MODE
-        printf("Entering Previous Mode Failure...\r\nSetting Filter Failure...\r\n");
-#endif
+        RCLCPP_INFO(logger_, "Entering Previous Mode Failure...");
+        RCLCPP_INFO(logger_, "Setting Filter Failure...");
         return res;
     }
-#if DEBUG_MODE
-    printf("Setting Filter Successfull!\r\n");
-#endif
-
+    RCLCPP_INFO(logger_, "Setting Filter Successfull!");
     return res;
 }
 
@@ -1071,15 +1042,11 @@ uint8_t MCP_CAN::init_Filt(uint8_t num, uint32_t ulData)
     uint8_t res = MCP2515_OK;
     uint8_t ext = 0;
 
-#if DEBUG_MODE
-    printf("Starting to Set Filter!\r\n");
-#endif
+    RCLCPP_INFO(logger_, "Starting to Set Filter!");
     res = mcp2515_setCANCTRL_Mode(MODE_CONFIG);
     if (res > 0)
     {
-#if DEBUG_MODE
-        printf("Enter Configuration Mode Failure...\r\n");
-#endif
+        RCLCPP_INFO(logger_, "Enter Configuration Mode Failure...");
         return res;
     }
 
@@ -1121,15 +1088,11 @@ uint8_t MCP_CAN::init_Filt(uint8_t num, uint32_t ulData)
     res = mcp2515_setCANCTRL_Mode(this->mcpMode);
     if (res > 0)
     {
-#if DEBUG_MODE
-        printf("Entering Previous Mode Failure...\r\nSetting Filter Failure...\r\n");
-#endif
+        RCLCPP_INFO(logger_, "Entering Previous Mode Failure...");
+        RCLCPP_INFO(logger_, "Setting Filter Failure...");
         return res;
     }
-#if DEBUG_MODE
-    printf("Setting Filter Successfull!\r\n");
-#endif
-
+    RCLCPP_INFO(logger_, "Setting Filter Successful!");
     return res;
 }
 
@@ -1181,7 +1144,8 @@ uint8_t MCP_CAN::clearMsg()
 *********************************************************************************************************/
 uint8_t MCP_CAN::sendMsg()
 {
-    uint8_t    res, res1, txbuf_n;
+    uint8_t* res1;
+    uint8_t res, res1, txbuf_n;
     uint16_t uiTimeOut = 0;
 
     do
@@ -1202,7 +1166,7 @@ uint8_t MCP_CAN::sendMsg()
     {
         uiTimeOut++;
         res1 = mcp2515_readRegister(txbuf_n - 1);                         /* read send buff ctrl reg  */
-        res1 = res1 & 0x08;
+        res1[0] = res1[0] & 0x08;
     } while (res1 && (uiTimeOut < TIMEOUTVALUE));
 
     if (uiTimeOut == TIMEOUTVALUE)                                       /* send msg timeout             */
@@ -1368,9 +1332,9 @@ uint8_t MCP_CAN::checkReceive(void)
 *********************************************************************************************************/
 uint8_t MCP_CAN::checkError(void)
 {
-    uint8_t eflg = mcp2515_readRegister(MCP_EFLG);
+    uint8_t* eflg = mcp2515_readRegister(MCP_EFLG);
 
-    if (eflg & MCP_EFLG_ERRORMASK)
+    if (eflg[0] & MCP_EFLG_ERRORMASK)
     {
         return CAN_CTRLERROR;
     }
@@ -1480,3 +1444,5 @@ uint8_t MCP_CAN::queryBMS(int moduleID, int shuntVoltageMillivolts)
 
     return res;
 }
+
+} //amp

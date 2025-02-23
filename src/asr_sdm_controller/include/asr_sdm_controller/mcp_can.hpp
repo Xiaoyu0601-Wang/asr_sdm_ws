@@ -15,7 +15,7 @@
 #include <cstdlib> // For malloc and free
 #include <ctime>
 
-#include "usr_sdm_controller/mcp_can_dfs.h"
+#include "asr_sdm_controller/mcp_can_dfs.h"
 
 #define MAX_CHAR_IN_MESSAGE    8
 
@@ -30,6 +30,12 @@ namespace amp
 
 class MCP_CAN
 {
+// public:
+// MCP_CAN(rclcpp::Logger logger)//, const std::string& prefix)
+//     : logger_(logger)
+//     // , prefix_(prefix)
+// {
+// }
 private:
     uint8_t m_nExtFlg;                                                    // Identifier Type
                                                                         // Extended (29 bit) or Standard (11 bit)
@@ -48,6 +54,7 @@ private:
     uint8_t gpio_can_cs;
 
     mraa::Spi spi_;
+    rclcpp::Logger logger_;
 
 /*********************************************************************************************************
 *  mcp2515 driver function
@@ -57,11 +64,11 @@ private:
 
     struct timespec delay_spi_can = {0, 0L};
 
-    uint8_t spiTransfer(uint8_t byte_number, unsigned char *buf);
+    uint8_t* spiTransfer(uint8_t byte_number, unsigned char *buf);
 
     void resetMCP2515(void);                                           // Soft Reset MCP2515
 
-    uint8_t mcp2515_readRegister(const uint8_t address);                    // Read MCP2515 register
+    uint8_t* mcp2515_readRegister(const uint8_t address);                    // Read MCP2515 register
 
     void mcp2515_readRegisterS(const uint8_t address,                     // Read MCP2515 successive registers
                                uint8_t       values[],
@@ -140,7 +147,7 @@ public:
 
     // bool setupInterruptGpio();
     // bool setupSpi();
-    bool canReadData();
+    // bool canReadData();
 
     typedef std::unique_ptr<MCP_CAN> Ptr;
 };
