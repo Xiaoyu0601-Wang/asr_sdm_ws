@@ -225,12 +225,12 @@ uint8_t MCP_CAN::mcp2515_setCANCTRL_Mode(const uint8_t newmode)
 
     if (value[0] == newmode)
     {
-        RCLCPP_INFO(logger_, "CAN Mode Configuration Successful!");
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "CAN Mode Configuration Successful!");
         return MCP2515_OK;
     }
     else
     {
-        RCLCPP_INFO(logger_, "CAN Mode Configuration Failure...");
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "CAN Mode Configuration Failure...");
         return MCP2515_FAIL;
     }
 }
@@ -590,19 +590,19 @@ uint8_t MCP_CAN::initMCP2515(const uint8_t canIDMode, const uint8_t canSpeed, co
     res = mcp2515_setCANCTRL_Mode(MODE_CONFIG);
     if (res > 0)
     {
-        RCLCPP_INFO(logger_, "Entering CAN Configuration Mode Failure...");
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Entering CAN Configuration Mode Failure...");
         return res;
     }
-    RCLCPP_INFO(logger_, "Entering CAN Configuration Mode Successful!");
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Entering CAN Configuration Mode Successful!");
 
 
     // Set Baudrate
     if (mcp2515_configRate(canSpeed, canClock))
     {
-        RCLCPP_INFO(logger_, "Setting CAN Baudrate Failure...");
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Setting CAN Baudrate Failure...");
         return res;
     }
-    RCLCPP_INFO(logger_, "Setting CAN Baudrate Successful!");
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Setting CAN Baudrate Successful!");
 
     if (res == MCP2515_OK)
     {
@@ -647,7 +647,7 @@ uint8_t MCP_CAN::initMCP2515(const uint8_t canIDMode, const uint8_t canSpeed, co
             break;
 
         default:
-            RCLCPP_INFO(logger_, "Setting ID Mode Failure...");
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Setting ID Mode Failure...");
             return MCP2515_FAIL;
 
             break;
@@ -657,7 +657,7 @@ uint8_t MCP_CAN::initMCP2515(const uint8_t canIDMode, const uint8_t canSpeed, co
         res = mcp2515_setCANCTRL_Mode(this->mcpMode);
         if (res)
         {
-            RCLCPP_INFO(logger_, "Returning to Previous Mode Failure...");
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Returning to Previous Mode Failure...");
             return res;
         }
     }
@@ -866,11 +866,11 @@ uint8_t MCP_CAN::initCAN(uint8_t idmodeset, uint8_t speedset, uint8_t clockset)
     res = initMCP2515(idmodeset, speedset, clockset);
     if (res == MCP2515_OK)
     {
-        RCLCPP_INFO(logger_, "CAN is initialized");
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "CAN is initialized");
         return CAN_OK;
     }
 
-    RCLCPP_INFO(logger_, "CAN initializtion is failed");
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "CAN initializtion is failed");
     return CAN_FAILINIT;
 }
 
@@ -896,11 +896,11 @@ uint8_t MCP_CAN::init_Mask(uint8_t num, uint8_t ext, uint32_t ulData)
 {
     uint8_t res = MCP2515_OK;
 
-    RCLCPP_INFO(logger_, "Starting to Set Mask!");
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Starting to Set Mask!");
     res = mcp2515_setCANCTRL_Mode(MODE_CONFIG);
     if (res > 0)
     {
-        RCLCPP_INFO(logger_, "Entering Configuration Mode Failure...");
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Entering Configuration Mode Failure...");
         return res;
     }
 
@@ -920,11 +920,11 @@ uint8_t MCP_CAN::init_Mask(uint8_t num, uint8_t ext, uint32_t ulData)
     res = mcp2515_setCANCTRL_Mode(this->mcpMode);
     if (res > 0)
     {
-        RCLCPP_INFO(logger_, "Entering Previous Mode Failure...");
-        RCLCPP_INFO(logger_, "Setting Mask Failure...");
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Entering Previous Mode Failure...");
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Setting Mask Failure...");
         return res;
     }
-    RCLCPP_INFO(logger_, "Setting Mask Successful!");
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Setting Mask Successful!");
     return res;
 }
 
@@ -938,11 +938,11 @@ uint8_t MCP_CAN::init_Mask(uint8_t num, uint32_t ulData)
     uint8_t res = MCP2515_OK;
     uint8_t ext = 0;
 
-    RCLCPP_INFO(logger_, "Starting to Set Mask!");
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Starting to Set Mask!");
     res = mcp2515_setCANCTRL_Mode(MODE_CONFIG);
     if (res > 0)
     {
-        RCLCPP_INFO(logger_, "Enter Configuration Mode Failure...");
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Enter Configuration Mode Failure...");
         return res;
     }
 
@@ -967,11 +967,11 @@ uint8_t MCP_CAN::init_Mask(uint8_t num, uint32_t ulData)
     res = mcp2515_setCANCTRL_Mode(this->mcpMode);
     if (res > 0)
     {
-        RCLCPP_INFO(logger_, "Entering Previous Mode Failure...");
-        RCLCPP_INFO(logger_, "Setting Mask Failure...");
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Entering Previous Mode Failure...");
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Setting Mask Failure...");
         return res;
     }
-    RCLCPP_INFO(logger_, "Setting Mask Successful!");
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Setting Mask Successful!");
     return res;
 }
 
@@ -984,11 +984,11 @@ uint8_t MCP_CAN::init_Filt(uint8_t num, uint8_t ext, uint32_t ulData)
 {
     uint8_t res = MCP2515_OK;
 
-    RCLCPP_INFO(logger_, "Starting to Set Filter!");
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Starting to Set Filter!");
     res = mcp2515_setCANCTRL_Mode(MODE_CONFIG);
     if (res > 0)
     {
-        RCLCPP_INFO(logger_, "Enter Configuration Mode Failure...");
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Enter Configuration Mode Failure...");
         return res;
     }
 
@@ -1025,11 +1025,11 @@ uint8_t MCP_CAN::init_Filt(uint8_t num, uint8_t ext, uint32_t ulData)
     res = mcp2515_setCANCTRL_Mode(this->mcpMode);
     if (res > 0)
     {
-        RCLCPP_INFO(logger_, "Entering Previous Mode Failure...");
-        RCLCPP_INFO(logger_, "Setting Filter Failure...");
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Entering Previous Mode Failure...");
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Setting Filter Failure...");
         return res;
     }
-    RCLCPP_INFO(logger_, "Setting Filter Successfull!");
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Setting Filter Successfull!");
     return res;
 }
 
@@ -1043,11 +1043,11 @@ uint8_t MCP_CAN::init_Filt(uint8_t num, uint32_t ulData)
     uint8_t res = MCP2515_OK;
     uint8_t ext = 0;
 
-    RCLCPP_INFO(logger_, "Starting to Set Filter!");
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Starting to Set Filter!");
     res = mcp2515_setCANCTRL_Mode(MODE_CONFIG);
     if (res > 0)
     {
-        RCLCPP_INFO(logger_, "Enter Configuration Mode Failure...");
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Enter Configuration Mode Failure...");
         return res;
     }
 
@@ -1089,11 +1089,11 @@ uint8_t MCP_CAN::init_Filt(uint8_t num, uint32_t ulData)
     res = mcp2515_setCANCTRL_Mode(this->mcpMode);
     if (res > 0)
     {
-        RCLCPP_INFO(logger_, "Entering Previous Mode Failure...");
-        RCLCPP_INFO(logger_, "Setting Filter Failure...");
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Entering Previous Mode Failure...");
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Setting Filter Failure...");
         return res;
     }
-    RCLCPP_INFO(logger_, "Setting Filter Successful!");
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Setting Filter Successful!");
     return res;
 }
 

@@ -30,12 +30,17 @@ namespace amp
 
 class MCP_CAN
 {
-// public:
-// MCP_CAN(rclcpp::Logger logger)//, const std::string& prefix)
-//     : logger_(logger)
-//     // , prefix_(prefix)
-// {
-// }
+public:
+    MCP_CAN()
+    : spi_(3, 0)
+    {
+      // can.reset(new amp::ASRSDM::CANProtocol);
+      // can->interfaceSetup();
+    	// can_.reset(new amp::MCP_CAN);
+    	// can_->initCAN(MCP_ANY, CAN_500KBPS, MCP_8MHZ);
+
+    }
+
 private:
     uint8_t m_nExtFlg;                                                    // Identifier Type
                                                                         // Extended (29 bit) or Standard (11 bit)
@@ -54,14 +59,11 @@ private:
     uint8_t gpio_can_cs;
 
     mraa::Spi spi_;
-    rclcpp::Logger logger_;
-
 /*********************************************************************************************************
 *  mcp2515 driver function
 *********************************************************************************************************/
     // private:
 private:
-
     struct timespec delay_spi_can = {0, 0L};
 
     uint8_t* spiTransfer(uint8_t byte_number, unsigned char *buf);
