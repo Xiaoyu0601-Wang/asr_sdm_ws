@@ -219,7 +219,7 @@ uint8_t MCP_CAN::setMode(const uint8_t opMode)
 uint8_t MCP_CAN::mcp2515_setCANCTRL_Mode(const uint8_t newmode)
 {
     mcp2515_modifyRegister(MCP_CANCTRL, MODE_MASK, newmode);
-    uint8_t value[1];
+    uint8_t* value;
     value = mcp2515_readRegister(MCP_CANCTRL);
     value[0] &= MODE_MASK;
 
@@ -785,7 +785,8 @@ void MCP_CAN::mcp2515_write_canMsg(const uint8_t buffer_sidh_addr)
 *********************************************************************************************************/
 void MCP_CAN::mcp2515_read_canMsg(const uint8_t buffer_sidh_addr)         /* read can msg                 */
 {
-    uint8_t* dlc, ctrl;
+    uint8_t* dlc;
+    uint8_t* ctrl;
     uint8_t mcp_addr;
 
     mcp_addr = buffer_sidh_addr;
@@ -816,7 +817,7 @@ void MCP_CAN::mcp2515_read_canMsg(const uint8_t buffer_sidh_addr)         /* rea
 *********************************************************************************************************/
 uint8_t MCP_CAN::mcp2515_getNextFreeTXBuf(uint8_t *txbuf_n)                 /* get Next free txbuf          */
 {
-    uint8_t res, i, ctrlval;
+    uint8_t res, i, *ctrlval;
     uint8_t ctrlregs[MCP_N_TXBUFFERS] = { MCP_TXB0CTRL, MCP_TXB1CTRL, MCP_TXB2CTRL };
 
     res      = MCP_ALLTXBUSY;
@@ -826,7 +827,7 @@ uint8_t MCP_CAN::mcp2515_getNextFreeTXBuf(uint8_t *txbuf_n)                 /* g
     for (i = 0; i < MCP_N_TXBUFFERS; i++)
     {
         ctrlval = mcp2515_readRegister(ctrlregs[i]);
-        if ((ctrlval & MCP_TXB_TXREQ_M) == 0)
+        if ((ctrlval[0] & MCP_TXB_TXREQ_M) == 0)
         {
             *txbuf_n = ctrlregs[i] + 1;                                   /* return SIDH-address of Buffer*/
 
@@ -1144,8 +1145,8 @@ uint8_t MCP_CAN::clearMsg()
 *********************************************************************************************************/
 uint8_t MCP_CAN::sendMsg()
 {
-    uint8_t* res1;
-    uint8_t res, res1, txbuf_n;
+    uint8_t *res1;
+    uint8_t res, txbuf_n;
     uint16_t uiTimeOut = 0;
 
     do
@@ -1351,7 +1352,9 @@ uint8_t MCP_CAN::checkError(void)
 *********************************************************************************************************/
 uint8_t MCP_CAN::getError(void)
 {
-    return mcp2515_readRegister(MCP_EFLG);
+    uint8_t *value;
+    value = mcp2515_readRegister(MCP_EFLG);
+    return value[0];
 }
 
 
@@ -1361,7 +1364,9 @@ uint8_t MCP_CAN::getError(void)
 *********************************************************************************************************/
 uint8_t MCP_CAN::errorCountRX(void)
 {
-    return mcp2515_readRegister(MCP_REC);
+    uint8_t *value;
+    value = mcp2515_readRegister(MCP_REC);
+    return value[0];
 }
 
 
@@ -1371,7 +1376,9 @@ uint8_t MCP_CAN::errorCountRX(void)
 *********************************************************************************************************/
 uint8_t MCP_CAN::errorCountTX(void)
 {
-    return mcp2515_readRegister(MCP_TEC);
+    uint8_t *value;
+    value = mcp2515_readRegister(MCP_TEC);
+    return value[0];
 }
 
 
@@ -1381,8 +1388,10 @@ uint8_t MCP_CAN::errorCountTX(void)
 *********************************************************************************************************/
 uint8_t MCP_CAN::enOneShotTX(void)
 {
+    uint8_t *value;
     mcp2515_modifyRegister(MCP_CANCTRL, MODE_ONESHOT, MODE_ONESHOT);
-    if ((mcp2515_readRegister(MCP_CANCTRL) & MODE_ONESHOT) != MODE_ONESHOT)
+    value = mcp2515_readRegister(MCP_CANCTRL);
+    if ((value[0] & MODE_ONESHOT) != MODE_ONESHOT)
     {
         return CAN_FAIL;
     }
@@ -1392,15 +1401,16 @@ uint8_t MCP_CAN::enOneShotTX(void)
     }
 }
 
-
 /*********************************************************************************************************
 ** Function name:           mcp2515_disOneShotTX
 ** Descriptions:            Disables one shot transmission mode
 *********************************************************************************************************/
 uint8_t MCP_CAN::disOneShotTX(void)
 {
+    uint8_t *value;
     mcp2515_modifyRegister(MCP_CANCTRL, MODE_ONESHOT, 0);
-    if ((mcp2515_readRegister(MCP_CANCTRL) & MODE_ONESHOT) != 0)
+    value = mcp2515_readRegister(MCP_CANCTRL);
+    if ((value[0] & MODE_ONESHOT) != 0)
     {
         return CAN_FAIL;
     }
