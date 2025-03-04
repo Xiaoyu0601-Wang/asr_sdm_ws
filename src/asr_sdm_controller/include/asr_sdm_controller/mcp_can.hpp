@@ -34,6 +34,7 @@ public:
     MCP_CAN()
     : spi_(3, 0)
     {
+        // spi_.frequency(500000);
       // can.reset(new amp::ASRSDM::CANProtocol);
       // can->interfaceSetup();
     	// can_.reset(new amp::MCP_CAN);

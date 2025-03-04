@@ -26,13 +26,13 @@ class ASRSDM : public rclcpp::Node
 {
   public:
     ASRSDM()
-    : Node("usr_sdm_controller")
+    : Node("asr_sdm_controller")
     , count_(0)
     {
       // can.reset(new amp::ASRSDM::CANProtocol);
       // can->interfaceSetup();
     	can_.reset(new amp::MCP_CAN);
-    	// can_->initCAN(MCP_ANY, CAN_500KBPS, MCP_8MHZ);
+    	can_->initCAN(MCP_ANY, CAN_500KBPS, MCP_8MHZ);
 
     	pub_ros_info_ = this->create_publisher<std_msgs::msg::String>("topic", 10);
     	timer_hardware_ = this->create_wall_timer(1000ms, std::bind(&ASRSDM::timer_callback, this));
