@@ -36,6 +36,7 @@ class ASRSDM : public rclcpp::Node
 
     	pub_ros_info_ = this->create_publisher<std_msgs::msg::String>("topic", 10);
     	timer_hardware_ = this->create_wall_timer(1000ms, std::bind(&ASRSDM::timer_callback, this));
+    	timer_imu_ = this->create_wall_timer(5ms, std::bind(&ASRSDM::timer_imu_callback, this));
     }
 
   private:
@@ -49,9 +50,15 @@ class ASRSDM : public rclcpp::Node
 //      publisher_->publish(message);
     }
 
+    void timer_imu_callback()
+    {
+      
+    }
+
     size_t count_;
 
     rclcpp::TimerBase::SharedPtr timer_hardware_;
+    rclcpp::TimerBase::SharedPtr timer_imu_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr pub_ros_info_;
     amp::MCP_CAN::Ptr can_;
 };
