@@ -8,14 +8,14 @@ namespace amp
 *********************************************************************************************************/
 uint8_t* MCP_CAN::spiTransfer(uint8_t byte_number, unsigned char *buf)
 {
-    // uint8_t* value;
-    // value = spi_.write(buf, byte_number);
-    uint8_t value[8] = {0};
+    uint8_t* value;
+    value = spi_.write(buf, byte_number);
+    // uint8_t value[8] = {0};
 
-    if (spi_.transfer(buf, value, byte_number) == mraa::SUCCESS)
-    {
-        RCLCPP_INFO(rclcpp::get_logger("hardware"), "SUCCESS");
-    }
+    // if (spi_.transfer(buf, value, byte_number) == mraa::SUCCESS)
+    // {
+    //     RCLCPP_INFO(rclcpp::get_logger("hardware"), "SUCCESS");
+    // }
     RCLCPP_INFO(rclcpp::get_logger("hardware"),
                 "%ld, %#04x, %#04x, %#04x, %#04x, %#04x, %#04x, %d",
                 sizeof(value), value[0], value[1], value[2], value[3], value[4], buf[0], byte_number);
@@ -877,7 +877,11 @@ uint8_t MCP_CAN::mcp2515_getNextFreeTXBuf(uint8_t *txbuf_n)                 /* g
 uint8_t MCP_CAN::initCAN(uint8_t idmodeset, uint8_t speedset, uint8_t clockset)
 {
     uint8_t res;
-    spi_.frequency(500000);
+    // spi_.frequency(500000);
+    if (spi_.frequency(250000) == mraa::SUCCESS)
+    {
+        RCLCPP_INFO(rclcpp::get_logger("hardware"), "SPI Frequency Changed");
+    }
 
     res = initMCP2515(idmodeset, speedset, clockset);
     if (res == MCP2515_OK)
