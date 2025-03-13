@@ -8,18 +8,36 @@ namespace amp
 *********************************************************************************************************/
 uint8_t* MCP_CAN::spiTransfer(uint8_t byte_number, unsigned char *buf)
 {
-    uint8_t* value;
-    value = spi_.write(buf, byte_number);
+    uint8_t rx_data[4];
+    // uint8_t* value;
+    // gpio_24.write(0);
+    // rclcpp::sleep_for(std::chrono::milliseconds(1));
+    // spi_transfer_value = spi_.write(buf, byte_number);
     // uint8_t value[8] = {0};
 
-    // if (spi_.transfer(buf, value, byte_number) == mraa::SUCCESS)
-    // {
-    //     RCLCPP_INFO(rclcpp::get_logger("hardware"), "SUCCESS");
-    // }
+    if (spi_transfer(spi_, buf, rx_data, byte_number) < 0)
+    {
+        RCLCPP_INFO(rclcpp::get_logger("hardware"), "failed");
+        fprintf(stderr, "spi_transfer(): %s\n", spi_errmsg(spi_));
+        return NULL;
+    }
+
     RCLCPP_INFO(rclcpp::get_logger("hardware"),
-                "%ld, %#04x, %#04x, %#04x, %#04x, %#04x, %#04x, %d",
-                sizeof(value), value[0], value[1], value[2], value[3], value[4], buf[0], byte_number);
-    return value;
+                "cmd: %#04x, %#04x", buf[0], buf[1]);
+    RCLCPP_INFO(rclcpp::get_logger("hardware"),
+                "%#04x, %#04x, %#04x, %#04x",
+                rx_data[0], rx_data[1], rx_data[2], rx_data[3]);
+
+    // RCLCPP_INFO(rclcpp::get_logger("hardware"),
+    //             "%ld, %#04x, %#04x, %#04x, %#04x, %#04x, %#04x, %d",
+    //             sizeof(spi_transfer_value), spi_transfer_value[0], spi_transfer_value[1], spi_transfer_value[2],
+    //             spi_transfer_value[3], spi_transfer_value[4], buf[0], byte_number);
+    
+    // gpio_24.write(1);
+    // rclcpp::sleep_for(std::chrono::milliseconds(100));
+    usleep(100);
+    // return spi_transfer_value;
+    return &rx_data[0];
 }
 
 
@@ -102,8 +120,18 @@ uint8_t* MCP_CAN::spiTransfer(uint8_t byte_number, unsigned char *buf)
 *********************************************************************************************************/
 void MCP_CAN::resetMCP2515(void)
 {
-    unsigned char cmd[1] = { MCP_RESET };
-    spiTransfer(1, cmd);
+    unsigned char cmd[2] = { MCP_RESET, 0x00 };
+    // spiTransfer(1, cmd);
+    // if (spiTransfer(sizeof(cmd), cmd) < 0) {
+    //     fprintf(stderr, "spi_transfer(): %s\n", spi_errmsg(spi_));
+    //     // RCLCPP_INFO(rclcpp::get_logger("hardware"), "CAN is initialized");
+    // }
+    // else
+    // {
+    //     RCLCPP_INFO(rclcpp::get_logger("hardware"), "MCP2515 is Reseted");
+    // }
+    spiTransfer(2, cmd);
+    RCLCPP_INFO(rclcpp::get_logger("hardware"), "MCP2515 is Reseted");
     rclcpp::sleep_for(std::chrono::milliseconds(100));
 }
 
@@ -114,8 +142,8 @@ void MCP_CAN::resetMCP2515(void)
 *********************************************************************************************************/
 uint8_t* MCP_CAN::mcp2515_readRegister(const uint8_t address)
 {
-    unsigned char buf[2] = { MCP_READ, address};
-    return spiTransfer(2, buf);
+    unsigned char buf[3] = { MCP_READ, address, 0x00};
+    return spiTransfer(3, buf);
 }
 
 
@@ -229,13 +257,14 @@ uint8_t MCP_CAN::setMode(const uint8_t opMode)
 *********************************************************************************************************/
 uint8_t MCP_CAN::mcp2515_setCANCTRL_Mode(const uint8_t newmode)
 {
-    mcp2515_modifyRegister(MCP_CANCTRL, MODE_MASK, newmode);
-    uint8_t* value;
-    value = mcp2515_readRegister(MCP_CANCTRL);
-    RCLCPP_INFO(rclcpp::get_logger("hardware"), "mode: %#04x", newmode);
-    RCLCPP_INFO(rclcpp::get_logger("hardware"),
-                "%ld, %#04x, %#04x, %#04x, %#04x, %#04x", sizeof(value), value[0], value[1], value[2], value[2], value[3]);
-    uint8_t mode_status =  value[sizeof(value) - 1] & MODE_MASK;
+    // mcp2515_modifyRegister(MCP_CANCTRL, MODE_MASK, newmode);
+    uint8_t* set_canctrl_value;
+    // set_canctrl_value = mcp2515_readRegister(MCP_CANCTRL);
+    set_canctrl_value = mcp2515_readRegister(MCP_CANCTRL);
+    RCLCPP_INFO(rclcpp::get_logger("hardware"), "mode command: %#04x", newmode);
+    // RCLCPP_INFO(rclcpp::get_logger("hardware"),
+    //             "%ld, %#04x, %#04x, %#04x, %#04x, %#04x", sizeof(value), value[0], value[1], value[2], value[2], value[3]);
+    uint8_t mode_status = set_canctrl_value[2] & MODE_MASK;
     RCLCPP_INFO(rclcpp::get_logger("hardware"), "mode_status: %#04x", mode_status);
     if (mode_status == newmode)
     {
@@ -598,11 +627,11 @@ uint8_t MCP_CAN::initMCP2515(const uint8_t canIDMode, const uint8_t canSpeed, co
     uint8_t res;
 
     resetMCP2515();
-    RCLCPP_INFO(rclcpp::get_logger("hardware"), "Reset MCP2515");
 
     this->mcpMode = MCP_NORMAL;
 
     res = mcp2515_setCANCTRL_Mode(MODE_CONFIG);
+    rclcpp::sleep_for(std::chrono::milliseconds(100));
     if (res > 0)
     {
         RCLCPP_INFO(rclcpp::get_logger("hardware"), "Entering MCP2515 Configuration Mode Failure...");
@@ -877,11 +906,6 @@ uint8_t MCP_CAN::mcp2515_getNextFreeTXBuf(uint8_t *txbuf_n)                 /* g
 uint8_t MCP_CAN::initCAN(uint8_t idmodeset, uint8_t speedset, uint8_t clockset)
 {
     uint8_t res;
-    // spi_.frequency(500000);
-    if (spi_.frequency(250000) == mraa::SUCCESS)
-    {
-        RCLCPP_INFO(rclcpp::get_logger("hardware"), "SPI Frequency Changed");
-    }
 
     res = initMCP2515(idmodeset, speedset, clockset);
     if (res == MCP2515_OK)

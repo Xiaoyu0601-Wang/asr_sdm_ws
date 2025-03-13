@@ -3,10 +3,12 @@
 /* ROS2 headers */
 #include <rclcpp/rclcpp.hpp>
 
-/* mraa headers */
-#include "mraa/common.hpp"
-#include "mraa/spi.hpp"
+/* c-periphery headers */
+#include "periphery/spi.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
 #include <chrono>
 #include <iostream>
 #include <memory>
@@ -14,6 +16,9 @@
 #include <cstdio>
 #include <cstdlib> // For malloc and free
 #include <ctime>
+#include <fcntl.h>
+#include <unistd.h>
+#include <cstring>
 
 #include "asr_sdm_controller/mcp_can_dfs.h"
 
@@ -32,14 +37,19 @@ class MCP_CAN
 {
 public:
     MCP_CAN()
-    : spi_(3, 0)
     {
-        // spi_.frequency(500000);
-      // can.reset(new amp::ASRSDM::CANProtocol);
-      // can->interfaceSetup();
-    	// can_.reset(new amp::MCP_CAN);
-    	// can_->initCAN(MCP_ANY, CAN_500KBPS, MCP_8MHZ);
+        spi_ = spi_new();
+        /* Open spidev3.0 with mode 0 and max speed 1MHz */
+        if (spi_open(spi_, "/dev/spidev3.0", 0, 500000) < 0) {
+            fprintf(stderr, "spi_open(): %s\n", spi_errmsg(spi_));
+        }
 
+    }
+
+    ~MCP_CAN()
+    {
+        spi_close(spi_);
+        spi_free(spi_);
     }
 
 private:
@@ -59,7 +69,18 @@ private:
     uint8_t gpio_can_interrupt;
     uint8_t gpio_can_cs;
 
-    mraa::Spi spi_;
+    // int spi_fd_;
+    // uint8_t spi_mode_;
+    // unsigned int spi_speed_;
+    // uint8_t spi_tx_buffer_[32];
+    // uint8_t spi_rx_buffer_[32];
+    // struct spi_ioc_transfer spi_transfer_buffer_;
+    // mraa::Gpio gpio_24;
+    // mraa::Spi spi_;
+    spi_t *spi_;
+    // uint8_t* spi_transfer_value;
+    // uint8_t* set_canctrl_value;
+    // uint8_t rx_data[8];
 /*********************************************************************************************************
 *  mcp2515 driver function
 *********************************************************************************************************/

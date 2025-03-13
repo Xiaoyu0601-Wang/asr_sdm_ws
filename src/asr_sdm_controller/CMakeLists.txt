@@ -9,23 +9,30 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+
+find_package(periphery REQUIRED)
+# Find libgpiod
+# find_package(PkgConfig REQUIRED)
+# pkg_check_modules(GPIOD REQUIRED libgpiod)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
-find_library(MRAA_LIB NAMES mraa PATHS /usr/local/include)
+# find_library(MRAA_LIB NAMES mraa PATHS /usr/local/include)
+# find_library(PERIPHERY_LIB NAMES periphery PATHS /usr/local/include)
 
 include_directories(
   include
-  # /usr/local/include
+  # ${GPIOD_INCLUDE_DIRS}
+  /usr/local/include
 )
 
 # add_executable(mcp_can src/mcp_can.cpp)
 # target_link_libraries(mcp_can ${MRAA_LIB})
 # ament_target_dependencies(mcp_can rclcpp)
 
-add_executable(asr_sdm_controller src/asr_sdm_controller.cpp src/mcp_can.cpp)
-target_link_libraries(asr_sdm_controller ${MRAA_LIB})
+add_executable(asr_sdm_controller src/asr_sdm_controller_node.cpp src/mcp_can.cpp)
+target_link_libraries(asr_sdm_controller periphery)
 ament_target_dependencies(asr_sdm_controller rclcpp std_msgs)
 
 install(TARGETS

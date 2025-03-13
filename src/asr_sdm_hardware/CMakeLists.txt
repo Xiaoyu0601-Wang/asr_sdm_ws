@@ -10,6 +10,27 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 
+find_package(periphery REQUIRED)
+
+include_directories(
+  include
+  # ${GPIOD_INCLUDE_DIRS}
+  /usr/local/include
+)
+
+# add_executable(mcp_can src/mcp_can.cpp)
+# target_link_libraries(mcp_can ${MRAA_LIB})
+# ament_target_dependencies(mcp_can rclcpp)
+
+add_executable(asr_sdm_hardware_node src/asr_sdm_hardware_node.cpp)
+target_link_libraries(asr_sdm_hardware_node periphery)
+ament_target_dependencies(asr_sdm_hardware_node rclcpp std_msgs)
+
+install(TARGETS
+  asr_sdm_hardware_node
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights

@@ -1,6 +1,9 @@
 # asr_sdm_radxa_ws
 Workspace of Radxa Zero for Amphibious Snake-like Robot with Screw-drive Mechanism
 
+### C Library for Linux Peripheral I/O (GPIO, LED, PWM, SPI, I2C, MMIO, Serial)
+https://github.com/vsergeev/c-periphery
+
 ### How to grant user permissions to utilize the spidev port
 ```sh
 sudo groupadd spi
@@ -8,6 +11,9 @@ sudo usermod -aG spi $USER
 ls -l /dev/spidev*
 sudo nano /etc/udev/rules.d/99-spi.rules
 SUBSYSTEM=="spidev", GROUP="spi", MODE="0660"
+sudo nano /etc/udev/rules.d/99-gpio.rules
+SUBSYSTEM=="gpio", KERNEL=="gpiochip*", MODE="0660", GROUP="gpio"
+sudo usermod -aG gpio $USER
 sudo udevadm control --reload-rules
 sudo udevadm trigger
 sudo reboot
