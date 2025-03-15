@@ -1,6 +1,22 @@
 # [WIP]asr_sdm_radxa_ws
 Workspace of Radxa Zero for Amphibious Snake-like Robot with Screw-drive Mechanism
 
+## Environment Setup
+
+### .bash.rc
+```sh
+alias ls='ls --color=auto'  # Linux
+alias ls='ls -G'            # macOS
+export CLICOLOR=1           # macOS 启用颜色
+export LSCOLORS="ExGxFxdaCxDaDahbadacec"  # macOS 颜色方案
+export TERM=xterm-256color
+export PS1='\[\e[1;32m\]\u@\h:\w\$\[\e[0m\] '  # 绿色提示符
+source /opt/ros/rolling/setup.bash
+export ROS_DOMAIN_ID=176
+source /usr/share/colcon_cd/function/colcon_cd.sh
+export _colcon_cd_root=/opt/ros/2/
+```
+
 ### C Library for Linux Peripheral I/O (GPIO, LED, PWM, SPI, I2C, MMIO, Serial)
 https://github.com/vsergeev/c-periphery
 
