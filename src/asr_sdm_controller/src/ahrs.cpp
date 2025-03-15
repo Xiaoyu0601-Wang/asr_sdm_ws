@@ -2,5 +2,8 @@
 
 namespace amp
 {
-
-} //amp
+Ahrs::Ahrs(const std::string & name)
+{
+  // TODO: Initialize AHRS system
+}
+}  // namespace amp
