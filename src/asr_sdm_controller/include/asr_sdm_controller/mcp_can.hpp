@@ -39,7 +39,7 @@ public:
   {
     spi_ = spi_new();
     /* Open spidev3.0 with mode 0 and max speed 1MHz */
-    if (spi_open(spi_, "/dev/spidev3.0", 0, 500000) < 0) {
+    if (spi_open(spi_, "/dev/spidev3.0", 0, 1000000) < 0) {
       fprintf(stderr, "spi_open(): %s\n", spi_errmsg(spi_));
     }
   }
@@ -145,6 +145,7 @@ public:
   uint8_t init_Filt(uint8_t num, uint8_t ext, uint32_t ulData);  // Initilize Filter(s)
   uint8_t init_Filt(uint8_t num, uint32_t ulData);               // Initilize Filter(s)
   uint8_t setMode(uint8_t opMode);                               // Set operational mode
+  void mcp2515_send(uint32_t canid, uint8_t * buf, uint8_t len);
   uint8_t sendMsgBuf(
     uint32_t id, uint8_t ext, uint8_t len, uint8_t * buf);      // Send message to transmit buffer
   uint8_t sendMsgBuf(uint32_t id, uint8_t len, uint8_t * buf);  // Send message to transmit buffer

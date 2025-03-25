@@ -30,7 +30,7 @@ public:
   AsrSdmControllerNode() : Node("asr_sdm_controller"), count_(0)
   {
     can_.reset(new amp::MCP_CAN);
-    can_->initCAN(MCP_ANY, CAN_500KBPS, MCP_8MHZ);
+    can_->initCAN(MCP_ANY, CAN_250KBPS, MCP_8MHZ);
 
     pub_ros_info_ = this->create_publisher<std_msgs::msg::String>("topic", 10);
     timer_hardware_ =
@@ -44,9 +44,10 @@ private:
   {
     // RCLCPP_INFO("Publishing");
     RCLCPP_INFO(this->get_logger(), "Publishing");
-    // uint8_t len = 1;
-    // uint8_t buf[1] = {0x01};  //, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
-    // can_->sendMsgBuf(1, 1, len, buf);
+    const uint8_t len = 8;
+    uint8_t buf[len] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
+    // can_->sendMsgBuf(1, 0, len, buf);
+    can_->mcp2515_send(0x100, buf, len);
     //      auto message = std_msgs::msg::String();
     //      message.data = "Hello, world! " + std::to_string(count_++);
     //      RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());

@@ -14,12 +14,13 @@ bool MCP_CAN::spiTransfer(uint8_t byte_number, unsigned char * tx_buf, unsigned 
     return false;
   }
 
-  RCLCPP_INFO(rclcpp::get_logger("hardware"), "cmd: %#04x, %#04x", tx_buf[0], tx_buf[1]);
+  RCLCPP_INFO(
+    rclcpp::get_logger("hardware"), "cmd: %#04x, %#04x, %#04x", tx_buf[0], tx_buf[1], tx_buf[2]);
   RCLCPP_INFO(
     rclcpp::get_logger("hardware"), "%#04x, %#04x, %#04x, %#04x", rx_buf[0], rx_buf[1], rx_buf[2],
     rx_buf[3]);
 
-  usleep(10);
+  // usleep(10);
   return true;
 }
 
@@ -99,9 +100,10 @@ bool MCP_CAN::spiTransfer(uint8_t byte_number, unsigned char * tx_buf, unsigned 
 *********************************************************************************************************/
 bool MCP_CAN::resetMCP2515(void)
 {
-  unsigned char cmd[2] = {MCP_RESET, 0x00};
+  unsigned char tx_buf[2] = {MCP_RESET, 0x00};
+  unsigned char rx_buf[2] = {0};
 
-  if (!spiTransfer(2, cmd, cmd)) {
+  if (!spiTransfer(2, tx_buf, rx_buf)) {
     RCLCPP_INFO(rclcpp::get_logger("hardware"), "MCP2515 Reset Failure...");
     return false;
   }
@@ -152,9 +154,10 @@ void MCP_CAN::mcp2515_readRegisterS(const uint8_t address, uint8_t values[], con
 *********************************************************************************************************/
 void MCP_CAN::mcp2515_setRegister(const uint8_t address, const uint8_t value)
 {
-  unsigned char tx_buf[4] = {MCP_WRITE, address, value, 0x00};
+  unsigned char tx_buf[3] = {MCP_WRITE, address, value};
+  unsigned char rx_buf[3] = {0};
 
-  spiTransfer(4, tx_buf, tx_buf);
+  spiTransfer(3, tx_buf, rx_buf);
 }
 
 /*********************************************************************************************************
@@ -163,24 +166,23 @@ void MCP_CAN::mcp2515_setRegister(const uint8_t address, const uint8_t value)
 *********************************************************************************************************/
 void MCP_CAN::mcp2515_setRegisterS(const uint8_t address, const uint8_t values[], const uint8_t n)
 {
-  uint8_t i;
-
   int buf_size = 3 + n;
-  //    unsigned char buf[buf_size];
-  //   unsigned char tx_buf[3] = {MCP_WRITE, address, 0x00};
-  unsigned char * tx_buf = (unsigned char *)malloc(buf_size * sizeof(unsigned char));
+  unsigned char tx_buf[4] = {MCP_WRITE, address, 0x00, 0x00};
+  // unsigned char * tx_buf = (unsigned char *)malloc(buf_size * sizeof(unsigned char));
+  unsigned char rx_buf[4] = {0};
 
-  tx_buf[0] = MCP_WRITE;
-  tx_buf[1] = address;
-  for (i = 0; i < n; ++i) {
-    tx_buf[i + 2] = values[i];
+  for (uint8_t i = 0; i < n; ++i) {
+    tx_buf[2] = values[i];
+    spiTransfer(4, tx_buf, rx_buf);
+    tx_buf[1] += 1;
   }
-  tx_buf[buf_size - 1] = 0x00;
 
-  spiTransfer(buf_size, tx_buf, tx_buf);
+  // tx_buf[buf_size - 1] = 0x00;
+
+  // spiTransfer(buf_size, tx_buf, rx_buf);
 
   // Free the allocated memory
-  free(tx_buf);
+  // free(tx_buf);
 }
 
 /*********************************************************************************************************
@@ -224,8 +226,10 @@ uint8_t MCP_CAN::setMode(const uint8_t opMode)
 *********************************************************************************************************/
 uint8_t MCP_CAN::mcp2515_setCANCTRL_Mode(const uint8_t newmode)
 {
-  mcp2515_modifyRegister(MCP_CANCTRL, MODE_MASK, newmode);
-  uint8_t mode_status = mcp2515_readRegister(MCP_CANCTRL) & MODE_MASK;
+  // mcp2515_modifyRegister(MCP_CANCTRL, MODE_MASK, newmode);
+  mcp2515_setRegister(MCP_CANCTRL, newmode);
+  rclcpp::sleep_for(std::chrono::milliseconds(1));
+  uint8_t mode_status = mcp2515_readRegister(MCP_CANCTRL);
   RCLCPP_INFO(rclcpp::get_logger("hardware"), "mode command: %#04x", newmode);
   RCLCPP_INFO(rclcpp::get_logger("hardware"), "mode_status: %#04x", mode_status);
   if (mode_status == newmode) {
@@ -516,9 +520,28 @@ uint8_t MCP_CAN::mcp2515_configRate(const uint8_t canSpeed, const uint8_t canClo
   }
 
   if (set) {
-    mcp2515_setRegister(MCP_CNF1, cfg1);
-    mcp2515_setRegister(MCP_CNF2, cfg2);
-    mcp2515_setRegister(MCP_CNF3, cfg3);
+    // mcp2515_setRegister(MCP_CNF1, cfg1);
+    // mcp2515_setRegister(MCP_CNF2, cfg2);
+    // mcp2515_setRegister(MCP_CNF3, cfg3);
+    // mcp2515_setRegister(MCP_CNF1, 0x00);
+    // mcp2515_setRegister(MCP_CNF2, 0xd1);
+    // mcp2515_setRegister(MCP_CNF3, 0x81);
+
+    // mcp2515_setRegister(MCP_CNF1, 0x00);
+    // mcp2515_setRegister(MCP_CNF2, 0x90);
+    // mcp2515_setRegister(MCP_CNF3, 0x82);
+
+    // mcp2515_setRegister(MCP_CNF1, 0x00);
+    // mcp2515_setRegister(MCP_CNF2, 0xB1);
+    // mcp2515_setRegister(MCP_CNF3, 0x85);
+
+    mcp2515_setRegister(MCP_CNF1, 0x00);
+    mcp2515_setRegister(MCP_CNF2, 0x90);
+    mcp2515_setRegister(MCP_CNF3, 0x02);
+
+    // mcp2515_setRegister(MCP_CNF1, 0x1F);
+    // mcp2515_setRegister(MCP_CNF2, 0xBF);
+    // mcp2515_setRegister(MCP_CNF3, 0x87);
     return MCP2515_OK;
   }
 
@@ -574,75 +597,98 @@ void MCP_CAN::mcp2515_initCANBuffers(void)
 uint8_t MCP_CAN::initMCP2515(
   const uint8_t canIDMode, const uint8_t canSpeed, const uint8_t canClock)
 {
-  uint8_t res;
-
+  // Reset MCP2515
   resetMCP2515();
   rclcpp::sleep_for(std::chrono::milliseconds(100));
 
-  this->mcpMode = MCP_NORMAL;
-  res = mcp2515_setCANCTRL_Mode(MODE_CONFIG);
-  rclcpp::sleep_for(std::chrono::milliseconds(10));
-  if (res > 0) {
-    RCLCPP_INFO(rclcpp::get_logger("hardware"), "Entering MCP2515 Configuration Mode Failure...");
-    return res;
-  }
-  RCLCPP_INFO(rclcpp::get_logger("hardware"), "Entering CAN Configuration Mode Successful!");
+  mcpMode = MCP_NORMAL | CLKOUT_ENABLE;
+  uint8_t dummy = mcp2515_readRegister(MCP_CANSTAT);
+  RCLCPP_INFO(rclcpp::get_logger("hardware"), "MCP_CANSTAT: %#04x", dummy);
+
+  // if (mcp2515_setCANCTRL_Mode(MODE_CONFIG | CLKOUT_ENABLE) > 0) {
+  //   RCLCPP_INFO(rclcpp::get_logger("hardware"), "Entering MCP2515 Configuration Mode
+  //   Failure..."); return MCP2515_FAIL;
+  // }
 
   // Set Baudrate
   if (mcp2515_configRate(canSpeed, canClock)) {
     RCLCPP_INFO(rclcpp::get_logger("hardware"), "Setting CAN Baudrate Failure...");
-    return res;
+    return MCP2515_FAIL;
   }
   RCLCPP_INFO(rclcpp::get_logger("hardware"), "Setting CAN Baudrate Successful!");
 
-  if (res == MCP2515_OK) {
-    /* init canbuffers              */
-    mcp2515_initCANBuffers();
+  mcp2515_setRegister(0x31, 0xFF);
+  mcp2515_setRegister(0x32, 0xE0);
+  // mcp2515_setRegister(0x33, 0xFF);
+  // mcp2515_setRegister(0x34, 0xFF);
+  // mcp2515_setRegister(0x35, 0x40 | 0x08);
 
-    /* interrupt mode               */
-    mcp2515_setRegister(MCP_CANINTE, MCP_RX0IF | MCP_RX1IF);
+  /* init canbuffers              */
+  // mcp2515_initCANBuffers();
 
-    switch (canIDMode) {
-      case (MCP_ANY):
-        mcp2515_modifyRegister(
-          MCP_RXB0CTRL, MCP_RXB_RX_MASK | MCP_RXB_BUKT_MASK, MCP_RXB_RX_ANY | MCP_RXB_BUKT_MASK);
-        mcp2515_modifyRegister(MCP_RXB1CTRL, MCP_RXB_RX_MASK, MCP_RXB_RX_ANY);
-        break;
+  // #Set RX
+  mcp2515_setRegister(MCP_RXB0SIDH, 0x00);
+  mcp2515_setRegister(0x62, 0x00);
+  // mcp2515_setRegister(0x63, 0x00);
+  // mcp2515_setRegister(0x64, 0x00);
+  mcp2515_setRegister(MCP_RXB0CTRL, 0x20);
+  mcp2515_setRegister(0x65, 0x08);  // DLC_8
 
-        /*          The followingn two functions of the MCP2515 do not work, there is a bug in the
-         * silicon. case (MCP_STD): mcp2515_modifyRegister(MCP_RXB0CTRL, MCP_RXB_RX_MASK |
-         * MCP_RXB_BUKT_MASK, MCP_RXB_RX_STD | MCP_RXB_BUKT_MASK );
-         *          mcp2515_modifyRegister(MCP_RXB1CTRL, MCP_RXB_RX_MASK,
-         *          MCP_RXB_RX_STD);
-         *          break;
-         *          case (MCP_EXT):
-         *          mcp2515_modifyRegister(MCP_RXB0CTRL,
-         *          MCP_RXB_RX_MASK | MCP_RXB_BUKT_MASK,
-         *          MCP_RXB_RX_EXT | MCP_RXB_BUKT_MASK );
-         *          mcp2515_modifyRegister(MCP_RXB1CTRL, MCP_RXB_RX_MASK,
-         *          MCP_RXB_RX_EXT);
-         *          break;
-         */
-      case (MCP_STDEXT):
-        mcp2515_modifyRegister(
-          MCP_RXB0CTRL, MCP_RXB_RX_MASK | MCP_RXB_BUKT_MASK, MCP_RXB_RX_STDEXT | MCP_RXB_BUKT_MASK);
-        mcp2515_modifyRegister(MCP_RXB1CTRL, MCP_RXB_RX_MASK, MCP_RXB_RX_STDEXT);
-        break;
+  mcp2515_setRegister(MCP_RXF0SIDH, 0xFF);
+  mcp2515_setRegister(MCP_RXF0SIDL, 0xE0);
+  mcp2515_setRegister(MCP_RXM0SIDH, 0xFF);
+  mcp2515_setRegister(MCP_RXM0SIDL, 0xE0);
 
-      default:
-        RCLCPP_INFO(rclcpp::get_logger("hardware"), "Setting ID Mode Failure...");
-        return MCP2515_FAIL;
+  /* interrupt mode               */
+  mcp2515_setRegister(MCP_CANINTF, 0x00);
+  mcp2515_setRegister(MCP_CANINTE, 0x01);  // MCP_RX0IF);  // | MCP_RX1IF);
 
-        break;
-    }
+  // switch (canIDMode) {
+  //   case (MCP_ANY):
+  //     mcp2515_modifyRegister(
+  //       MCP_RXB0CTRL, MCP_RXB_RX_MASK | MCP_RXB_BUKT_MASK, MCP_RXB_RX_ANY | MCP_RXB_BUKT_MASK);
+  //     mcp2515_modifyRegister(MCP_RXB1CTRL, MCP_RXB_RX_MASK, MCP_RXB_RX_ANY);
+  //     break;
 
-    res = mcp2515_setCANCTRL_Mode(this->mcpMode);
-    if (res) {
-      RCLCPP_INFO(rclcpp::get_logger("hardware"), "Returning to Previous Mode Failure...");
-      return res;
-    }
+  //     /*          The followingn two functions of the MCP2515 do not work, there is a bug in the
+  //      * silicon. case (MCP_STD): mcp2515_modifyRegister(MCP_RXB0CTRL, MCP_RXB_RX_MASK |
+  //      * MCP_RXB_BUKT_MASK, MCP_RXB_RX_STD | MCP_RXB_BUKT_MASK );
+  //      *          mcp2515_modifyRegister(MCP_RXB1CTRL, MCP_RXB_RX_MASK,
+  //      *          MCP_RXB_RX_STD);
+  //      *          break;
+  //      *          case (MCP_EXT):
+  //      *          mcp2515_modifyRegister(MCP_RXB0CTRL,
+  //      *          MCP_RXB_RX_MASK | MCP_RXB_BUKT_MASK,
+  //      *          MCP_RXB_RX_EXT | MCP_RXB_BUKT_MASK );
+  //      *          mcp2515_modifyRegister(MCP_RXB1CTRL, MCP_RXB_RX_MASK,
+  //      *          MCP_RXB_RX_EXT);
+  //      *          break;
+  //      */
+  //   case (MCP_STDEXT):
+  //     mcp2515_modifyRegister(
+  //       MCP_RXB0CTRL, MCP_RXB_RX_MASK | MCP_RXB_BUKT_MASK, MCP_RXB_RX_STDEXT |
+  //       MCP_RXB_BUKT_MASK);
+  //     mcp2515_modifyRegister(MCP_RXB1CTRL, MCP_RXB_RX_MASK, MCP_RXB_RX_STDEXT);
+  //     break;
+
+  //   default:
+  //     RCLCPP_INFO(rclcpp::get_logger("hardware"), "Setting ID Mode Failure...");
+  //     return MCP2515_FAIL;
+
+  //     break;
+  // }
+
+  if (mcp2515_setCANCTRL_Mode(MCP_NORMAL | CLKOUT_ENABLE)) {
+    RCLCPP_INFO(rclcpp::get_logger("hardware"), "Returning to Previous Mode Failure...");
+    return MCP2515_FAIL;
   }
-  return res;
+  dummy = mcp2515_readRegister(MCP_CANSTAT);
+  RCLCPP_INFO(rclcpp::get_logger("hardware"), "MCP_CANSTAT: %#04x", dummy);
+  // if (dummy == 0) {
+  //   mcp2515_setCANCTRL_Mode(MCP_NORMAL | CLKOUT_ENABLE);
+  // }
+  // rclcpp::sleep_for(std::chrono::milliseconds(1));
+  return MCP2515_OK;
 }
 
 /*********************************************************************************************************
@@ -656,22 +702,28 @@ void MCP_CAN::mcp2515_write_id(const uint8_t mcp_addr, const uint8_t ext, const 
 
   canid = (uint16_t)(id & 0x0FFFF);
 
-  if (ext == 1) {
-    tbufdata[MCP_EID0] = (uint8_t)(canid & 0xFF);
-    tbufdata[MCP_EID8] = (uint8_t)(canid >> 8);
-    canid = (uint16_t)(id >> 16);
-    tbufdata[MCP_SIDL] = (uint8_t)(canid & 0x03);
-    tbufdata[MCP_SIDL] += (uint8_t)((canid & 0x1C) << 3);
-    tbufdata[MCP_SIDL] |= MCP_TXB_EXIDE_M;
-    tbufdata[MCP_SIDH] = (uint8_t)(canid >> 5);
-  } else {
-    tbufdata[MCP_SIDH] = (uint8_t)(canid >> 3);
-    tbufdata[MCP_SIDL] = (uint8_t)((canid & 0x07) << 5);
-    tbufdata[MCP_EID0] = 0;
-    tbufdata[MCP_EID8] = 0;
-  }
+  // if (ext == 1) {
+  //   tbufdata[MCP_EID0] = (uint8_t)(canid & 0xFF);
+  //   tbufdata[MCP_EID8] = (uint8_t)(canid >> 8);
+  //   canid = (uint16_t)(id >> 16);
+  //   tbufdata[MCP_SIDL] = (uint8_t)(canid & 0x03);
+  //   tbufdata[MCP_SIDL] += (uint8_t)((canid & 0x1C) << 3);
+  //   tbufdata[MCP_SIDL] |= MCP_TXB_EXIDE_M;
+  //   tbufdata[MCP_SIDH] = (uint8_t)(canid >> 5);
+  // } else {
+  //   tbufdata[MCP_SIDH] = (uint8_t)(canid >> 3);
+  //   tbufdata[MCP_SIDL] = (uint8_t)((canid & 0x07) << 5);
+  //   tbufdata[MCP_EID0] = 0;
+  //   tbufdata[MCP_EID8] = 0;
+  // }
 
-  mcp2515_setRegisterS(mcp_addr, tbufdata, 4);
+  // mcp2515_setRegisterS(mcp_addr, tbufdata, 4);
+
+  mcp2515_setRegister(0x31, (canid >> 3) & 0XFF);
+  mcp2515_setRegister(0x32, (canid & 0x07) << 5);
+  mcp2515_setRegister(0x33, 0);
+  mcp2515_setRegister(0x34, 0);
+  // mcp2515_setRegister(TXB0DLC, len);
 }
 
 /*********************************************************************************************************
@@ -744,7 +796,8 @@ void MCP_CAN::mcp2515_write_canMsg(const uint8_t buffer_sidh_addr)
     m_nDlc |= MCP_RTR_MASK;
   }
 
-  mcp2515_setRegister((mcp_addr + 4), m_nDlc);  /* write the RTR and DLC        */
+  // mcp2515_setRegister((mcp_addr + 4), m_nDlc);  /* write the RTR and DLC        */
+  mcp2515_setRegister(0x35, m_nDlc);            /* write the RTR and DLC        */
   mcp2515_write_id(mcp_addr, m_nExtFlg, m_nID); /* write CAN id                 */
 }
 
@@ -778,24 +831,22 @@ void MCP_CAN::mcp2515_read_canMsg(const uint8_t buffer_sidh_addr) /* read can ms
 ** Function name:           mcp2515_getNextFreeTXBuf
 ** Descriptions:            Send message
 *********************************************************************************************************/
-uint8_t MCP_CAN::mcp2515_getNextFreeTXBuf(uint8_t * txbuf_n) /* get Next free txbuf          */
+uint8_t MCP_CAN::mcp2515_getNextFreeTXBuf(uint8_t * txbuf_address) /* get Next free txbuf */
 {
   uint8_t i, ctrlval;
   uint8_t ctrlregs[MCP_N_TXBUFFERS] = {MCP_TXB0CTRL, MCP_TXB1CTRL, MCP_TXB2CTRL};
 
-  *txbuf_n = 0x00;
+  *txbuf_address = 0x00;
 
   /* check all 3 TX-Buffers       */
   for (i = 0; i < MCP_N_TXBUFFERS; i++) {
     ctrlval = mcp2515_readRegister(ctrlregs[i]);
     if ((ctrlval & MCP_TXB_TXREQ_M) == 0) {
-      *txbuf_n = ctrlregs[i] + 1; /* return SIDH-address of Buffer*/
-      return MCP2515_OK;          /* ! function exit */
-    } else {
-      return MCP_ALLTXBUSY;
+      *txbuf_address = ctrlregs[i] + 1; /* return SIDH-address of Buffer*/
+      return MCP2515_OK;                /* ! function exit */
     }
   }
-  return res;
+  return MCP_ALLTXBUSY;
 }
 
 /*********************************************************************************************************
@@ -1081,6 +1132,7 @@ uint8_t MCP_CAN::sendMsg()
   } while (res == MCP_ALLTXBUSY && (uiTimeOut < TIMEOUTVALUE));
 
   if (uiTimeOut == TIMEOUTVALUE) {
+    RCLCPP_INFO(rclcpp::get_logger("hardware"), "Get MCP2515 Tx Buff Time Out!");
     return CAN_GETTXBFTIMEOUT; /* get tx buff time out         */
   }
   uiTimeOut = 0;
@@ -1095,6 +1147,7 @@ uint8_t MCP_CAN::sendMsg()
 
   if (uiTimeOut == TIMEOUTVALUE) /* send msg timeout             */
   {
+    RCLCPP_INFO(rclcpp::get_logger("hardware"), "CAN Send Msg Time Out!");
     return CAN_SENDMSGTIMEOUT;
   }
 
@@ -1105,6 +1158,35 @@ uint8_t MCP_CAN::sendMsg()
 ** Function name:           sendMsgBuf
 ** Descriptions:            Send message to transmitt buffer
 *********************************************************************************************************/
+void MCP_CAN::mcp2515_send(uint32_t canid, uint8_t * buf, uint8_t len)
+{
+  // uint8_t tempdata = MCP2515_ReadByte(CAN_RD_STATUS);
+  uint8_t dly = 0;
+  while ((mcp2515_readRegister(MCP_TXB0CTRL) & 0x08) && (dly < 10)) {
+    rclcpp::sleep_for(std::chrono::milliseconds(2));
+    dly++;
+  }
+
+  mcp2515_setRegister(0x31, (canid >> 3) & 0XFF);
+  mcp2515_setRegister(0x32, (canid & 0x07) << 5);
+  // mcp2515_setRegister(0x33, 0);
+  // mcp2515_setRegister(0x34, 0);
+
+  // for (uint8_t j = 0; j < 8; j++) {
+  //   mcp2515_setRegister(0x36 + j, buf[j]);
+  // }
+  mcp2515_setRegister(0x36, 0x01);
+  mcp2515_setRegister(0x37, 0x02);
+  mcp2515_setRegister(0x38, 0x03);
+  mcp2515_setRegister(0x39, 0x04);
+  mcp2515_setRegister(0x3a, 0x05);
+  mcp2515_setRegister(0x3b, 0x06);
+  mcp2515_setRegister(0x3c, 0x07);
+  mcp2515_setRegister(0x3d, 0x08);
+  mcp2515_setRegister(0x35, 0x08);
+  mcp2515_setRegister(MCP_TXB0CTRL, 0x08);
+}
+
 uint8_t MCP_CAN::sendMsgBuf(uint32_t id, uint8_t ext, uint8_t len, uint8_t * buf)
 {
   uint8_t res;
