@@ -31,9 +31,6 @@ class AsrSdmControllerNode : public rclcpp::Node
 public:
   AsrSdmControllerNode() : Node("asr_sdm_controller"), count_(0)
   {
-    // can_.reset(new amp::MCP_CAN);
-    // can_->initCAN(MCP_ANY, CAN_250KBPS, MCP_8MHZ);
-
     serial_ = serial_new();
     uint8_t s_buf[8] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
     /* Open /dev/ttyUSB0 with baudrate 115200, and defaults of 8N1, no flow control */

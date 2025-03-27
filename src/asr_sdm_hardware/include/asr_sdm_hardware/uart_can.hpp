@@ -1,27 +1,22 @@
-#ifndef MCP_CAN_HPP_
-#define MCP_CAN_HPP_
+#ifndef UART_CAN_HPP_
+#define UART_CAN_HPP_
+
+/* System headers */
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#include <chrono>
+
 /* ROS2 headers */
 #include <rclcpp/rclcpp.hpp>
 
 /* c-periphery headers */
-#include "asr_sdm_controller/mcp_can_dfs.h"
-#include "periphery/spi.h"
+#include "periphery/serial.h"
 
-#include <fcntl.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-
-#include <chrono>
-#include <cstdio>
-#include <cstdlib>  // For malloc and free
-#include <cstring>
-#include <ctime>
-#include <iostream>
-#include <memory>
-
-#define MAX_CHAR_IN_MESSAGE 8
+#define MAX_CHAR_IN_MESSAGE 11
 
 #define CAN_MODEL_NUMBER 10000
 
@@ -32,22 +27,24 @@
 namespace amp
 {
 
-class MCP_CAN
+class UART_CAN
 {
 public:
-  MCP_CAN()
+  UART_CAN()
   {
-    spi_ = spi_new();
-    /* Open spidev3.0 with mode 0 and max speed 1MHz */
-    if (spi_open(spi_, "/dev/spidev3.0", 0, 1000000) < 0) {
-      fprintf(stderr, "spi_open(): %s\n", spi_errmsg(spi_));
+    serial_ = serial_new();
+
+    /* Open /dev/ttyS3 with baudrate 115200, and defaults of 8N1, no flow control */
+    if (serial_open(serial_, "/dev/ttyS3", 115200) < 0) {
+      RCLCPP_INFO(
+        rclcpp::get_logger("hardware"), "serial_ttyS3_open(): %s", serial_errmsg(serial_));
     }
   }
 
-  ~MCP_CAN()
+  ~UART_CAN()
   {
-    spi_close(spi_);
-    spi_free(spi_);
+    serial_close(serial_);
+    serial_free(serial_);
   }
 
 private:
@@ -65,10 +62,10 @@ private:
   uint8_t gpio_can_interrupt;
   uint8_t gpio_can_cs;
 
-  spi_t * spi_;
+  serial_t * serial_;
 
   /*********************************************************************************************************
-   *  mcp2515 driver function
+   *  uart driver function
    *********************************************************************************************************/
   // private:
 private:
@@ -76,53 +73,53 @@ private:
 
   bool spiTransfer(uint8_t byte_number, unsigned char * tx_buf, unsigned char * rx_buf);
 
-  bool resetMCP2515(void);  // Soft Reset MCP2515
+  bool resetuart(void);  // Soft Reset uart
 
-  uint8_t mcp2515_readRegister(const uint8_t address);  // Read MCP2515 register
+  uint8_t uart_readRegister(const uint8_t address);  // Read uart register
 
-  void mcp2515_readRegisterS(
-    const uint8_t address,  // Read MCP2515 successive registers
+  void uart_readRegisterS(
+    const uint8_t address,  // Read uart successive registers
     uint8_t values[], const uint8_t n);
 
-  void mcp2515_setRegister(
-    const uint8_t address,  // Set MCP2515 register
+  void uart_setRegister(
+    const uint8_t address,  // Set uart register
     const uint8_t value);
 
-  void mcp2515_setRegisterS(
-    const uint8_t address,  // Set MCP2515 successive registers
+  void uart_setRegisterS(
+    const uint8_t address,  // Set uart successive registers
     const uint8_t values[], const uint8_t n);
 
-  void mcp2515_initCANBuffers(void);
+  void uart_initCANBuffers(void);
 
-  void mcp2515_modifyRegister(
+  void uart_modifyRegister(
     const uint8_t address,  // Set specific bit(s) of a register
     const uint8_t mask, const uint8_t data);
 
-  uint8_t mcp2515_readStatus(void);                        // Read MCP2515 Status
-  uint8_t mcp2515_setCANCTRL_Mode(const uint8_t newmode);  // Set mode
-  uint8_t mcp2515_configRate(
+  uint8_t uart_readStatus(void);                        // Read uart Status
+  uint8_t uart_setCANCTRL_Mode(const uint8_t newmode);  // Set mode
+  uint8_t uart_configRate(
     const uint8_t canSpeed,  // Set baudrate
     const uint8_t canClock);
 
-  uint8_t initMCP2515(
+  uint8_t inituart(
     const uint8_t canIDMode,  // Initialize Controller
     const uint8_t canSpeed, const uint8_t canClock);
 
-  void mcp2515_write_mf(
+  void uart_write_mf(
     const uint8_t mcp_addr,  // Write CAN Mask or Filter
     const uint8_t ext, const uint32_t id);
 
-  void mcp2515_write_id(
+  void uart_write_id(
     const uint8_t mcp_addr,  // Write CAN ID
     const uint8_t ext, const uint32_t id);
 
-  void mcp2515_read_id(
+  void uart_read_id(
     const uint8_t mcp_addr,  // Read CAN ID
     uint8_t * ext, uint32_t * id);
 
-  void mcp2515_write_canMsg(const uint8_t buffer_sidh_addr);  // Write CAN message
-  void mcp2515_read_canMsg(const uint8_t buffer_sidh_addr);   // Read CAN message
-  uint8_t mcp2515_getNextFreeTXBuf(uint8_t * txbuf_n);        // Find empty transmit buffer
+  void uart_write_canMsg(const uint8_t buffer_sidh_addr);  // Write CAN message
+  void uart_read_canMsg(const uint8_t buffer_sidh_addr);   // Read CAN message
+  uint8_t uart_getNextFreeTXBuf(uint8_t * txbuf_n);        // Find empty transmit buffer
 
   /*********************************************************************************************************
    *  CAN operator function
@@ -137,15 +134,11 @@ private:
 public:
   // void init_Para(int spi_channel, int spi_baudrate, uint8_t gpio_can_interrupt, uint8_t
   // gpio_can_cs);
-  uint8_t initCAN(uint8_t idmodeset, uint8_t speedset, uint8_t clockset);
+  uint8_t initUART2CAN(uint8_t idmodeset, uint8_t speedset, uint8_t clockset);
   // uint8_t begin(uint8_t idmodeset, uint8_t speedset, uint8_t clockset);     // Initilize
   // controller prameters
-  uint8_t init_Mask(uint8_t num, uint8_t ext, uint32_t ulData);  // Initilize Mask(s)
-  uint8_t init_Mask(uint8_t num, uint32_t ulData);               // Initilize Mask(s)
-  uint8_t init_Filt(uint8_t num, uint8_t ext, uint32_t ulData);  // Initilize Filter(s)
-  uint8_t init_Filt(uint8_t num, uint32_t ulData);               // Initilize Filter(s)
-  uint8_t setMode(uint8_t opMode);                               // Set operational mode
-  void mcp2515_send(uint32_t canid, uint8_t * buf, uint8_t len);
+  uint8_t setMode(uint8_t opMode);  // Set operational mode
+  void uart_send(uint32_t canid, uint8_t * buf, uint8_t len);
   uint8_t sendMsgBuf(
     uint32_t id, uint8_t ext, uint8_t len, uint8_t * buf);      // Send message to transmit buffer
   uint8_t sendMsgBuf(uint32_t id, uint8_t len, uint8_t * buf);  // Send message to transmit buffer
@@ -169,7 +162,7 @@ public:
   // bool setupSpi();
   // bool canReadData();
 
-  typedef std::unique_ptr<MCP_CAN> Ptr;
+  typedef std::unique_ptr<UART_CAN> Ptr;
 };
 
 }  // namespace amp
