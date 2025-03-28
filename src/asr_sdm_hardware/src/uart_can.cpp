@@ -400,28 +400,23 @@ uint8_t UART_CAN::initUART2CAN(uint8_t idmodeset, uint8_t speedset, uint8_t cloc
 ** Function name:           setMsg
 ** Descriptions:            Set can message, such as dlc, id, dta[] and so on
 *********************************************************************************************************/
-uint8_t UART_CAN::setMsg(uint32_t id, uint8_t rtr, uint8_t ext, uint8_t len, uint8_t * pData)
+uint8_t UART_CAN::setMsg(uint32_t id, uint8_t rtr, uint8_t ext, uint8_t len, uint8_t * buf)
 {
-  int i = 0;
-
-  m_nID = (uint16_t)(id >> 16);
-  m_nDta[0] = 0x0B;
-  if (ext) {
+  uart_frame_.m_nID = id;
+  uart_frame_.m_nRtr = rtr;
+  uart_frame_.m_nExtFlg = ext;
+  uart_frame_.m_nDlc = FRAME_HEAD_LENGTH + len - 1;
+  uart_frame_.m_nDta[0] = m_nDlc;
+  if (ext != 0) {
     // m_nDta[1] = (uint16_t)(id >> 16);
   } else {
-    m_nDta[1] = 0x00;
-    m_nDta[2] = (uint16_t)(id >> 16);
-    m_nDta[3] = (uint16_t)(id >> 16);
+    uart_frame_.m_nDta[1] = 0x00;
+    uart_frame_.m_nDta[2] = (uint16_t)(id >> 16);
+    uart_frame_.m_nDta[3] = (uint16_t)(id & 0xFF);
   }
 
-  m_nDta[0] = (uint16_t)(id >> 16);
-  m_nDta[1] = (uint16_t)(id >> 16);
-  m_nID = id;
-  m_nRtr = rtr;
-  m_nExtFlg = ext;
-  m_nDlc = len;
-  for (i = 0; i < MAX_CHAR_IN_MESSAGE; i++) {
-    m_nDta[i] = *(pData + i);
+  for (int i = FRAME_HEAD_LENGTH; i < m_nDlc; i++) {
+    uart_frame_.m_nDta[i] = buf[i - FRAME_HEAD_LENGTH];
   }
 
   return uart_OK;
@@ -433,13 +428,13 @@ uint8_t UART_CAN::setMsg(uint32_t id, uint8_t rtr, uint8_t ext, uint8_t len, uin
 *********************************************************************************************************/
 uint8_t UART_CAN::clearMsg()
 {
-  m_nID = 0;
-  m_nDlc = 0;
-  m_nExtFlg = 0;
-  m_nRtr = 0;
-  m_nfilhit = 0;
+  uart_frame_.m_nID = 0;
+  uart_frame_.m_nDlc = 0;
+  uart_frame_.m_nExtFlg = 0;
+  uart_frame_.m_nRtr = 0;
+  uart_frame_.m_nfilhit = 0;
   for (int i = 0; i < m_nDlc; i++) {
-    m_nDta[i] = 0x00;
+    uart_frame_.m_nDta[i] = 0x00;
   }
 
   return uart_OK;
@@ -455,7 +450,7 @@ uint8_t UART_CAN::sendMsg()
   uint16_t uiTimeOut = 0;
 
   do {
-    res = uartTransfer(uint8_t byte_number, unsigned char * tx_buf);
+    res = uartTransfer(uart_frame_.m_nDlc, uart_frame_.m_nDta);
     uiTimeOut++;
   } while (res == MCP_ALLTXBUSY && (uiTimeOut < TIMEOUTVALUE));
 

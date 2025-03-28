@@ -16,16 +16,25 @@
 /* c-periphery headers */
 #include "periphery/serial.h"
 
-#define MAX_CHAR_IN_MESSAGE 11
-
-#define CAN_MODEL_NUMBER 10000
-
-#define SPI_PORT 3
-#define SPI_CS 0
-#define SPI_FREQUENCY 1000000
+#define FRAME_HEAD_LENGTH 4
+#define FRAME_TAIL_LENGTH 1
+#define MAX_FRAME_DATA_LENGTH 8
 
 namespace amp
 {
+struct UartFrame
+{
+  uint8_t m_nExtFlg;  // Identifier Type
+                      // Extended (29 bit) or Standard (11 bit)
+  uint32_t m_nID;     // CAN ID
+  uint8_t m_nDlc;     // Data Length Code
+  uint8_t m_nDta[FRAME_HEAD_LENGTH + MAX_FRAME_DATA_LENGTH];  // Data array
+  uint8_t m_nRtr;                                             // Remote request flag
+  uint8_t m_nfilhit;  // The number of the filter that matched the message
+  uint8_t mcpMode;    // Mode to return to after configurations are performed.
+  uint8_t frame_head;
+  uint8_t frame_tail;
+};
 
 class UART_CAN
 {
@@ -39,6 +48,9 @@ public:
       RCLCPP_INFO(
         rclcpp::get_logger("hardware"), "serial_ttyS3_open(): %s", serial_errmsg(serial_));
     }
+
+    uart_frame_.frame_head = 0xAA;
+    uart_frame_.frame_tail = 0xFF;
   }
 
   ~UART_CAN()
@@ -48,21 +60,11 @@ public:
   }
 
 private:
-  uint8_t m_nExtFlg;                    // Identifier Type
-                                        // Extended (29 bit) or Standard (11 bit)
-  uint32_t m_nID;                       // CAN ID
-  uint8_t m_nDlc;                       // Data Length Code
-  uint8_t m_nDta[MAX_CHAR_IN_MESSAGE];  // Data array
-  uint8_t m_nRtr;                       // Remote request flag
-  uint8_t m_nfilhit;                    // The number of the filter that matched the message
-  uint8_t mcpMode;                      // Mode to return to after configurations are performed.
-
   int spi_channel;
   int spi_baudrate;
-  uint8_t gpio_can_interrupt;
-  uint8_t gpio_can_cs;
 
   serial_t * serial_;
+  UartFrame uart_frame_;
 
   /*********************************************************************************************************
    *  uart driver function
