@@ -35,15 +35,18 @@ class AsrSdmHardwareNode : public rclcpp::Node
 public:
   AsrSdmHardwareNode() : Node("asrsdm_hardware"), count_(0)
   {
-    callback_group_cf_cmd_ =
-      this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-    auto sub_opt_cf_cmd = rclcpp::SubscriptionOptions();
-    sub_opt_cf_cmd.callback_group = callback_group_cf_cmd_;
+    const std::string uart_port =
+      this->declare_parameter<std::string>("uart_can.uart_port", "/dev/ttyS3");
+    const uint32_t uart_baudrate =
+      this->declare_parameter<uint32_t>("uart_can.uart_baudrate", 115200);
+
+    uart_can_ = std::make_unique<amp::UART_CAN>();
+    // uart_can_->initCAN(MCP_ANY, CAN_250KBPS, MCP_8MHZ);
 
     pub_ros_info_ = this->create_publisher<std_msgs::msg::String>("topic", 10);
     sub_can_interface_ = this->create_subscription<asr_sdm_hardware::msg::CANFrame>(
-      "topic", rclcpp::SystemDefaultsQoS(),
-      std::bind(&AsrSdmHardwareNode::topic_callback, this, _1), sub_opt_cf_cmd);
+      "~/input/pointcloud", rclcpp::SensorDataQoS{}.keep_last(1),
+      std::bind(&AsrSdmHardwareNode::topic_callback, this, std::placeholders::_1));
 
     timer_hardware_ =
       this->create_wall_timer(1000ms, std::bind(&AsrSdmHardwareNode::timer_callback, this));
@@ -75,8 +78,7 @@ private:
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr pub_ros_info_;
   rclcpp::Subscription<asr_sdm_hardware::msg::CANFrame>::SharedPtr sub_can_interface_;
 
-  // multithreading
-  rclcpp::CallbackGroup::SharedPtr callback_group_cf_cmd_;
+  amp::UART_CAN::Ptr uart_can_;
 };
 
 int main(int argc, char * argv[])

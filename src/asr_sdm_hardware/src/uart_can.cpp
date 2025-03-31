@@ -2,9 +2,22 @@
 
 namespace amp
 {
+
+UART_CAN::UART_CAN()
+{
+  serial_ = serial_new();
+
+  /* Open /dev/ttyS3 with baudrate 115200, and defaults of 8N1, no flow control */
+  if (serial_open(serial_, "/dev/ttyS3", 115200) < 0) {
+    RCLCPP_INFO(rclcpp::get_logger("hardware"), "serial_ttyS3_open(): %s", serial_errmsg(serial_));
+  }
+
+  uart_frame_.frame_head = 0xAA;
+  uart_frame_.frame_tail = 0xFF;
+}
 /*********************************************************************************************************
-** Function name:           spiTransfer
-** Descriptions:            Performs a spi transfer on Raspberry Pi (using wiringPi)
+** Function name:           uartTransfer
+** Descriptions:            Performs a uart transfer
 *********************************************************************************************************/
 bool UART_CAN::uartTransfer(uint8_t byte_number, unsigned char * tx_buf)
 {

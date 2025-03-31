@@ -39,7 +39,19 @@ struct UartFrame
 class UART_CAN
 {
 public:
-  UART_CAN()
+  UART_CAN(
+    const std::string & link_uri, const std::string & cf_type, const std::string & name,
+    rclcpp::Node * node, rclcpp::CallbackGroup::SharedPtr callback_group_cf_cmd,
+    rclcpp::CallbackGroup::SharedPtr callback_group_cf_srv, const CrazyflieBroadcaster * cfbc,
+    bool enable_parameters = true)
+  : logger_(node->get_logger()),
+    cf_logger_(logger_, "[" + name + "]"),
+    cf_(link_uri, cf_logger_, std::bind(&CrazyflieROS::on_console, this, std::placeholders::_1)),
+    name_(name),
+    node_(node),
+    tf_broadcaster_(node),
+    last_on_latency_(std::chrono::steady_clock::now()),
+    cfbc_(cfbc)
   {
     serial_ = serial_new();
 
