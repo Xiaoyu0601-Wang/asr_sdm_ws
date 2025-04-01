@@ -40,13 +40,12 @@ public:
     const uint32_t uart_baudrate =
       this->declare_parameter<uint32_t>("uart_can.uart_baudrate", 115200);
 
-    uart_can_ = std::make_unique<amp::UART_CAN>();
-    // uart_can_->initCAN(MCP_ANY, CAN_250KBPS, MCP_8MHZ);
+    uart_can_ = std::make_unique<amp::UART_CAN>(uart_port, uart_baudrate);
 
     pub_ros_info_ = this->create_publisher<std_msgs::msg::String>("topic", 10);
     sub_can_interface_ = this->create_subscription<asr_sdm_hardware::msg::CANFrame>(
-      "~/input/pointcloud", rclcpp::SensorDataQoS{}.keep_last(1),
-      std::bind(&AsrSdmHardwareNode::topic_callback, this, std::placeholders::_1));
+      "~/input/can_frame", rclcpp::SensorDataQoS{}.keep_last(1),
+      std::bind(&AsrSdmHardwareNode::canFrameCallback, this, std::placeholders::_1));
 
     timer_hardware_ =
       this->create_wall_timer(1000ms, std::bind(&AsrSdmHardwareNode::timer_callback, this));
@@ -55,6 +54,11 @@ public:
   }
 
 private:
+  void canFrameCallback(const asr_sdm_hardware::msg::CANFrame::SharedPtr msg)
+  {
+    RCLCPP_INFO(
+      this->get_logger(), "Received CAN frame: id=%d, data=%s", msg->id, msg->data.c_str());
+  }
   void topic_callback(const std_msgs::msg::String::SharedPtr msg) const
   {
     RCLCPP_INFO(this->get_logger(), "I heard: '%s'", msg->data.c_str());

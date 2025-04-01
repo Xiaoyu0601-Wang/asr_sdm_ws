@@ -20,7 +20,7 @@ def generate_launch_description():
             executable='asr_sdm_hardware_node',
             name='asr_sdm_hardware',
             remappings=[
-                ('/input/can_frame', '/robot/cmd_vel'),
+                ('~/input/can_frame', '/can/can_frame'),
                 ('/sensor_data', '/lidar/data')
             ],
             output='screen',

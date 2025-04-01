@@ -39,37 +39,9 @@ struct UartFrame
 class UART_CAN
 {
 public:
-  UART_CAN(
-    const std::string & link_uri, const std::string & cf_type, const std::string & name,
-    rclcpp::Node * node, rclcpp::CallbackGroup::SharedPtr callback_group_cf_cmd,
-    rclcpp::CallbackGroup::SharedPtr callback_group_cf_srv, const CrazyflieBroadcaster * cfbc,
-    bool enable_parameters = true)
-  : logger_(node->get_logger()),
-    cf_logger_(logger_, "[" + name + "]"),
-    cf_(link_uri, cf_logger_, std::bind(&CrazyflieROS::on_console, this, std::placeholders::_1)),
-    name_(name),
-    node_(node),
-    tf_broadcaster_(node),
-    last_on_latency_(std::chrono::steady_clock::now()),
-    cfbc_(cfbc)
-  {
-    serial_ = serial_new();
+  UART_CAN(const std::string & uart_port, uint32_t uart_baudrate);
 
-    /* Open /dev/ttyS3 with baudrate 115200, and defaults of 8N1, no flow control */
-    if (serial_open(serial_, "/dev/ttyS3", 115200) < 0) {
-      RCLCPP_INFO(
-        rclcpp::get_logger("hardware"), "serial_ttyS3_open(): %s", serial_errmsg(serial_));
-    }
-
-    uart_frame_.frame_head = 0xAA;
-    uart_frame_.frame_tail = 0xFF;
-  }
-
-  ~UART_CAN()
-  {
-    serial_close(serial_);
-    serial_free(serial_);
-  }
+  ~UART_CAN();
 
 private:
   int spi_channel;
@@ -77,6 +49,7 @@ private:
 
   serial_t * serial_;
   UartFrame uart_frame_;
+  const char * uart_port_;
 
   /*********************************************************************************************************
    *  uart driver function
@@ -85,11 +58,7 @@ private:
 private:
   struct timespec delay_spi_can = {0, 0L};
 
-  bool spiTransfer(uint8_t byte_number, unsigned char * tx_buf, unsigned char * rx_buf);
-
-  bool resetuart(void);  // Soft Reset uart
-
-  uint8_t uart_readRegister(const uint8_t address);  // Read uart register
+  bool uartTransfer(uint8_t byte_number, unsigned char * tx_buf);
 
   void uart_readRegisterS(
     const uint8_t address,  // Read uart successive registers
@@ -103,25 +72,11 @@ private:
     const uint8_t address,  // Set uart successive registers
     const uint8_t values[], const uint8_t n);
 
-  void uart_initCANBuffers(void);
-
-  void uart_modifyRegister(
-    const uint8_t address,  // Set specific bit(s) of a register
-    const uint8_t mask, const uint8_t data);
-
   uint8_t uart_readStatus(void);                        // Read uart Status
   uint8_t uart_setCANCTRL_Mode(const uint8_t newmode);  // Set mode
   uint8_t uart_configRate(
     const uint8_t canSpeed,  // Set baudrate
     const uint8_t canClock);
-
-  uint8_t inituart(
-    const uint8_t canIDMode,  // Initialize Controller
-    const uint8_t canSpeed, const uint8_t canClock);
-
-  void uart_write_mf(
-    const uint8_t mcp_addr,  // Write CAN Mask or Filter
-    const uint8_t ext, const uint32_t id);
 
   void uart_write_id(
     const uint8_t mcp_addr,  // Write CAN ID
@@ -131,14 +86,9 @@ private:
     const uint8_t mcp_addr,  // Read CAN ID
     uint8_t * ext, uint32_t * id);
 
-  void uart_write_canMsg(const uint8_t buffer_sidh_addr);  // Write CAN message
-  void uart_read_canMsg(const uint8_t buffer_sidh_addr);   // Read CAN message
-  uint8_t uart_getNextFreeTXBuf(uint8_t * txbuf_n);        // Find empty transmit buffer
-
   /*********************************************************************************************************
    *  CAN operator function
    *********************************************************************************************************/
-
   uint8_t setMsg(
     uint32_t id, uint8_t rtr, uint8_t ext, uint8_t len, uint8_t * pData);  // Set message
   uint8_t clearMsg();  // Clear all message to zero
@@ -146,11 +96,7 @@ private:
   uint8_t sendMsg();   // Send message
 
 public:
-  // void init_Para(int spi_channel, int spi_baudrate, uint8_t gpio_can_interrupt, uint8_t
-  // gpio_can_cs);
   uint8_t initUART2CAN(uint8_t idmodeset, uint8_t speedset, uint8_t clockset);
-  // uint8_t begin(uint8_t idmodeset, uint8_t speedset, uint8_t clockset);     // Initilize
-  // controller prameters
   uint8_t setMode(uint8_t opMode);  // Set operational mode
   void uart_send(uint32_t canid, uint8_t * buf, uint8_t len);
   uint8_t sendMsgBuf(
@@ -161,20 +107,6 @@ public:
     uint8_t * buf);  // Read message from receive buffer
   uint8_t readMsgBuf(
     uint32_t * id, uint8_t * len, uint8_t * buf);  // Read message from receive buffer
-  uint8_t checkReceive(void);                      // Check for received data
-  uint8_t checkError(void);                        // Check for errors
-  uint8_t getError(void);                          // Check for errors
-  uint8_t errorCountRX(void);                      // Get error count
-  uint8_t errorCountTX(void);                      // Get error count
-  uint8_t enOneShotTX(void);                       // Enable one-shot transmission
-  uint8_t disOneShotTX(void);                      // Disable one-shot transmission
-
-  uint8_t queryCharger(float voltage, float current, int address, int charge);  // Start charging
-  uint8_t queryBMS(int moduleID, int shuntVoltageMillivolts);                   // Query BMS
-
-  // bool setupInterruptGpio();
-  // bool setupSpi();
-  // bool canReadData();
 
   typedef std::unique_ptr<UART_CAN> Ptr;
 };
