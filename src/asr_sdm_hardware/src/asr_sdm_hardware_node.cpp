@@ -1,6 +1,8 @@
 /* standard headers */
+#include <fcntl.h>
 #include <signal.h>
 #include <stdlib.h>
+#include <sys/ioctl.h>
 #include <unistd.h>
 
 #include <chrono>
@@ -9,22 +11,11 @@
 
 /* ROS2 headers */
 #include "asr_sdm_hardware/msg/CANFrame.hpp"
-#include "periphery/spi.h"
 
 #include <rclcpp/rclcpp.hpp>
 
 #include <std_msgs/msg/string.hpp>
 
-#include <fcntl.h>
-#include <sys/ioctl.h>
-#include <unistd.h>
-
-// #define SPI_PORT 3
-// #define SPI_CS   0
-// #define SPI_FREQUENCY   1000000
-
-// #define SPI_DEVICE "/dev/spidev3.0"
-// // #define SPI_SPEED 500000  // 500kHz
 // #define GPIO_CHIP "/dev/gpiochip0"
 // #define GPIO_PIN 24
 
@@ -56,13 +47,12 @@ public:
 private:
   void canFrameCallback(const asr_sdm_hardware::msg::CANFrame::SharedPtr msg)
   {
+    can_frame_ = *msg;
     RCLCPP_INFO(
-      this->get_logger(), "Received CAN frame: id=%d, data=%s", msg->id, msg->data.c_str());
+      this->get_logger(), "Received CAN frame: id=%d, data=%d", can_frame_->id,
+      can_frame_->data[0]);
   }
-  void topic_callback(const std_msgs::msg::String::SharedPtr msg) const
-  {
-    RCLCPP_INFO(this->get_logger(), "I heard: '%s'", msg->data.c_str());
-  }
+
   void timer_callback()
   {
     // RCLCPP_INFO("Publishing");
@@ -83,6 +73,7 @@ private:
   rclcpp::Subscription<asr_sdm_hardware::msg::CANFrame>::SharedPtr sub_can_interface_;
 
   amp::UART_CAN::Ptr uart_can_;
+  asr_sdm_hardware::msg::CANFrame can_frame_;
 };
 
 int main(int argc, char * argv[])

@@ -23,10 +23,18 @@ UART_CAN::~UART_CAN()
   serial_free(serial_);
 }
 
-/*********************************************************************************************************
-** Function name:           uartTransfer
-** Descriptions:            Performs a uart transfer
-*********************************************************************************************************/
+/**
+ * @name uartTransfer
+ * @brief Brief description of what the function does.
+ *
+ * @param byte_number Description of the first parameter.
+ * @param tx_buf Description of the second parameter.
+ * @return Return type and what it represents.
+ *
+ * @note Any additional notes about usage.
+ * @warning Warnings or important considerations.
+ * @throws Exception types the function may throw.
+ */
 bool UART_CAN::uartTransfer(uint8_t byte_number, unsigned char * tx_buf)
 {
   /* Write to the serial port */
@@ -106,43 +114,8 @@ void UART_CAN::uart_write_canMsg(const uint8_t buffer_sidh_addr)
 ** Function name:           uart_read_canMsg
 ** Descriptions:            Read message
 *********************************************************************************************************/
-void UART_CAN::uart_read_canMsg(const uint8_t buffer_sidh_addr) /* read can msg */
+void UART_CAN::uart_read_canMsg(const uint8_t buffer_sidh_addr)
 {
-  uint8_t ctrl;
-  uint8_t mcp_addr;
-
-  mcp_addr = buffer_sidh_addr;
-
-  uart_read_id(mcp_addr, &m_nExtFlg, &m_nID);
-
-  ctrl = uart_readRegister(mcp_addr - 1);
-  m_nDlc = uart_readRegister(mcp_addr + 4);
-
-  if (ctrl & 0x08) {
-    m_nRtr = 1;
-  } else {
-    m_nRtr = 0;
-  }
-
-  m_nDlc &= MCP_DLC_MASK;
-  uart_readRegisterS(mcp_addr + 5, &(m_nDta[0]), m_nDlc);
-}
-
-/*********************************************************************************************************
-** Function name:           begin
-** Descriptions:            Public function to declare controller initialization parameters.
-*********************************************************************************************************/
-uint8_t UART_CAN::initUART2CAN(uint8_t idmodeset, uint8_t speedset, uint8_t clockset)
-{
-  uint8_t res;
-
-  if (res == uart_OK) {
-    RCLCPP_INFO(rclcpp::get_logger("hardware"), "CAN is initialized");
-    return CAN_OK;
-  }
-
-  RCLCPP_INFO(rclcpp::get_logger("hardware"), "CAN initializtion is failed");
-  return CAN_FAILINIT;
 }
 
 /*********************************************************************************************************
@@ -204,15 +177,6 @@ uint8_t UART_CAN::sendMsg()
   } while (res == MCP_ALLTXBUSY && (uiTimeOut < TIMEOUTVALUE));
 }
 
-/*********************************************************************************************************
-** Function name:           sendMsgBuf
-** Descriptions:            Send message to transmitt buffer
-*********************************************************************************************************/
-void UART_CAN::uartSend(uint32_t canid, uint8_t ext, uint8_t * buf, uint8_t len)
-{
-  setMsg(canid, 1, ext, len, buf);
-}
-
 uint8_t UART_CAN::sendMsgBuf(uint32_t id, uint8_t ext, uint8_t len, uint8_t * buf)
 {
   uint8_t res;
@@ -221,14 +185,6 @@ uint8_t UART_CAN::sendMsgBuf(uint32_t id, uint8_t ext, uint8_t len, uint8_t * bu
   res = sendMsg();
 
   return res;
-}
-
-/*********************************************************************************************************
-** Function name:           sendMsgBuf
-** Descriptions:            Send message to transmitt buffer
-*********************************************************************************************************/
-uint8_t UART_CAN::sendMsgBuf(uint32_t id, uint8_t len, uint8_t * buf)
-{
 }
 
 /*********************************************************************************************************
@@ -247,15 +203,6 @@ uint8_t UART_CAN::readMsg()
 ** Descriptions:            Public function, Reads message from receive buffer.
 *********************************************************************************************************/
 uint8_t UART_CAN::readMsgBuf(uint32_t * id, uint8_t * ext, uint8_t * len, uint8_t buf[])
-{
-  return CAN_OK;
-}
-
-/*********************************************************************************************************
-** Function name:           readMsgBuf
-** Descriptions:            Public function, Reads message from receive buffer.
-*********************************************************************************************************/
-uint8_t UART_CAN::readMsgBuf(uint32_t * id, uint8_t * len, uint8_t buf[])
 {
   return CAN_OK;
 }

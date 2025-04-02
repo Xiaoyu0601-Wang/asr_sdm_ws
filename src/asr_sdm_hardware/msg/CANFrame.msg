@@ -3,6 +3,7 @@
 # @author Michael Wang
 # @brief message type to publish can messages to ROS topic
 # @param id CAN message id (11/29 bit)
+# @param ext ext: 0x80, std: 0x00
 # @param dlc CAN data size in bytes
 # @param data CAN data
 # @param err error flag bit (0 = data frame, 1 = error message)
@@ -10,9 +11,10 @@
 # @param eff frame format flag (0 = standard 11 bit, 1 = extended 29 bit)
 
 std_msgs/Header header
-uint32 id
-uint8 dlc
-uint8[8] data
-uint8 err
-uint8 rtr
-uint8 eff
+uint32_t id
+uint8_t ext
+uint8_t dlc
+uint8_t data[8]
+uint8_t err
+uint8_t rtr
+uint8_t eff
