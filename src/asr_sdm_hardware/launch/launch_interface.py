@@ -21,7 +21,7 @@ def generate_launch_description():
             name='asr_sdm_hardware',
             remappings=[
                 ('~/input/can_frame', '/can/can_frame'),
-                ('/sensor_data', '/lidar/data')
+                ('~/input/sensor_data', '/lidar/data')
             ],
             output='screen',
             parameters=[periphery_config]

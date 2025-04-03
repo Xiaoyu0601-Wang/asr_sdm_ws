@@ -162,26 +162,11 @@ uint8_t UART_CAN::clearMsg()
   return uart_OK;
 }
 
-/*********************************************************************************************************
-** Function name:           sendMsg
-** Descriptions:            Send message
-*********************************************************************************************************/
-uint8_t UART_CAN::sendMsg()
-{
-  uint8_t res, res1, txbuf_n;
-  uint16_t uiTimeOut = 0;
-
-  do {
-    res = uartTransfer(uart_frame_.m_nDlc, uart_frame_.m_nDta);
-    uiTimeOut++;
-  } while (res == MCP_ALLTXBUSY && (uiTimeOut < TIMEOUTVALUE));
-}
-
-uint8_t UART_CAN::sendMsgBuf(uint32_t id, uint8_t ext, uint8_t len, uint8_t * buf)
+uint8_t UART_CAN::sendMsg(uint32_t id, uint8_t rtr, uint8_t ext, uint8_t len, uint8_t * buf)
 {
   uint8_t res;
 
-  setMsg(id, 1, ext, len, buf);
+  setMsg(id, rtr, ext, len, buf);
   res = sendMsg();
 
   return res;
@@ -189,20 +174,9 @@ uint8_t UART_CAN::sendMsgBuf(uint32_t id, uint8_t ext, uint8_t len, uint8_t * bu
 
 /*********************************************************************************************************
 ** Function name:           readMsg
-** Descriptions:            Read message
-*********************************************************************************************************/
-uint8_t UART_CAN::readMsg()
-{
-  uint8_t stat, res;
-
-  return res;
-}
-
-/*********************************************************************************************************
-** Function name:           readMsgBuf
 ** Descriptions:            Public function, Reads message from receive buffer.
 *********************************************************************************************************/
-uint8_t UART_CAN::readMsgBuf(uint32_t * id, uint8_t * ext, uint8_t * len, uint8_t buf[])
+uint8_t UART_CAN::readMsg(uint32_t * id, uint8_t * ext, uint8_t * len, uint8_t buf[])
 {
   return CAN_OK;
 }

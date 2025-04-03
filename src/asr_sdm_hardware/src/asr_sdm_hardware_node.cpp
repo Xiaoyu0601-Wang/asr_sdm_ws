@@ -47,10 +47,11 @@ public:
 private:
   void canFrameCallback(const asr_sdm_hardware::msg::CANFrame::SharedPtr msg)
   {
-    can_frame_ = *msg;
+    // msg_can_frame_data_ = *msg;
+    uart_can_->sendMsg(msg->id, msg->rtr, msg->ext, msg->dlc, msg->data);
     RCLCPP_INFO(
-      this->get_logger(), "Received CAN frame: id=%d, data=%d", can_frame_->id,
-      can_frame_->data[0]);
+      this->get_logger(), "Received CAN frame: id=%d, data=%d", msg_can_frame_data_.id, ,
+      msg_can_frame_data_.data[0]);
   }
 
   void timer_callback()
@@ -63,7 +64,11 @@ private:
     //      publisher_->publish(message);
   }
 
-  void timer_imu_callback() {}
+  void timerHardwareCallback()
+  {
+    ;
+    uart_can_->sendMsg(msg_can_frame_data_);
+  }
 
   size_t count_;
 
@@ -73,7 +78,7 @@ private:
   rclcpp::Subscription<asr_sdm_hardware::msg::CANFrame>::SharedPtr sub_can_interface_;
 
   amp::UART_CAN::Ptr uart_can_;
-  asr_sdm_hardware::msg::CANFrame can_frame_;
+  asr_sdm_hardware::msg::CANFrame msg_can_frame_;
 };
 
 int main(int argc, char * argv[])

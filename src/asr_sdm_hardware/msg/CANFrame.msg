@@ -11,10 +11,10 @@
 # @param eff frame format flag (0 = standard 11 bit, 1 = extended 29 bit)
 
 std_msgs/Header header
-uint32_t id
-uint8_t ext
-uint8_t dlc
-uint8_t data[8]
-uint8_t err
-uint8_t rtr
-uint8_t eff
+uint32 id
+uint8 ext
+uint8 dlc
+uint8[8] data
+uint8 err
+uint8 rtr
+uint8 eff

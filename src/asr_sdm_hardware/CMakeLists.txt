@@ -10,7 +10,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
-
+find_package(rosidl_default_generators REQUIRED)
 find_package(periphery REQUIRED)
 
 # ===================================================
@@ -20,7 +20,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   DEPENDENCIES
   builtin_interfaces
   std_msgs
-  geometry_msgs
 )
 
 include_directories(
@@ -29,11 +28,12 @@ include_directories(
   /usr/local/include
 )
 
+ament_export_dependencies(rosidl_default_runtime)
 # add_executable(mcp_can src/mcp_can.cpp)
 # target_link_libraries(mcp_can ${MRAA_LIB})
 # ament_target_dependencies(mcp_can rclcpp)
 
-add_executable(asr_sdm_hardware_node src/asr_sdm_hardware_node.cpp)
+add_executable(asr_sdm_hardware_node src/asr_sdm_hardware_node.cpp src/uart_can.cpp)
 target_link_libraries(asr_sdm_hardware_node periphery)
 ament_target_dependencies(asr_sdm_hardware_node rclcpp std_msgs)
 

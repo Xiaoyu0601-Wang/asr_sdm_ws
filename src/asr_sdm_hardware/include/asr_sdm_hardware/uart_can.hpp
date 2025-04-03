@@ -64,13 +64,11 @@ private:
    *************************************************************/
   uint8_t setMsg(uint32_t id, uint8_t rtr, uint8_t ext, uint8_t len, uint8_t * pData);
   uint8_t clearMsg();
-  uint8_t readMsg();
-  uint8_t sendMsg();
 
 public:
   void uart_send(uint32_t canid, uint8_t * buf, uint8_t len);
-  uint8_t sendMsgBuf(uint32_t id, uint8_t ext, uint8_t len, uint8_t * buf);
-  uint8_t readMsgBuf(uint32_t * id, uint8_t * ext, uint8_t * len, uint8_t * buf);
+  uint8_t sendMsg(uint32_t id, uint8_t rtr, uint8_t ext, uint8_t len, uint8_t * buf);
+  uint8_t readMsg(uint32_t * id, uint8_t * ext, uint8_t * len, uint8_t * buf);
 
   typedef std::unique_ptr<UART_CAN> Ptr;
 };
