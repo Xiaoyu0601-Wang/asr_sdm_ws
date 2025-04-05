@@ -11,7 +11,7 @@
 #include <chrono>
 
 /* ROS2 headers */
-#include "asr_sdm_hardware/msg/CANFrame.hpp"
+#include "asr_sdm_hardware/msg/can_frame.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -48,13 +48,13 @@ public:
 private:
   serial_t * serial_;
   UartFrame uart_frame_;
+  const char * uart_port_;
 
   /*************************************************************
    *  uart driver function
    *************************************************************/
 private:
   bool uartTransfer(uint8_t byte_number, unsigned char * tx_buf);
-  uint8_t uart_setCANCTRL_Mode(const uint8_t newmode);
   uint8_t uart_configRate(const uint8_t canSpeed, const uint8_t canClock);
   void uart_write_id(const uint8_t mcp_addr, const uint8_t ext, const uint32_t id);
   void uart_read_id(const uint8_t mcp_addr, uint8_t * ext, uint32_t * id);

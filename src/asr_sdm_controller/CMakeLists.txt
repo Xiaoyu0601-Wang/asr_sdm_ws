@@ -6,10 +6,12 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 # find dependencies
+find_package(ament_cmake_auto REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(periphery REQUIRED)
+find_package(asr_sdm_hardware REQUIRED)
 # Find libgpiod
 # find_package(PkgConfig REQUIRED)
 # pkg_check_modules(GPIOD REQUIRED libgpiod)
@@ -30,9 +32,9 @@ include_directories(
 # target_link_libraries(mcp_can ${MRAA_LIB})
 # ament_target_dependencies(mcp_can rclcpp)
 
-add_executable(asr_sdm_controller src/asr_sdm_controller_node.cpp src/mcp_can.cpp)
+add_executable(asr_sdm_controller src/asr_sdm_controller_node.cpp)
 target_link_libraries(asr_sdm_controller periphery)
-ament_target_dependencies(asr_sdm_controller rclcpp std_msgs)
+ament_target_dependencies(asr_sdm_controller rclcpp std_msgs asr_sdm_hardware)
 
 install(TARGETS
   asr_sdm_controller

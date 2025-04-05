@@ -7,6 +7,7 @@ endif()
 
 # ===================================================
 # Dependencies
+find_package(ament_cmake_auto REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
@@ -16,7 +17,7 @@ find_package(periphery REQUIRED)
 # ===================================================
 # Message & Service
 rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/CANFrame.msg"
+  "msg/CanFrame.msg"
   DEPENDENCIES
   builtin_interfaces
   std_msgs
@@ -28,19 +29,22 @@ include_directories(
   /usr/local/include
 )
 
-ament_export_dependencies(rosidl_default_runtime)
 # add_executable(mcp_can src/mcp_can.cpp)
 # target_link_libraries(mcp_can ${MRAA_LIB})
 # ament_target_dependencies(mcp_can rclcpp)
 
+# ament_auto_add_executable(asr_sdm_hardware_node src/asr_sdm_hardware_node.cpp src/uart_can.cpp)
 add_executable(asr_sdm_hardware_node src/asr_sdm_hardware_node.cpp src/uart_can.cpp)
-target_link_libraries(asr_sdm_hardware_node periphery)
+rosidl_get_typesupport_target(cpp_typesupport_target asr_sdm_hardware "rosidl_typesupport_cpp")
+target_link_libraries(asr_sdm_hardware_node periphery "${cpp_typesupport_target}")
 ament_target_dependencies(asr_sdm_hardware_node rclcpp std_msgs)
 
 install(TARGETS
   asr_sdm_hardware_node
   DESTINATION lib/${PROJECT_NAME}
 )
+
+ament_export_dependencies(rosidl_default_runtime)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
