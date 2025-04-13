@@ -24,7 +24,7 @@
 
 namespace amp
 {
-struct UartFrame
+struct Uart2CanFrame
 {
   uint8_t m_nExtFlg;  // Identifier Type
                       // Extended (29 bit) or Standard (11 bit)
@@ -47,7 +47,7 @@ public:
 
 private:
   serial_t * serial_;
-  UartFrame uart_frame_;
+  Uart2CanFrame uart2can_frame_;
   const char * uart_port_;
 
   /*************************************************************

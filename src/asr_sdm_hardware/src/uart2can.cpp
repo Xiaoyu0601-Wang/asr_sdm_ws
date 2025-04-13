@@ -13,8 +13,8 @@ UART_CAN::UART_CAN(const std::string & uart_port, uint32_t uart_baudrate)
     RCLCPP_INFO(rclcpp::get_logger("hardware"), "serial_ttyS3_open(): %s", serial_errmsg(serial_));
   }
 
-  uart_frame_.frame_head = 0xAA;
-  uart_frame_.frame_tail = 0xFF;
+  uart2can_frame_.frame_head = 0xAA;
+  uart2can_frame_.frame_tail = 0xFF;
 }
 
 UART_CAN::~UART_CAN()
@@ -77,21 +77,21 @@ void UART_CAN::uart_read_id(const uint8_t mcp_addr, uint8_t * ext, uint32_t * id
 *********************************************************************************************************/
 uint8_t UART_CAN::setMsg(uint32_t id, uint8_t rtr, uint8_t ext, uint8_t len, uint8_t * buf)
 {
-  uart_frame_.m_nID = id;
-  uart_frame_.m_nRtr = rtr;
-  uart_frame_.m_nExtFlg = ext;
-  uart_frame_.m_nDlc = FRAME_HEAD_LENGTH + len - 1;
-  uart_frame_.m_nDta[0] = uart_frame_.m_nDlc;
+  uart2can_frame_.m_nID = id;
+  uart2can_frame_.m_nRtr = rtr;
+  uart2can_frame_.m_nExtFlg = ext;
+  uart2can_frame_.m_nDlc = FRAME_HEAD_LENGTH + len - 1;
+  uart2can_frame_.m_nDta[0] = uart2can_frame_.m_nDlc;
   if (ext != 0) {
     // m_nDta[1] = (uint16_t)(id >> 16);
   } else {
-    uart_frame_.m_nDta[1] = 0x00;
-    uart_frame_.m_nDta[2] = (uint16_t)(id >> 16);
-    uart_frame_.m_nDta[3] = (uint16_t)(id & 0xFF);
+    uart2can_frame_.m_nDta[1] = 0x00;
+    uart2can_frame_.m_nDta[2] = (uint16_t)(id >> 16);
+    uart2can_frame_.m_nDta[3] = (uint16_t)(id & 0xFF);
   }
 
-  for (int i = FRAME_HEAD_LENGTH; i < uart_frame_.m_nDlc; i++) {
-    uart_frame_.m_nDta[i] = buf[i - FRAME_HEAD_LENGTH];
+  for (int i = FRAME_HEAD_LENGTH; i < uart2can_frame_.m_nDlc; i++) {
+    uart2can_frame_.m_nDta[i] = buf[i - FRAME_HEAD_LENGTH];
   }
 
   return 0x00;
@@ -103,12 +103,12 @@ uint8_t UART_CAN::setMsg(uint32_t id, uint8_t rtr, uint8_t ext, uint8_t len, uin
 *********************************************************************************************************/
 uint8_t UART_CAN::clearMsg()
 {
-  uart_frame_.m_nID = 0;
-  uart_frame_.m_nDlc = 0;
-  uart_frame_.m_nExtFlg = 0;
-  uart_frame_.m_nRtr = 0;
-  for (int i = 0; i < uart_frame_.m_nDlc; i++) {
-    uart_frame_.m_nDta[i] = 0x00;
+  uart2can_frame_.m_nID = 0;
+  uart2can_frame_.m_nDlc = 0;
+  uart2can_frame_.m_nExtFlg = 0;
+  uart2can_frame_.m_nRtr = 0;
+  for (int i = 0; i < uart2can_frame_.m_nDlc; i++) {
+    uart2can_frame_.m_nDta[i] = 0x00;
   }
 
   return 0;
