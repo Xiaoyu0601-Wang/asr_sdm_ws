@@ -1,5 +1,5 @@
-#ifndef UART_CAN_HPP_
-#define UART_CAN_HPP_
+#ifndef UART2CAN_HPP_
+#define UART2CAN_HPP_
 
 /* System headers */
 #include <stdint.h>

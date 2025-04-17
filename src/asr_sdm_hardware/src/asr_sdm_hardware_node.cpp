@@ -11,7 +11,7 @@
 
 /* ROS2 headers */
 #include "asr_sdm_hardware/msg/can_frame.hpp"
-#include "asr_sdm_hardware/uart_can.hpp"
+#include "asr_sdm_hardware/uart2can.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 

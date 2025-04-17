@@ -13,6 +13,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 
+#include "asr_sdm_control_msgs/msg/robot_cmd.hpp"
 #include <std_msgs/msg/string.hpp>
 
 using namespace std::chrono_literals;

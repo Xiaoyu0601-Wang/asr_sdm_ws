@@ -1,17 +1,20 @@
 cmake_minimum_required(VERSION 3.8)
 project(asr_sdm_hardware)
 
+# Default to C++17
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 17)
+endif()
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
 # ===================================================
 # Dependencies
-find_package(ament_cmake_auto REQUIRED)
 find_package(ament_cmake REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
 find_package(periphery REQUIRED)
 
 # ===================================================
@@ -19,7 +22,6 @@ find_package(periphery REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/CanFrame.msg"
   DEPENDENCIES
-  builtin_interfaces
   std_msgs
 )
 
@@ -34,7 +36,7 @@ include_directories(
 # ament_target_dependencies(mcp_can rclcpp)
 
 # ament_auto_add_executable(asr_sdm_hardware_node src/asr_sdm_hardware_node.cpp src/uart_can.cpp)
-add_executable(asr_sdm_hardware_node src/asr_sdm_hardware_node.cpp src/uart_can.cpp)
+add_executable(asr_sdm_hardware_node src/asr_sdm_hardware_node.cpp src/uart2can.cpp)
 rosidl_get_typesupport_target(cpp_typesupport_target asr_sdm_hardware "rosidl_typesupport_cpp")
 target_link_libraries(asr_sdm_hardware_node periphery "${cpp_typesupport_target}")
 ament_target_dependencies(asr_sdm_hardware_node rclcpp std_msgs)
@@ -43,8 +45,6 @@ install(TARGETS
   asr_sdm_hardware_node
   DESTINATION lib/${PROJECT_NAME}
 )
-
-ament_export_dependencies(rosidl_default_runtime)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -58,4 +58,5 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
+ament_export_dependencies(rosidl_default_runtime)
 ament_package()

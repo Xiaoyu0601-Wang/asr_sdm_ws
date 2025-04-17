@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.8)
 project(asr_sdm_controller)
 
+# Default to C++17
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 17)
+endif()
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
@@ -10,6 +14,7 @@ find_package(ament_cmake_auto REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(asr_sdm_control_msgs REQUIRED)
 find_package(periphery REQUIRED)
 find_package(asr_sdm_hardware REQUIRED)
 # Find libgpiod
@@ -34,7 +39,7 @@ include_directories(
 
 add_executable(asr_sdm_controller src/asr_sdm_controller_node.cpp)
 target_link_libraries(asr_sdm_controller periphery)
-ament_target_dependencies(asr_sdm_controller rclcpp std_msgs asr_sdm_hardware)
+ament_target_dependencies(asr_sdm_controller rclcpp std_msgs asr_sdm_hardware asr_sdm_control_msgs)
 
 install(TARGETS
   asr_sdm_controller

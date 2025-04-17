@@ -1,4 +1,4 @@
-#include "asr_sdm_hardware/uart_can.hpp"
+#include "asr_sdm_hardware/uart2can.hpp"
 
 namespace amp
 {
