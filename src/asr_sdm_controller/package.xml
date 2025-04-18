@@ -11,7 +11,7 @@
 
   <depend>rclcpp</depend>
   <depend>std_msgs</depend>
-  <depend>asr_sdm_hardware</depend>
+  <depend>asr_sdm_hardware_msgs</depend>
   <depend>asr_sdm_control_msgs</depend>
 
   <test_depend>ament_lint_auto</test_depend>

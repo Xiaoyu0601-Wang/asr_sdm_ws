@@ -7,8 +7,17 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+
+# ===================================================
+# Message & Service
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/CanFrame.msg"
+  DEPENDENCIES
+  std_msgs
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

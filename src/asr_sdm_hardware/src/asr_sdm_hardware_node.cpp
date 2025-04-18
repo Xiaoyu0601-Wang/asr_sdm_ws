@@ -10,15 +10,12 @@
 #include <string>
 
 /* ROS2 headers */
-#include "asr_sdm_hardware/msg/can_frame.hpp"
 #include "asr_sdm_hardware/uart2can.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
+#include "asr_sdm_hardware_msgs/msg/can_frame.hpp"
 #include <std_msgs/msg/string.hpp>
-
-// #define GPIO_CHIP "/dev/gpiochip0"
-// #define GPIO_PIN 24
 
 using namespace std::chrono_literals;
 
@@ -42,7 +39,7 @@ public:
     uart_can_ = std::make_unique<amp::UART_CAN>(uart_port, uart_baudrate);
 
     pub_ros_info_ = this->create_publisher<std_msgs::msg::String>("~/output/topic", 10);
-    sub_can_interface_ = this->create_subscription<asr_sdm_hardware::msg::CanFrame>(
+    sub_interface_can_ = this->create_subscription<asr_sdm_hardware_msgs::msg::CanFrame>(
       "~/input/can_frame", rclcpp::SensorDataQoS{}.keep_last(1),
       std::bind(&AsrSdmHardwareNode::canFrameCallback, this, std::placeholders::_1));
 
@@ -53,7 +50,7 @@ public:
   }
 
 private:
-  void canFrameCallback(const asr_sdm_hardware::msg::CanFrame::SharedPtr msg)
+  void canFrameCallback(const asr_sdm_hardware_msgs::msg::CanFrame::SharedPtr msg)
   {
     msg_can_frame_ = *msg;
     uart_can_->sendMsg(msg->id, msg->rtr, msg->ext, msg->dlc, msg->data.data());
@@ -79,10 +76,10 @@ private:
   rclcpp::TimerBase::SharedPtr timer_hardware_;
   rclcpp::TimerBase::SharedPtr timer_imu_;
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr pub_ros_info_;
-  rclcpp::Subscription<asr_sdm_hardware::msg::CanFrame>::SharedPtr sub_can_interface_;
+  rclcpp::Subscription<asr_sdm_hardware_msgs::msg::CanFrame>::SharedPtr sub_interface_can_;
 
   amp::UART_CAN::Ptr uart_can_;
-  asr_sdm_hardware::msg::CanFrame msg_can_frame_;
+  asr_sdm_hardware_msgs::msg::CanFrame msg_can_frame_;
 };
 
 int main(int argc, char * argv[])

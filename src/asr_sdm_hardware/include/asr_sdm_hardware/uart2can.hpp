@@ -11,9 +11,9 @@
 #include <chrono>
 
 /* ROS2 headers */
-#include "asr_sdm_hardware/msg/can_frame.hpp"
-
 #include <rclcpp/rclcpp.hpp>
+
+#include "asr_sdm_hardware_msgs/msg/can_frame.hpp"
 
 /* c-periphery headers */
 #include "periphery/serial.h"

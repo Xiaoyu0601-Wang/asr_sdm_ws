@@ -15,6 +15,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(asr_sdm_control_msgs REQUIRED)
+find_package(asr_sdm_hardware_msgs REQUIRED)
 find_package(periphery REQUIRED)
 find_package(asr_sdm_hardware REQUIRED)
 # Find libgpiod
@@ -39,7 +40,7 @@ include_directories(
 
 add_executable(asr_sdm_controller src/asr_sdm_controller_node.cpp)
 target_link_libraries(asr_sdm_controller periphery)
-ament_target_dependencies(asr_sdm_controller rclcpp std_msgs asr_sdm_hardware asr_sdm_control_msgs)
+ament_target_dependencies(asr_sdm_controller rclcpp std_msgs asr_sdm_control_msgs asr_sdm_hardware_msgs)
 
 install(TARGETS
   asr_sdm_controller

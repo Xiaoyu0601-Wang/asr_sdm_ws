@@ -9,11 +9,10 @@
 #include <string>
 
 /* ROS2 headers */
-#include "asr_sdm_hardware/msg/can_frame.hpp"
-
 #include <rclcpp/rclcpp.hpp>
 
 #include "asr_sdm_control_msgs/msg/robot_cmd.hpp"
+#include "asr_sdm_hardware_msgs/msg/can_frame.hpp"
 #include <std_msgs/msg/string.hpp>
 
 using namespace std::chrono_literals;
@@ -43,7 +42,7 @@ private:
 
   rclcpp::TimerBase::SharedPtr timer_hardware_;
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr pub_ros_info_;
-  rclcpp::Publisher<asr_sdm_hardware::msg::CanFrame>::SharedPtr pub_can_interface_;
+  rclcpp::Publisher<asr_sdm_hardware_msgs::msg::CanFrame>::SharedPtr pub_can_interface_;
 };
 
 int main(int argc, char * argv[])

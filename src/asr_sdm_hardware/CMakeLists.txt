@@ -15,15 +15,9 @@ find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(asr_sdm_control_msgs REQUIRED)
+find_package(asr_sdm_hardware_msgs REQUIRED)
 find_package(periphery REQUIRED)
-
-# ===================================================
-# Message & Service
-rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/CanFrame.msg"
-  DEPENDENCIES
-  std_msgs
-)
 
 include_directories(
   include
@@ -37,9 +31,8 @@ include_directories(
 
 # ament_auto_add_executable(asr_sdm_hardware_node src/asr_sdm_hardware_node.cpp src/uart_can.cpp)
 add_executable(asr_sdm_hardware_node src/asr_sdm_hardware_node.cpp src/uart2can.cpp)
-rosidl_get_typesupport_target(cpp_typesupport_target asr_sdm_hardware "rosidl_typesupport_cpp")
-target_link_libraries(asr_sdm_hardware_node periphery "${cpp_typesupport_target}")
-ament_target_dependencies(asr_sdm_hardware_node rclcpp std_msgs)
+target_link_libraries(asr_sdm_hardware_node periphery)
+ament_target_dependencies(asr_sdm_hardware_node rclcpp std_msgs asr_sdm_hardware_msgs asr_sdm_control_msgs)
 
 install(TARGETS
   asr_sdm_hardware_node
