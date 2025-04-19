@@ -17,7 +17,6 @@ find_package(std_msgs REQUIRED)
 find_package(asr_sdm_control_msgs REQUIRED)
 find_package(asr_sdm_hardware_msgs REQUIRED)
 find_package(periphery REQUIRED)
-find_package(asr_sdm_hardware REQUIRED)
 # Find libgpiod
 # find_package(PkgConfig REQUIRED)
 # pkg_check_modules(GPIOD REQUIRED libgpiod)
