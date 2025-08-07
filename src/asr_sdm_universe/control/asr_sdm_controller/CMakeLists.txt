@@ -38,8 +38,15 @@ include_directories(
 # ament_target_dependencies(mcp_can rclcpp)
 
 add_executable(asr_sdm_controller src/asr_sdm_controller_node.cpp)
-target_link_libraries(asr_sdm_controller periphery)
-ament_target_dependencies(asr_sdm_controller rclcpp std_msgs asr_sdm_control_msgs asr_sdm_hardware_msgs)
+# target_link_libraries(asr_sdm_controller periphery)
+target_link_libraries(asr_sdm_controller PUBLIC
+  ${asr_sdm_control_msgs_TARGETS}
+  ${asr_sdm_hardware_msgs_TARGETS}
+  ${std_msgs_TARGETS}
+  rclcpp::rclcpp
+  periphery
+)
+# ament_target_dependencies(asr_sdm_controller rclcpp std_msgs asr_sdm_control_msgs asr_sdm_hardware_msgs)
 
 install(TARGETS
   asr_sdm_controller

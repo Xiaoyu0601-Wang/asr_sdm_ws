@@ -31,8 +31,17 @@ include_directories(
 
 # ament_auto_add_executable(asr_sdm_hardware_node src/asr_sdm_hardware_node.cpp src/uart_can.cpp)
 add_executable(asr_sdm_hardware_node src/asr_sdm_hardware_node.cpp src/uart2can.cpp)
-target_link_libraries(asr_sdm_hardware_node periphery)
-ament_target_dependencies(asr_sdm_hardware_node rclcpp std_msgs asr_sdm_hardware_msgs asr_sdm_control_msgs)
+target_link_libraries(asr_sdm_hardware_node PUBLIC
+  ${asr_sdm_control_msgs_TARGETS}
+  ${asr_sdm_hardware_msgs_TARGETS}
+  ${std_msgs_TARGETS}
+  rclcpp::rclcpp
+  periphery#::periphery
+)
+# periphery rclcpp std_msgs asr_sdm_hardware_msgs asr_sdm_control_msgs)
+# ament_target_dependencies(asr_sdm_hardware_node rclcpp std_msgs asr_sdm_hardware_msgs asr_sdm_control_msgs)
+
+# target_link_libraries(uart2can periphery rclcpp std_msgs asr_sdm_hardware_msgs asr_sdm_control_msgs)
 
 install(TARGETS
   asr_sdm_hardware_node
