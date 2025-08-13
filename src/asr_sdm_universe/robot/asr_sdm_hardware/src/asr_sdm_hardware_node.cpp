@@ -25,18 +25,17 @@ class AsrSdmHardwareNode : public rclcpp::Node
 public:
   AsrSdmHardwareNode() : Node("asrsdm_hardware"), count_(0)
   {
-    this->declare_parameter("uart_can.uart_port", "/dev/ttyS3");
+    // Declare parameters with default values
+    this->declare_parameter("uart_can.uart_port", "/dev/ttyACM0");
+    this->declare_parameter("uart_can.uart_baudrate", 57600);
+    // Get parameters
     const std::string uart_port =
       this->get_parameter("uart_can.uart_port").get_parameter_value().get<std::string>();
-    this->declare_parameter("uart_can.uart_baudrate", 115200);
     const uint32_t uart_baudrate =
-      this->get_parameter("uart_can.uart_port").get_parameter_value().get<uint32_t>();
-
-    // const std::string uart_port =
-    // this->declare_parameter<std::string>("uart_can.uart_port", "/dev/ttyS3");
-    // const uint32_t uart_baudrate =
-    //   this->declare_parameter<uint32_t>("uart_can.uart_baudrate", 115200);
-
+      this->get_parameter("uart_can.uart_baudrate").get_parameter_value().get<uint32_t>();
+    RCLCPP_INFO(
+      this->get_logger(), "UART Port: %s, Baudrate: %u", uart_port.c_str(), uart_baudrate);
+    // Initialize UART_CAN instance
     uart_can_ = std::make_unique<amp::UART_CAN>(uart_port, uart_baudrate);
 
     pub_heartbeat_ =

@@ -6,13 +6,10 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     # load periphery
-    periphery_config_yaml = os.path.join(
+    periphery_config = os.path.join(
         get_package_share_directory('asr_sdm_hardware'),
         'config',
         'periphery_config.yaml')
-
-    with open(periphery_config_yaml, 'r') as ymlfile:
-        periphery_config = yaml.safe_load(ymlfile)
     
     return LaunchDescription([
         Node(
