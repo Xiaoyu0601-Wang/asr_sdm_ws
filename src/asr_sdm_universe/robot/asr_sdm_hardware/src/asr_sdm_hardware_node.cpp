@@ -37,13 +37,20 @@ public:
       this->get_logger(), "UART Port: %s, Baudrate: %u", uart_port.c_str(), uart_baudrate);
     // Initialize UART_CAN instance
     uart_can_ = std::make_unique<amp::UART_CAN>(uart_port, uart_baudrate);
+    RCLCPP_INFO(this->get_logger(), "UART_CAN initialized");
 
-    pub_heartbeat_ =
-      this->create_publisher<std_msgs::msg::String>("~/output/hardware/heartbeat", 1);
+    // Declare the topic name parameter with default value
+    this->declare_parameter<std::string>("topic_asr_sdm_cmd", "~/input/asr_sdm_cmd");
+    // Get the topic name parameter
+    std::string topic_asr_sdm_cmd =
+      this->get_parameter("topic_asr_sdm_cmd").get_parameter_value().get<std::string>();
+    // Initialize publishers and subscribers
+    pub_heartbeat_ = this->create_publisher<std_msgs::msg::String>("~/hardware/heartbeat", 1);
     sub_robot_cmd_ = this->create_subscription<asr_sdm_control_msgs::msg::RobotCmd>(
-      "~/input/robot_cmd", rclcpp::SensorDataQoS{}.keep_last(1),
+      topic_asr_sdm_cmd, rclcpp::SensorDataQoS{}.keep_last(1),
       std::bind(&AsrSdmHardwareNode::hardware_control, this, std::placeholders::_1));
 
+    // Initialize timers
     timer_heartbeat_ =
       this->create_wall_timer(1000ms, std::bind(&AsrSdmHardwareNode::timer_heartbeat, this));
     timer_imu_ =
@@ -56,7 +63,14 @@ private:
     msg_robot_cmd_ = *msg;
   }
 
-  void timer_heartbeat() { RCLCPP_INFO(this->get_logger(), "Hardware Node Heartbeat"); }
+  void timer_heartbeat()
+  {
+    auto message = std_msgs::msg::String();
+    message.data = "Hello ROS2: " + std::to_string(1);
+    RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
+    pub_heartbeat_->publish(message);
+    // RCLCPP_INFO(this->get_logger(), "Hardware Node Heartbeat");
+  }
 
   void timer_hardware_ctrl() {}
 

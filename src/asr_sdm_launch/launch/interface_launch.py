@@ -16,11 +16,13 @@ def generate_launch_description():
             package='asr_sdm_hardware',
             executable='asr_sdm_hardware_node',
             name='asr_sdm_hardware',
-            remappings=[
-                ('/input/can_frame', '/robot/cmd_vel'),
-                ('/sensor_data', '/lidar/data')
-            ],
+            # remappings=[
+            #     ('/input/can_frame', '/robot/cmd_vel'),
+            #     ('/sensor_data', '/lidar/data')
+            # ],
             output='screen',
-            parameters=[periphery_config]
+            parameters=[periphery_config,
+                        # {'use_sim_time': True},
+                        {'topic_asr_sdm_cmd': '~/asr_sdm_cmd'}]
         ),
     ])
