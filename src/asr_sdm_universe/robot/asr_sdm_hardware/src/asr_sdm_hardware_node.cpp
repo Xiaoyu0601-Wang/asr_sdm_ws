@@ -58,6 +58,7 @@ public:
       this->get_parameter("topic_asr_sdm_cmd").get_parameter_value().get<std::string>();
     // Initialize publishers and subscribers
     pub_heartbeat_ = this->create_publisher<std_msgs::msg::String>("~/hardware/heartbeat", 1);
+    pub_imu_ = this->create_publisher<sensor_msgs::msg::Imu>("~/hardware/imu", 1);
     sub_robot_cmd_ = this->create_subscription<asr_sdm_control_msgs::msg::RobotCmd>(
       topic_asr_sdm_cmd, rclcpp::SensorDataQoS{}.keep_last(1),
       std::bind(&AsrSdmHardwareNode::hardware_control, this, std::placeholders::_1));
