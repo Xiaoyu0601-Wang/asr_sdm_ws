@@ -16,6 +16,7 @@
 
 #include "asr_sdm_control_msgs/msg/robot_cmd.hpp"
 #include "asr_sdm_hardware_msgs/msg/can_frame.hpp"
+#include <sensor_msgs/msg/imu.hpp>
 #include <std_msgs/msg/string.hpp>
 
 using namespace std::chrono_literals;
@@ -90,6 +91,7 @@ private:
   rclcpp::TimerBase::SharedPtr timer_heartbeat_;
   rclcpp::TimerBase::SharedPtr timer_imu_;
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr pub_heartbeat_;
+  rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr pub_imu_;
   rclcpp::Subscription<asr_sdm_control_msgs::msg::RobotCmd>::SharedPtr sub_robot_cmd_;
 
   amp::UART_CAN::Ptr uart_can_;

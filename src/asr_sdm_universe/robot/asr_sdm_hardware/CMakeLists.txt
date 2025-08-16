@@ -15,6 +15,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(asr_sdm_control_msgs REQUIRED)
 find_package(asr_sdm_hardware_msgs REQUIRED)
 find_package(periphery REQUIRED)
@@ -35,13 +36,10 @@ target_link_libraries(asr_sdm_hardware_node PUBLIC
   ${asr_sdm_control_msgs_TARGETS}
   ${asr_sdm_hardware_msgs_TARGETS}
   ${std_msgs_TARGETS}
+  ${sensor_msgs_TARGETS}
   rclcpp::rclcpp
   periphery#::periphery
 )
-# periphery rclcpp std_msgs asr_sdm_hardware_msgs asr_sdm_control_msgs)
-# ament_target_dependencies(asr_sdm_hardware_node rclcpp std_msgs asr_sdm_hardware_msgs asr_sdm_control_msgs)
-
-# target_link_libraries(uart2can periphery rclcpp std_msgs asr_sdm_hardware_msgs asr_sdm_control_msgs)
 
 install(TARGETS
   asr_sdm_hardware_node
