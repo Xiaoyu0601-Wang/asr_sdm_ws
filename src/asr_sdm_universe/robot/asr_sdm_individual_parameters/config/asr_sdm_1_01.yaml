@@ -1,0 +1,8 @@
+/asr_sdm_hardware:
+  ros__parameters:
+    uart_can:
+      uart_port: "/ttyS3"
+      uart_baudrate: 115200
+    imu_wheeltec_n100:
+      uart_port: "/ttyS4"
+      uart_baudrate: 115200

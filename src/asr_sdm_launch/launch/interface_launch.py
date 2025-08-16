@@ -7,10 +7,10 @@ from launch_ros.actions import Node
 def generate_launch_description():
     # load periphery
     periphery_config = os.path.join(
-        get_package_share_directory('asr_sdm_hardware'),
+        get_package_share_directory('asr_sdm_individual_parameters'),
         'config',
-        'periphery_config.yaml')
-    
+        'asr_sdm_1_01.yaml')
+
     return LaunchDescription([
         Node(
             package='asr_sdm_hardware',
@@ -23,6 +23,10 @@ def generate_launch_description():
             output='screen',
             parameters=[periphery_config,
                         # {'use_sim_time': True},
+                        # {'uart_can.uart_port': '/dev/ttyS3'},
+                        # {'uart_can.uart_baudrate': 115200},
+                        # {'imu_wheeltec_n100.uart_port': '/dev/ttyS4'},
+                        # {'imu_wheeltec_n100.uart_baudrate': 115200},
                         {'topic_asr_sdm_cmd': '~/asr_sdm_cmd'}]
         ),
     ])

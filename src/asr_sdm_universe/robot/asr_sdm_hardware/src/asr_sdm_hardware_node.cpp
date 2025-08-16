@@ -26,18 +26,29 @@ public:
   AsrSdmHardwareNode() : Node("asrsdm_hardware"), count_(0)
   {
     // Declare parameters with default values
-    this->declare_parameter("uart_can.uart_port", "/dev/ttyACM0");
+    this->declare_parameter("uart_can.uart_port", "/dev/tty0");
     this->declare_parameter("uart_can.uart_baudrate", 57600);
+    this->declare_parameter("imu_wheeltec_n100.uart_port", "/dev/tty1");
+    this->declare_parameter("imu_wheeltec_n100.uart_baudrate", 57600);
     // Get parameters
-    const std::string uart_port =
+    const std::string uart_can_port =
       this->get_parameter("uart_can.uart_port").get_parameter_value().get<std::string>();
-    const uint32_t uart_baudrate =
+    const uint32_t uart_can_baudrate =
       this->get_parameter("uart_can.uart_baudrate").get_parameter_value().get<uint32_t>();
     RCLCPP_INFO(
-      this->get_logger(), "UART Port: %s, Baudrate: %u", uart_port.c_str(), uart_baudrate);
+      this->get_logger(), "UART2CAN Port: %s, Baudrate: %u", uart_can_port.c_str(),
+      uart_can_baudrate);
+
+    const std::string imu_wheeltec_n100_port =
+      this->get_parameter("imu_wheeltec_n100.uart_port").get_parameter_value().get<std::string>();
+    const uint32_t imu_wheeltec_n100_baudrate =
+      this->get_parameter("imu_wheeltec_n100.uart_baudrate").get_parameter_value().get<uint32_t>();
+    RCLCPP_INFO(
+      this->get_logger(), "IMU Wheeltec N100 Port: %s, Baudrate: %u",
+      imu_wheeltec_n100_port.c_str(), imu_wheeltec_n100_baudrate);
+
     // Initialize UART_CAN instance
-    uart_can_ = std::make_unique<amp::UART_CAN>(uart_port, uart_baudrate);
-    RCLCPP_INFO(this->get_logger(), "UART_CAN initialized");
+    uart_can_ = std::make_unique<amp::UART_CAN>(uart_can_port, uart_can_baudrate);
 
     // Declare the topic name parameter with default value
     this->declare_parameter<std::string>("topic_asr_sdm_cmd", "~/input/asr_sdm_cmd");

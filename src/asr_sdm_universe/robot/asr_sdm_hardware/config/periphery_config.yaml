@@ -1,5 +1,5 @@
 /asr_sdm_hardware:
   ros__parameters:
     uart_can:
-      uart_port: "/dev/ttyS3"
-      uart_baudrate: 115200
+      uartport: "/ttyS3"
+      uartbaudrate: 5200
