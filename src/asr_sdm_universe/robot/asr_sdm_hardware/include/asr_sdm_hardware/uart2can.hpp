@@ -38,12 +38,12 @@ struct Uart2CanFrame
   uint8_t frame_tail;
 };
 
-class UART_CAN
+class UART2CAN
 {
 public:
-  UART_CAN(const std::string & uart_port, uint32_t uart_baudrate);
+  UART2CAN(const std::string & uart_port, uint32_t uart_baudrate);
 
-  ~UART_CAN();
+  ~UART2CAN();
 
 private:
   serial_t * serial_;
@@ -70,9 +70,9 @@ public:
   uint8_t sendMsg(uint32_t id, uint8_t rtr, uint8_t ext, uint8_t len, uint8_t * buf);
   uint8_t readMsg(uint32_t * id, uint8_t * ext, uint8_t * len, uint8_t * buf);
 
-  typedef std::unique_ptr<UART_CAN> Ptr;
+  typedef std::unique_ptr<UART2CAN> Ptr;
 };
 
 }  // namespace amp
 
-#endif
+#endif  // UART2CAN_HPP_

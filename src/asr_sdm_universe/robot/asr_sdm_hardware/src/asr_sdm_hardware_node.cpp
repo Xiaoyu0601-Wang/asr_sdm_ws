@@ -27,18 +27,18 @@ public:
   AsrSdmHardwareNode() : Node("asrsdm_hardware"), count_(0)
   {
     // Declare parameters with default values
-    this->declare_parameter("uart_can.uart_port", "/dev/tty0");
-    this->declare_parameter("uart_can.uart_baudrate", 57600);
+    this->declare_parameter("uart2can.uart_port", "/dev/tty0");
+    this->declare_parameter("uart2can.uart_baudrate", 57600);
     this->declare_parameter("imu_wheeltec_n100.uart_port", "/dev/tty1");
     this->declare_parameter("imu_wheeltec_n100.uart_baudrate", 57600);
     // Get parameters
-    const std::string uart_can_port =
-      this->get_parameter("uart_can.uart_port").get_parameter_value().get<std::string>();
-    const uint32_t uart_can_baudrate =
-      this->get_parameter("uart_can.uart_baudrate").get_parameter_value().get<uint32_t>();
+    const std::string uart2can_port =
+      this->get_parameter("uart2can.uart_port").get_parameter_value().get<std::string>();
+    const uint32_t uart2can_baudrate =
+      this->get_parameter("uart2can.uart_baudrate").get_parameter_value().get<uint32_t>();
     RCLCPP_INFO(
-      this->get_logger(), "UART2CAN Port: %s, Baudrate: %u", uart_can_port.c_str(),
-      uart_can_baudrate);
+      this->get_logger(), "UART2CAN Port: %s, Baudrate: %u", uart2can_port.c_str(),
+      uart2can_baudrate);
 
     const std::string imu_wheeltec_n100_port =
       this->get_parameter("imu_wheeltec_n100.uart_port").get_parameter_value().get<std::string>();
@@ -48,8 +48,8 @@ public:
       this->get_logger(), "IMU Wheeltec N100 Port: %s, Baudrate: %u",
       imu_wheeltec_n100_port.c_str(), imu_wheeltec_n100_baudrate);
 
-    // Initialize UART_CAN instance
-    uart_can_ = std::make_unique<amp::UART_CAN>(uart_can_port, uart_can_baudrate);
+    // Initialize UART2CAN instance
+    uart2can_ = std::make_unique<amp::UART2CAN>(uart2can_port, uart2can_baudrate);
 
     // Declare the topic name parameter with default value
     this->declare_parameter<std::string>("topic_asr_sdm_cmd", "~/input/asr_sdm_cmd");
@@ -85,6 +85,13 @@ private:
     // RCLCPP_INFO(this->get_logger(), "Hardware Node Heartbeat");
   }
 
+  void timer_imu()
+  {
+    auto message = sensor_msgs::msg::Imu();
+    // Fill the IMU message with data
+    pub_imu_->publish(message);
+  }
+
   void timer_hardware_ctrl() {}
 
   size_t count_;
@@ -95,7 +102,7 @@ private:
   rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr pub_imu_;
   rclcpp::Subscription<asr_sdm_control_msgs::msg::RobotCmd>::SharedPtr sub_robot_cmd_;
 
-  amp::UART_CAN::Ptr uart_can_;
+  amp::UART2CAN::Ptr uart2can_;
   asr_sdm_control_msgs::msg::RobotCmd msg_robot_cmd_;
 };
 

@@ -3,7 +3,7 @@
 namespace amp
 {
 
-UART_CAN::UART_CAN(const std::string & uart_port, uint32_t uart_baudrate)
+UART2CAN::UART2CAN(const std::string & uart_port, uint32_t uart_baudrate)
 {
   uart_port_ = uart_port.c_str();
   serial_ = serial_new();
@@ -17,7 +17,7 @@ UART_CAN::UART_CAN(const std::string & uart_port, uint32_t uart_baudrate)
   uart2can_frame_.frame_tail = 0xFF;
 }
 
-UART_CAN::~UART_CAN()
+UART2CAN::~UART2CAN()
 {
   serial_close(serial_);
   serial_free(serial_);
@@ -35,7 +35,7 @@ UART_CAN::~UART_CAN()
  * @warning Warnings or important considerations.
  * @throws Exception types the function may throw.
  */
-bool UART_CAN::uartTransfer(uint8_t byte_number, unsigned char * tx_buf)
+bool UART2CAN::uartTransfer(uint8_t byte_number, unsigned char * tx_buf)
 {
   /* Write to the serial port */
   if (serial_write(serial_, tx_buf, byte_number) < 0) {
@@ -50,7 +50,7 @@ bool UART_CAN::uartTransfer(uint8_t byte_number, unsigned char * tx_buf)
 ** Function name:           uart_configRate
 ** Descriptions:            Set baudrate
 *********************************************************************************************************/
-uint8_t UART_CAN::uart_configRate(const uint8_t canSpeed, const uint8_t canClock)
+uint8_t UART2CAN::uart_configRate(const uint8_t canSpeed, const uint8_t canClock)
 {
   return 0;
 }
@@ -59,7 +59,7 @@ uint8_t UART_CAN::uart_configRate(const uint8_t canSpeed, const uint8_t canClock
 ** Function name:           uart_write_id
 ** Descriptions:            Write CAN ID
 *********************************************************************************************************/
-void UART_CAN::uart_write_id(const uint8_t mcp_addr, const uint8_t ext, const uint32_t id)
+void UART2CAN::uart_write_id(const uint8_t mcp_addr, const uint8_t ext, const uint32_t id)
 {
 }
 
@@ -67,7 +67,7 @@ void UART_CAN::uart_write_id(const uint8_t mcp_addr, const uint8_t ext, const ui
 ** Function name:           uart_read_id
 ** Descriptions:            Read CAN ID
 *********************************************************************************************************/
-void UART_CAN::uart_read_id(const uint8_t mcp_addr, uint8_t * ext, uint32_t * id)
+void UART2CAN::uart_read_id(const uint8_t mcp_addr, uint8_t * ext, uint32_t * id)
 {
 }
 
@@ -75,7 +75,7 @@ void UART_CAN::uart_read_id(const uint8_t mcp_addr, uint8_t * ext, uint32_t * id
 ** Function name:           setMsg
 ** Descriptions:            Set can message, such as dlc, id, dta[] and so on
 *********************************************************************************************************/
-uint8_t UART_CAN::setMsg(uint32_t id, uint8_t rtr, uint8_t ext, uint8_t len, uint8_t * buf)
+uint8_t UART2CAN::setMsg(uint32_t id, uint8_t rtr, uint8_t ext, uint8_t len, uint8_t * buf)
 {
   uart2can_frame_.m_nID = id;
   uart2can_frame_.m_nRtr = rtr;
@@ -101,7 +101,7 @@ uint8_t UART_CAN::setMsg(uint32_t id, uint8_t rtr, uint8_t ext, uint8_t len, uin
 ** Function name:           clearMsg
 ** Descriptions:            Set all messages to zero
 *********************************************************************************************************/
-uint8_t UART_CAN::clearMsg()
+uint8_t UART2CAN::clearMsg()
 {
   uart2can_frame_.m_nID = 0;
   uart2can_frame_.m_nDlc = 0;
@@ -114,7 +114,7 @@ uint8_t UART_CAN::clearMsg()
   return 0;
 }
 
-uint8_t UART_CAN::sendMsg(uint32_t id, uint8_t rtr, uint8_t ext, uint8_t len, uint8_t * buf)
+uint8_t UART2CAN::sendMsg(uint32_t id, uint8_t rtr, uint8_t ext, uint8_t len, uint8_t * buf)
 {
   uint8_t res;
 
@@ -128,7 +128,7 @@ uint8_t UART_CAN::sendMsg(uint32_t id, uint8_t rtr, uint8_t ext, uint8_t len, ui
 ** Function name:           readMsg
 ** Descriptions:            Public function, Reads message from receive buffer.
 *********************************************************************************************************/
-uint8_t UART_CAN::readMsg(uint32_t * id, uint8_t * ext, uint8_t * len, uint8_t buf[])
+uint8_t UART2CAN::readMsg(uint32_t * id, uint8_t * ext, uint8_t * len, uint8_t buf[])
 {
   return 0x00;
 }

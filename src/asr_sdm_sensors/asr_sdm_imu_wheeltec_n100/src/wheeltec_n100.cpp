@@ -486,8 +486,6 @@ private:
           mag_covariance_);
         mag_pub_->publish(mag);
       }
-      // printf(" %s : %i\n", serial_port_.c_str(), serial_baud_ );
-      // rclcpp::sleep_for(std::chrono::seconds(1));
     }
   }
 

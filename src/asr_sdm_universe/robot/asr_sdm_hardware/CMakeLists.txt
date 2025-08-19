@@ -30,7 +30,7 @@ include_directories(
 # target_link_libraries(mcp_can ${MRAA_LIB})
 # ament_target_dependencies(mcp_can rclcpp)
 
-# ament_auto_add_executable(asr_sdm_hardware_node src/asr_sdm_hardware_node.cpp src/uart_can.cpp)
+# ament_auto_add_executable(asr_sdm_hardware_node src/asr_sdm_hardware_node.cpp src/uart2can.cpp)
 add_executable(asr_sdm_hardware_node src/asr_sdm_hardware_node.cpp src/uart2can.cpp)
 target_link_libraries(asr_sdm_hardware_node PUBLIC
   ${asr_sdm_control_msgs_TARGETS}
