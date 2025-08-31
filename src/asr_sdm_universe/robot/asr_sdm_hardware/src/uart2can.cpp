@@ -56,6 +56,12 @@ bool UART2CAN::uartTransfer(uint8_t byte_number)
     data_buffer_.pop(popped_val);
     tx_buf[i] = popped_val;
   }
+  data_buffer_.pop(popped_val);
+  if (popped_val == uart2can_frame_.frame_tail) {
+    tx_buf[byte_number - 1] = uart2can_frame_.frame_tail;
+  } else {
+    return false;
+  }
 
   /* Write to the serial port */
   if (serial_write(serial_, tx_buf.data(), byte_number) < 0) {
