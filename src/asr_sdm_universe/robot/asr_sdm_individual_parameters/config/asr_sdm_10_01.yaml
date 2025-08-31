@@ -3,6 +3,10 @@
     uart2can:
       uart_port: "/ttyS3"
       uart_baudrate: 115200
+      can_id: 0x100100
+      can_frame_length: 8
+      uart_frame_head: 0xAA
+      uart_frame_tail: 0xBB
     imu_wheeltec_n100:
       uart_port: "/ttyS4"
       uart_baudrate: 115200

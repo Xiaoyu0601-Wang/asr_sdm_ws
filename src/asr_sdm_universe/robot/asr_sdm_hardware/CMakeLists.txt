@@ -18,13 +18,18 @@ find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(asr_sdm_control_msgs REQUIRED)
 find_package(asr_sdm_hardware_msgs REQUIRED)
+find_package(data_structure REQUIRED)
 find_package(periphery REQUIRED)
 
 include_directories(
   include
   # ${GPIOD_INCLUDE_DIRS}
   /usr/local/include
+  # data_structure_INCLUDE_DIRS
 )
+
+# # Declare a header-only "library"
+add_library(data_structure INTERFACE)
 
 # add_executable(mcp_can src/mcp_can.cpp)
 # target_link_libraries(mcp_can ${MRAA_LIB})
@@ -32,11 +37,16 @@ include_directories(
 
 # ament_auto_add_executable(asr_sdm_hardware_node src/asr_sdm_hardware_node.cpp src/uart2can.cpp)
 add_executable(asr_sdm_hardware_node src/asr_sdm_hardware_node.cpp src/uart2can.cpp)
+target_include_directories(asr_sdm_hardware_node PUBLIC
+  $<BUILD_INTERFACE:${data_structure_INCLUDE_DIRS}>
+  $<INSTALL_INTERFACE:${data_structure_INCLUDE_DIRS}>
+)
 target_link_libraries(asr_sdm_hardware_node PUBLIC
   ${asr_sdm_control_msgs_TARGETS}
   ${asr_sdm_hardware_msgs_TARGETS}
   ${std_msgs_TARGETS}
   ${sensor_msgs_TARGETS}
+  data_structure
   rclcpp::rclcpp
   periphery#::periphery
 )

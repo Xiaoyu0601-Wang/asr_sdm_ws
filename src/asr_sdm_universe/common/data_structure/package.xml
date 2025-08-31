@@ -1,26 +1,18 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>asr_sdm_hardware</name>
+  <name>data_structure</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
-  <maintainer email="micheal.wang@hotmail.com">ubuntu</maintainer>
+  <maintainer email="micheal.wang@hotmail.com">Xiaoyu0601-Wang</maintainer>
   <license>TODO: License declaration</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>rclcpp</depend>
-  <depend>std_msgs</depend>
-  <depend>sensor_msgs</depend>
-  <depend>asr_sdm_control_msgs</depend>
-  <depend>asr_sdm_hardware_msgs</depend>
-  <depend>data_structure</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
-
-  <exec_depend>rosidl_default_runtime</exec_depend>
-  <member_of_group>rosidl_interface_packages</member_of_group>
 
   <export>
     <build_type>ament_cmake</build_type>
