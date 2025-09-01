@@ -116,16 +116,16 @@ bool UART2CAN::setMsg(uint32_t id, uint8_t rtr, uint8_t ext, uint8_t len, uint8_
   uart2can_frame_.can_dlc = len;
   data_buffer_.push_overwrite(uart2can_frame_.frame_head);
   if (ext == CAN_EXT_FRAME) {
-    data_buffer_.frame_size = len + 8;
-    data_buffer_.push_overwrite(data_buffer_.frame_size);
+    uart2can_frame_.frame_size = len + 8;
+    data_buffer_.push_overwrite(uart2can_frame_.frame_size);
     data_buffer_.push_overwrite(ext);
     data_buffer_.push_overwrite((uint8_t)(id >> 24));
     data_buffer_.push_overwrite((uint8_t)(id >> 16));
     data_buffer_.push_overwrite((uint8_t)(id >> 8));
     data_buffer_.push_overwrite((uint8_t)(id & 0xFF));
   } else if (ext == CAN_STD_FRAME) {
-    data_buffer_.frame_size = len + 6;
-    data_buffer_.push_overwrite(data_buffer_.frame_size);
+    uart2can_frame_.frame_size = len + 6;
+    data_buffer_.push_overwrite(uart2can_frame_.frame_size);
     data_buffer_.push_overwrite(ext);
     data_buffer_.push_overwrite((uint8_t)(id >> 8));
     data_buffer_.push_overwrite((uint8_t)(id & 0xFF));
@@ -159,7 +159,7 @@ bool UART2CAN::clearMsg(void)
 bool UART2CAN::sendMsg(uint32_t id, uint8_t rtr, bool ext, uint8_t len, uint8_t * buf)
 {
   setMsg(id, rtr, ext, len, buf);
-  return uartTransfer(data_buffer_.frame_size);
+  return uartTransfer(uart2can_frame_.frame_size);
 }
 
 /*********************************************************************************************************
