@@ -44,32 +44,39 @@ UART2CAN::~UART2CAN()
  */
 bool UART2CAN::uartTransfer(uint8_t byte_number)
 {
+  bool check_flag = false;
+
+  if (byte_number < 4) {
+    RCLCPP_WARN(rclcpp::get_logger("hardware"), "Invalid byte number");
+    return check_flag;
+  }
+
   std::vector<uint8_t> tx_buf(byte_number);
   uint8_t popped_val;
+
   while (data_buffer_.pop(popped_val)) {
     if (popped_val == uart2can_frame_.frame_head) {
       tx_buf[0] = uart2can_frame_.frame_head;
-      continue;
+      for (uint8_t i = 1; i < byte_number - 1; i++) {
+        data_buffer_.pop(popped_val);
+        tx_buf[i] = popped_val;
+      }
+      data_buffer_.pop(popped_val);
+      if (popped_val == uart2can_frame_.frame_tail) {
+        tx_buf[byte_number - 1] = uart2can_frame_.frame_tail;
+      } else {
+        continue;
+      }
+      /* Write to the serial port */
+      if (serial_write(serial_, tx_buf.data(), byte_number) < 0) {
+        RCLCPP_INFO(rclcpp::get_logger("hardware"), "serial_write(): %s\n", serial_errmsg(serial_));
+      } else {
+        check_flag = true;
+      }
     }
   }
-  for (uint8_t i = 1; i < byte_number - 1; i++) {
-    data_buffer_.pop(popped_val);
-    tx_buf[i] = popped_val;
-  }
-  data_buffer_.pop(popped_val);
-  if (popped_val == uart2can_frame_.frame_tail) {
-    tx_buf[byte_number - 1] = uart2can_frame_.frame_tail;
-  } else {
-    return false;
-  }
 
-  /* Write to the serial port */
-  if (serial_write(serial_, tx_buf.data(), byte_number) < 0) {
-    RCLCPP_INFO(rclcpp::get_logger("hardware"), "serial_write(): %s\n", serial_errmsg(serial_));
-    return false;
-  }
-
-  return true;
+  return check_flag;
 }
 
 /*********************************************************************************************************
