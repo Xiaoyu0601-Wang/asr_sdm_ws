@@ -57,7 +57,7 @@ bool UART2CAN::uartTransfer(uint8_t byte_number)
   while (data_buffer_.pop(popped_val)) {
     if (popped_val == uart2can_frame_.frame_head) {
       tx_buf[0] = uart2can_frame_.frame_head;
-      for (uint8_t i = 1; i < byte_number - 1; i++) {
+      for (uint8_t i = 1; i < uart2can_frame_.can_dlc; i++) {
         data_buffer_.pop(popped_val);
         tx_buf[i] = popped_val;
       }
@@ -113,17 +113,23 @@ bool UART2CAN::setMsg(uint32_t id, uint8_t rtr, uint8_t ext, uint8_t len, uint8_
   uart2can_frame_.can_id = id;
   uart2can_frame_.m_nRtr = rtr;
   uart2can_frame_.can_ext_flag = ext;
+  uart2can_frame_.can_dlc = len;
   data_buffer_.push_overwrite(uart2can_frame_.frame_head);
-  data_buffer_.push_overwrite(len);
-  if (ext != 0) {
-    data_buffer_.push_overwrite(0x80);
-  } else {
-    data_buffer_.push_overwrite(0x00);
+  if (ext == CAN_EXT_FRAME) {
+    data_buffer_.frame_size = len + 8;
+    data_buffer_.push_overwrite(data_buffer_.frame_size);
+    data_buffer_.push_overwrite(ext);
+    data_buffer_.push_overwrite((uint8_t)(id >> 24));
+    data_buffer_.push_overwrite((uint8_t)(id >> 16));
+    data_buffer_.push_overwrite((uint8_t)(id >> 8));
+    data_buffer_.push_overwrite((uint8_t)(id & 0xFF));
+  } else if (ext == CAN_STD_FRAME) {
+    data_buffer_.frame_size = len + 6;
+    data_buffer_.push_overwrite(data_buffer_.frame_size);
+    data_buffer_.push_overwrite(ext);
+    data_buffer_.push_overwrite((uint8_t)(id >> 8));
+    data_buffer_.push_overwrite((uint8_t)(id & 0xFF));
   }
-  data_buffer_.push_overwrite((uint8_t)(id >> 24));
-  data_buffer_.push_overwrite((uint8_t)(id >> 16));
-  data_buffer_.push_overwrite((uint8_t)(id >> 8));
-  data_buffer_.push_overwrite((uint8_t)(id & 0xFF));
 
   for (int i = 0; i < uart2can_frame_.can_dlc; i++) {
     data_buffer_.push_overwrite(buf[i]);
@@ -150,14 +156,10 @@ bool UART2CAN::clearMsg(void)
   return true;
 }
 
-uint8_t UART2CAN::sendMsg(uint32_t id, uint8_t rtr, bool ext, uint8_t len, uint8_t * buf)
+bool UART2CAN::sendMsg(uint32_t id, uint8_t rtr, bool ext, uint8_t len, uint8_t * buf)
 {
-  uint8_t res;
-
   setMsg(id, rtr, ext, len, buf);
-  // res = sendMsg();
-
-  return res;
+  return uartTransfer(data_buffer_.frame_size);
 }
 
 /*********************************************************************************************************
