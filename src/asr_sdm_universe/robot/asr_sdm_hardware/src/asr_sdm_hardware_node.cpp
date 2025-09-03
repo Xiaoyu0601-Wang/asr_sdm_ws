@@ -81,7 +81,7 @@ public:
     timer_heartbeat_ =
       this->create_wall_timer(1000ms, std::bind(&AsrSdmHardwareNode::timer_heartbeat, this));
     timer_imu_ =
-      this->create_wall_timer(500ms, std::bind(&AsrSdmHardwareNode::timer_hardware_ctrl, this));
+      this->create_wall_timer(1000ms, std::bind(&AsrSdmHardwareNode::timer_hardware_ctrl, this));
   }
 
 private:
@@ -106,7 +106,7 @@ private:
     pub_imu_->publish(message);
   }
 
-  void timer_hardware_ctrl() {}
+  void timer_hardware_ctrl() { uart2can_->sendMsg(0x100101, 0, true, 8, msg_robot_cmd_.data); }
 
   size_t count_;
 
