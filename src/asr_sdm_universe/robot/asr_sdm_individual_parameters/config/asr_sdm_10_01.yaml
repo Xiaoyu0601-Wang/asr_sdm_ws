@@ -1,7 +1,7 @@
 /asr_sdm_hardware:
   ros__parameters:
     uart2can:
-      uart_port: "/ttyS3"
+      uart_port: "/dev/ttyS2"
       uart_baudrate: 115200
       can_id: 0x100100
       can_frame_length: 8

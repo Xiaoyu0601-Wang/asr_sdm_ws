@@ -9,7 +9,7 @@ def generate_launch_description():
     periphery_config = os.path.join(
         get_package_share_directory('asr_sdm_individual_parameters'),
         'config',
-        'asr_sdm_1_01.yaml')
+        'asr_sdm_10_01.yaml')
 
     return LaunchDescription([
         Node(

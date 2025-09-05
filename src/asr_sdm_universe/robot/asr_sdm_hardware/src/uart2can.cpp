@@ -5,13 +5,18 @@
 namespace amp
 {
 
-UART2CAN::UART2CAN(
+UART2CAN::UART2CAN()
+: serial_(serial_new()), data_buffer_(MAX_FRAME_DATA_LENGTH)  // initialize with desired capacity
+
+{
+}
+
+void UART2CAN::initModules(
   const std::string & uart_port, uint32_t uart_baudrate, uint32_t can_id, uint8_t can_frame_length,
   uint8_t uart_frame_head, uint8_t uart_frame_tail)
-: data_buffer_(MAX_FRAME_DATA_LENGTH)  // initialize with desired capacity
 {
   uart_port_ = uart_port.c_str();
-  serial_ = serial_new();
+  // serial_ = serial_new();
 
   /* Open /dev/ttyS3 with baudrate 115200, and defaults of 8N1, no flow control */
   if (serial_open(serial_, uart_port_, uart_baudrate) < 0) {
@@ -156,7 +161,7 @@ bool UART2CAN::clearMsg(void)
   return true;
 }
 
-bool UART2CAN::sendMsg(uint32_t id, uint8_t rtr, bool ext, uint8_t len, uint8_t * buf)
+bool UART2CAN::sendMsg(uint32_t id, uint8_t rtr, uint8_t ext, uint8_t len, uint8_t * buf)
 {
   setMsg(id, rtr, ext, len, buf);
   return uartTransfer(uart2can_frame_.frame_size);

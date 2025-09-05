@@ -8,6 +8,7 @@
 #include <chrono>
 #include <iostream>
 #include <string>
+#include <vector>
 
 /* ROS2 headers */
 #include "asr_sdm_hardware/uart2can.hpp"
@@ -49,7 +50,7 @@ public:
     const uint8_t uart2can_uart_frame_tail =
       this->get_parameter("uart2can.uart_frame_tail").get_parameter_value().get<uint8_t>();
     RCLCPP_INFO(
-      this->get_logger(), "UART2CAN Port: %s, Baudrate: %u, CAN_ID: %u", uart2can_port.c_str(),
+      this->get_logger(), "UART2CAN Port: %s, Baudrate: %u, CAN_ID: %x", uart2can_port.c_str(),
       uart2can_baudrate, uart2can_can_id);
 
     const std::string imu_wheeltec_n100_port =
@@ -61,7 +62,8 @@ public:
       imu_wheeltec_n100_port.c_str(), imu_wheeltec_n100_baudrate);
 
     // Initialize UART2CAN instance
-    uart2can_ = std::make_unique<amp::UART2CAN>(
+    uart2can_.reset(new amp::UART2CAN);
+    uart2can_->initModules(
       uart2can_port, uart2can_baudrate, uart2can_can_id, uart2can_can_frame_length,
       uart2can_uart_frame_head, uart2can_uart_frame_tail);
 
@@ -82,6 +84,13 @@ public:
       this->create_wall_timer(1000ms, std::bind(&AsrSdmHardwareNode::timer_heartbeat, this));
     timer_imu_ =
       this->create_wall_timer(1000ms, std::bind(&AsrSdmHardwareNode::timer_hardware_ctrl, this));
+
+    // CAN test
+    std::vector<uint8_t> can_data(8);
+    for (size_t i = 0; i < 8; ++i) {
+      can_data[i] = static_cast<uint8_t>(i);
+    }
+    uart2can_->sendMsg(0x100101, 0, 0x80, 8, can_data.data());
   }
 
 private:
@@ -106,7 +115,7 @@ private:
     pub_imu_->publish(message);
   }
 
-  void timer_hardware_ctrl() { uart2can_->sendMsg(0x100101, 0, true, 8, msg_robot_cmd_.data); }
+  void timer_hardware_ctrl() {}
 
   size_t count_;
 

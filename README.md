@@ -22,17 +22,26 @@ https://github.com/vsergeev/c-periphery
 
 ### How to grant user permissions to utilize the spidev port
 ```sh
+ls -l /dev/spidev*
 sudo groupadd spi
 sudo usermod -aG spi $USER
-ls -l /dev/spidev*
 sudo nano /etc/udev/rules.d/99-spi.rules
 SUBSYSTEM=="spidev", GROUP="spi", MODE="0660"
+
 sudo groupadd gpio
 sudo usermod -aG gpio $USER
 sudo nano /etc/udev/rules.d/99-gpio.rules
 SUBSYSTEM=="gpio", KERNEL=="gpiochip*", MODE="0660", GROUP="gpio"
-sudo groupadd uart
-sudo usermod -aG uart $USER
+
+# Check the uart group
+ls -l /dev/ttyS*
+# You’ll see something like:
+crw-rw---- 1 root dialout 4, 64 Sep  4 00:12 /dev/ttyS*
+# In this example, the group is dialout. Suppose the group is dialout, run:
+sudo usermod -aG dialout $USER
+# Reboot ,then check with:
+cat /dev/ttyS*
+
 sudo nano /etc/udev/rules.d/99-uart.rules
 SUBSYSTEM=="tty", GROUP="uart", MODE="0660"
 sudo udevadm control --reload-rules

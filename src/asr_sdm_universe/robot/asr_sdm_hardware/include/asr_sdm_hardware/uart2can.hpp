@@ -46,11 +46,12 @@ struct Uart2CanFrame
 class UART2CAN
 {
 public:
-  UART2CAN(
+  UART2CAN();
+  ~UART2CAN();
+
+  void initModules(
     const std::string & uart_port, uint32_t uart_baudrate, uint32_t can_id, uint8_t uart_buff_size,
     uint8_t uart_data_head, uint8_t uart_data_tail);
-
-  ~UART2CAN();
 
 private:
   serial_t * serial_;
@@ -75,7 +76,7 @@ private:
 
 public:
   void uart_send(uint32_t canid, uint8_t * buf, uint8_t len);
-  bool sendMsg(uint32_t id, uint8_t rtr, bool ext, uint8_t len, uint8_t * buf);
+  bool sendMsg(uint32_t id, uint8_t rtr, uint8_t ext, uint8_t len, uint8_t * buf);
   uint8_t readMsg(uint32_t * id, uint8_t * ext, uint8_t * len, uint8_t * buf);
 
   typedef std::unique_ptr<UART2CAN> Ptr;
