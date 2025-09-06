@@ -63,6 +63,7 @@ private:
    *  uart driver function
    *************************************************************/
 private:
+  void printVector(uint8_t * vec, uint8_t len, const std::string & name = "vector");
   bool uartTransfer(uint8_t byte_number);
   // uint8_t uart_configRate(const uint8_t canSpeed, const uint8_t canClock);
   // void uart_write_id(const uint8_t mcp_addr, const uint8_t ext, const uint32_t id);

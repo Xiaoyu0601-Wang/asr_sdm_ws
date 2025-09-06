@@ -1,5 +1,7 @@
 #include "asr_sdm_hardware/uart2can.hpp"
 
+#include <iomanip>
+#include <sstream>
 #include <vector>
 
 namespace amp
@@ -35,6 +37,18 @@ UART2CAN::~UART2CAN()
   serial_free(serial_);
 }
 
+void UART2CAN::printVector(uint8_t * vec, uint8_t len, const std::string & name)
+{
+  std::ostringstream oss;
+  oss << name << ": [";
+  for (uint8_t i = 0; i < len; ++i) {
+    oss << "0x" << std::hex << std::setw(2) << std::setfill('0') << (int)vec[i];
+    if (i != len - 1) oss << ", ";
+  }
+  oss << "]";
+  RCLCPP_INFO(rclcpp::get_logger("uart2can"), "%s", oss.str().c_str());
+}
+
 /**
  * @name uartTransfer
  * @brief Brief description of what the function does.
@@ -52,10 +66,10 @@ bool UART2CAN::uartTransfer(uint8_t byte_number)
   bool check_flag = false;
 
   if (byte_number < 4) {
-    RCLCPP_WARN(rclcpp::get_logger("hardware"), "Invalid byte number");
+    RCLCPP_WARN(rclcpp::get_logger("uart2can"), "Invalid byte number");
     return check_flag;
   }
-
+  std::cout << "byte_number: " << byte_number << std::endl;
   std::vector<uint8_t> tx_buf(byte_number);
   uint8_t popped_val;
 
@@ -66,6 +80,7 @@ bool UART2CAN::uartTransfer(uint8_t byte_number)
         data_buffer_.pop(popped_val);
         tx_buf[i] = popped_val;
       }
+      std::cout << "popped_val: " << popped_val << std::endl;
       data_buffer_.pop(popped_val);
       if (popped_val == uart2can_frame_.frame_tail) {
         tx_buf[byte_number - 1] = uart2can_frame_.frame_tail;
@@ -73,8 +88,9 @@ bool UART2CAN::uartTransfer(uint8_t byte_number)
         continue;
       }
       /* Write to the serial port */
+      printVector(tx_buf.data(), byte_number, "uart Data to send");
       if (serial_write(serial_, tx_buf.data(), byte_number) < 0) {
-        RCLCPP_INFO(rclcpp::get_logger("hardware"), "serial_write(): %s\n", serial_errmsg(serial_));
+        RCLCPP_INFO(rclcpp::get_logger("uart2can"), "serial_write(): %s\n", serial_errmsg(serial_));
       } else {
         check_flag = true;
       }
@@ -163,6 +179,7 @@ bool UART2CAN::clearMsg(void)
 
 bool UART2CAN::sendMsg(uint32_t id, uint8_t rtr, uint8_t ext, uint8_t len, uint8_t * buf)
 {
+  printVector(buf, len, "CAN Data to send");
   setMsg(id, rtr, ext, len, buf);
   return uartTransfer(uart2can_frame_.frame_size);
 }
