@@ -1,4 +1,6 @@
+#include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <stdexcept>
 #include <vector>
 
@@ -59,6 +61,9 @@ public:
   {
     if (empty()) return false;
     out = std::move(buf_[tail_]);
+    // std::cout << "out: 0x" << std::hex << std::setw(2) << std::setfill('0') <<
+    // static_cast<int>(out)
+    //           << std::endl;
     tail_ = (tail_ + 1) % cap_;
     --count_;
     return true;

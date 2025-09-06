@@ -69,18 +69,26 @@ bool UART2CAN::uartTransfer(uint8_t byte_number)
     RCLCPP_WARN(rclcpp::get_logger("uart2can"), "Invalid byte number");
     return check_flag;
   }
-  std::cout << "byte_number: " << byte_number << std::endl;
+
   std::vector<uint8_t> tx_buf(byte_number);
   uint8_t popped_val;
 
   while (data_buffer_.pop(popped_val)) {
+    // std::cout << "popped_val: 0x" << std::hex << std::setw(2) << std::setfill('0')
+    //           << static_cast<int>(popped_val) << std::endl;
+    // std::cout << "size=" << data_buffer_.size() << " (cap=" << data_buffer_.capacity() << ")"
+    //           << std::endl;
+    // std::cout << "uart2can_frame_.frame_head: 0x" << std::hex << std::setw(2) <<
+    // std::setfill('0')
+    //           << static_cast<int>(uart2can_frame_.frame_head) << std::endl;
     if (popped_val == uart2can_frame_.frame_head) {
       tx_buf[0] = uart2can_frame_.frame_head;
-      for (uint8_t i = 1; i < uart2can_frame_.can_dlc; i++) {
+      for (uint8_t i = 1; i < uart2can_frame_.can_dlc + 7; i++) {
         data_buffer_.pop(popped_val);
         tx_buf[i] = popped_val;
       }
-      std::cout << "popped_val: " << popped_val << std::endl;
+
+      /* Check for frame tail */
       data_buffer_.pop(popped_val);
       if (popped_val == uart2can_frame_.frame_tail) {
         tx_buf[byte_number - 1] = uart2can_frame_.frame_tail;
@@ -88,11 +96,13 @@ bool UART2CAN::uartTransfer(uint8_t byte_number)
         continue;
       }
       /* Write to the serial port */
-      printVector(tx_buf.data(), byte_number, "uart Data to send");
+      // printVector(tx_buf.data(), byte_number, "uart Data to send2");
       if (serial_write(serial_, tx_buf.data(), byte_number) < 0) {
         RCLCPP_INFO(rclcpp::get_logger("uart2can"), "serial_write(): %s\n", serial_errmsg(serial_));
       } else {
         check_flag = true;
+        // RCLCPP_INFO(
+        //   rclcpp::get_logger("uart2can"), "serial_write(): %d bytes written\n", byte_number);
       }
     }
   }
@@ -131,11 +141,14 @@ bool UART2CAN::uartTransfer(uint8_t byte_number)
 *********************************************************************************************************/
 bool UART2CAN::setMsg(uint32_t id, uint8_t rtr, uint8_t ext, uint8_t len, uint8_t * buf)
 {
+  // printVector(buf, len, "CAN Data to send");
   uart2can_frame_.can_id = id;
   uart2can_frame_.m_nRtr = rtr;
   uart2can_frame_.can_ext_flag = ext;
   uart2can_frame_.can_dlc = len;
   data_buffer_.push_overwrite(uart2can_frame_.frame_head);
+  // std::cout << "size=" << data_buffer_.size() << " (cap=" << data_buffer_.capacity() << ")"
+  //           << std::endl;
   if (ext == CAN_EXT_FRAME) {
     uart2can_frame_.frame_size = len + 8;
     data_buffer_.push_overwrite(uart2can_frame_.frame_size);
@@ -156,7 +169,8 @@ bool UART2CAN::setMsg(uint32_t id, uint8_t rtr, uint8_t ext, uint8_t len, uint8_
     data_buffer_.push_overwrite(buf[i]);
   }
   data_buffer_.push_overwrite(uart2can_frame_.frame_tail);
-
+  // std::cout << "size=" << data_buffer_.size() << " (cap=" << data_buffer_.capacity() << ")"
+  //           << std::endl;
   return true;
 }
 
@@ -179,7 +193,7 @@ bool UART2CAN::clearMsg(void)
 
 bool UART2CAN::sendMsg(uint32_t id, uint8_t rtr, uint8_t ext, uint8_t len, uint8_t * buf)
 {
-  printVector(buf, len, "CAN Data to send");
+  // printVector(buf, len, "CAN Data to send");
   setMsg(id, rtr, ext, len, buf);
   return uartTransfer(uart2can_frame_.frame_size);
 }
