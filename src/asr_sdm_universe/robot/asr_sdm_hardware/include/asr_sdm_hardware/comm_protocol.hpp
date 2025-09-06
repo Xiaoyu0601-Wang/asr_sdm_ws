@@ -1,5 +1,5 @@
-#ifndef CAN_PROTOCOL_HPP_
-#define CAN_PROTOCOL_HPP_
+#ifndef COMM_PROTOCOL_HPP_
+#define COMM_PROTOCOL_HPP_
 
 #include <iostream>
 #include <memory>
@@ -8,7 +8,7 @@
 namespace amp
 {
 
-class CANProtocol
+class CommProtocol
 {
   enum {
     MSG_CO_NMT_CTRL = 0x000,  // CANOpen NMT Message REC
@@ -45,10 +45,10 @@ class CANProtocol
   };
 
 public:
-  CANProtocol();
-  ~CANProtocol();
+  CommProtocol();
+  ~CommProtocol();
 };
 
 }  // namespace amp
 
-#endif /* CAN_PROTOCOL_HPP_ */
+#endif /* COMM_PROTOCOL_HPP_ */
