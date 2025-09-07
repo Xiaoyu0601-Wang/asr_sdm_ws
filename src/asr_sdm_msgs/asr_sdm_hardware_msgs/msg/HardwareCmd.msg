@@ -1,0 +1,1 @@
+bool cmd_received_status

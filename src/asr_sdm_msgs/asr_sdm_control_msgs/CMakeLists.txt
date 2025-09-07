@@ -20,7 +20,7 @@ find_package(std_msgs REQUIRED)
 # Message & Service
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/UnitCmd.msg"
-  "msg/RobotCmd.msg"
+  "msg/ControlCmd.msg"
   DEPENDENCIES
   std_msgs
 )

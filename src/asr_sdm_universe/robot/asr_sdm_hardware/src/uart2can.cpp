@@ -14,8 +14,8 @@ UART2CAN::UART2CAN()
 }
 
 void UART2CAN::initModules(
-  const std::string & uart_port, uint32_t uart_baudrate, uint32_t can_id, uint8_t can_frame_length,
-  uint8_t uart_frame_head, uint8_t uart_frame_tail)
+  const std::string & uart_port, uint32_t uart_baudrate, uint32_t can_id_mask,
+  uint8_t can_frame_length, uint8_t uart_frame_head, uint8_t uart_frame_tail)
 {
   uart_port_ = uart_port.c_str();
   // serial_ = serial_new();
@@ -25,7 +25,7 @@ void UART2CAN::initModules(
     RCLCPP_INFO(rclcpp::get_logger("hardware"), "serial_ttyS3_open(): %s", serial_errmsg(serial_));
   }
 
-  uart2can_frame_.can_id = can_id;
+  uart2can_frame_.can_id_mask = can_id_mask;
   uart2can_frame_.can_dlc = can_frame_length;
   uart2can_frame_.frame_head = uart_frame_head;
   uart2can_frame_.frame_tail = uart_frame_tail;
@@ -139,10 +139,10 @@ bool UART2CAN::uartTransfer(uint8_t byte_number)
 ** Function name:           setMsg
 ** Descriptions:            Set can message, such as dlc, id, dta[] and so on
 *********************************************************************************************************/
-bool UART2CAN::setMsg(uint32_t id, uint8_t rtr, uint8_t ext, uint8_t len, uint8_t * buf)
+bool UART2CAN::setMsg(uint32_t can_id, uint8_t rtr, uint8_t ext, uint8_t len, uint8_t * buf)
 {
   // printVector(buf, len, "CAN Data to send");
-  uart2can_frame_.can_id = id;
+  uart2can_frame_.can_id = uart2can_frame_.can_id_mask | can_id;
   uart2can_frame_.m_nRtr = rtr;
   uart2can_frame_.can_ext_flag = ext;
   uart2can_frame_.can_dlc = len;
@@ -153,16 +153,16 @@ bool UART2CAN::setMsg(uint32_t id, uint8_t rtr, uint8_t ext, uint8_t len, uint8_
     uart2can_frame_.frame_size = len + 8;
     data_buffer_.push_overwrite(uart2can_frame_.frame_size);
     data_buffer_.push_overwrite(ext);
-    data_buffer_.push_overwrite((uint8_t)(id >> 24));
-    data_buffer_.push_overwrite((uint8_t)(id >> 16));
-    data_buffer_.push_overwrite((uint8_t)(id >> 8));
-    data_buffer_.push_overwrite((uint8_t)(id & 0xFF));
+    data_buffer_.push_overwrite((uint8_t)(uart2can_frame_.can_id >> 24));
+    data_buffer_.push_overwrite((uint8_t)(uart2can_frame_.can_id >> 16));
+    data_buffer_.push_overwrite((uint8_t)(uart2can_frame_.can_id >> 8));
+    data_buffer_.push_overwrite((uint8_t)(uart2can_frame_.can_id & 0xFF));
   } else if (ext == CAN_STD_FRAME) {
     uart2can_frame_.frame_size = len + 6;
     data_buffer_.push_overwrite(uart2can_frame_.frame_size);
     data_buffer_.push_overwrite(ext);
-    data_buffer_.push_overwrite((uint8_t)(id >> 8));
-    data_buffer_.push_overwrite((uint8_t)(id & 0xFF));
+    data_buffer_.push_overwrite((uint8_t)(uart2can_frame_.can_id >> 8));
+    data_buffer_.push_overwrite((uint8_t)(uart2can_frame_.can_id & 0xFF));
   }
 
   for (int i = 0; i < uart2can_frame_.can_dlc; i++) {
@@ -191,10 +191,10 @@ bool UART2CAN::clearMsg(void)
   return true;
 }
 
-bool UART2CAN::sendMsg(uint32_t id, uint8_t rtr, uint8_t ext, uint8_t len, uint8_t * buf)
+bool UART2CAN::sendMsg(uint32_t can_id, uint8_t rtr, uint8_t ext, uint8_t len, uint8_t * buf)
 {
   // printVector(buf, len, "CAN Data to send");
-  setMsg(id, rtr, ext, len, buf);
+  setMsg(can_id, rtr, ext, len, buf);
   return uartTransfer(uart2can_frame_.frame_size);
 }
 
@@ -202,9 +202,9 @@ bool UART2CAN::sendMsg(uint32_t id, uint8_t rtr, uint8_t ext, uint8_t len, uint8
 ** Function name:           readMsg
 ** Descriptions:            Public function, Reads message from receive buffer.
 *********************************************************************************************************/
-uint8_t UART2CAN::readMsg(uint32_t * id, uint8_t * ext, uint8_t * len, uint8_t buf[])
-{
-  return 0x00;
-}
+// uint8_t UART2CAN::readMsg(uint32_t * id, uint8_t * ext, uint8_t * len, uint8_t buf[])
+// {
+//   return 0x00;
+// }
 
 }  // namespace amp

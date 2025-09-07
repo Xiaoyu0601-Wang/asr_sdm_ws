@@ -1,6 +1,8 @@
 #ifndef COMM_PROTOCOL_HPP_
 #define COMM_PROTOCOL_HPP_
 
+#include "asr_sdm_hardware_msgs/msg/hardware_cmd.hpp"
+
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -47,6 +49,10 @@ class CommProtocol
 public:
   CommProtocol();
   ~CommProtocol();
+
+  // bool convertProtocol(std::vector<std::vector<float>> & msg, std::vector<uint8_t> *
+  // msg_converted); void writeCANMsg(uint16_t screwUnitID, std::vector<uint8_t> & msg); void
+  // readCANMsg(uint16_t screwUnitID, std::vector<uint8_t> * msg);
 };
 
 }  // namespace amp

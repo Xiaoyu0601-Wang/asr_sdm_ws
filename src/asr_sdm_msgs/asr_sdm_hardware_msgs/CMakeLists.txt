@@ -15,6 +15,7 @@ find_package(std_msgs REQUIRED)
 # Message & Service
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/CanFrame.msg"
+  "msg/HardwareCmd.msg"
   DEPENDENCIES
   std_msgs
 )

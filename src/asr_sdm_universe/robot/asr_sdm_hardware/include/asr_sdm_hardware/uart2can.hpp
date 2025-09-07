@@ -32,8 +32,9 @@ namespace amp
 struct Uart2CanFrame
 {
   uint8_t can_ext_flag;  // Identifier Type, Extended (29 bit) or Standard (11 bit)
-  uint32_t can_id;       // CAN ID
-  uint8_t can_dlc;       // Data Length Code
+  uint32_t can_id_mask;
+  uint32_t can_id;  // CAN ID
+  uint8_t can_dlc;  // Data Length Code
   uint8_t tx_buf[8];
   uint8_t rx_buf[8];
   // uint8_t data_buffer[MAX_FRAME_DATA_LENGTH];
@@ -50,8 +51,8 @@ public:
   ~UART2CAN();
 
   void initModules(
-    const std::string & uart_port, uint32_t uart_baudrate, uint32_t can_id, uint8_t uart_buff_size,
-    uint8_t uart_data_head, uint8_t uart_data_tail);
+    const std::string & uart_port, uint32_t uart_baudrate, uint32_t can_id_mask,
+    uint8_t uart_buff_size, uint8_t uart_data_head, uint8_t uart_data_tail);
 
 private:
   serial_t * serial_;
@@ -72,13 +73,13 @@ private:
   /*************************************************************
    *  CAN operator function
    *************************************************************/
-  bool setMsg(uint32_t id, uint8_t rtr, uint8_t ext, uint8_t len, uint8_t * pData);
+  bool setMsg(uint32_t can_id, uint8_t rtr, uint8_t ext, uint8_t len, uint8_t * pData);
   bool clearMsg(void);
 
 public:
-  void uart_send(uint32_t canid, uint8_t * buf, uint8_t len);
-  bool sendMsg(uint32_t id, uint8_t rtr, uint8_t ext, uint8_t len, uint8_t * buf);
-  uint8_t readMsg(uint32_t * id, uint8_t * ext, uint8_t * len, uint8_t * buf);
+  // void uart_send(uint32_t can_id, uint8_t * buf, uint8_t len);
+  bool sendMsg(uint32_t can_id, uint8_t rtr, uint8_t ext, uint8_t len, uint8_t * buf);
+  // uint8_t readMsg(uint32_t * id, uint8_t * ext, uint8_t * len, uint8_t * buf);
 
   typedef std::unique_ptr<UART2CAN> Ptr;
 };
