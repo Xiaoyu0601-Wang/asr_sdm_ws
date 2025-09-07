@@ -26,7 +26,7 @@ using namespace std::chrono_literals;
 class AsrSdmHardwareNode : public rclcpp::Node
 {
 public:
-  AsrSdmHardwareNode() : Node("asrsdm_hardware"), count_(0), control_cmd_received_status_(false)
+  AsrSdmHardwareNode() : Node("asrsdm_hardware"), control_cmd_received_status_(false)
   {
     // Declare parameters with default values
     this->declare_parameter("uart2can.uart_port", "/dev/tty0");
@@ -83,7 +83,7 @@ public:
     // Initialize timers
     timer_heartbeat_ =
       this->create_wall_timer(1000ms, std::bind(&AsrSdmHardwareNode::timer_heartbeat, this));
-    timer_imu_ =
+    timer_hardware_ctrl_ =
       this->create_wall_timer(1000ms, std::bind(&AsrSdmHardwareNode::timer_hardware_ctrl, this));
 
     // // CAN test
@@ -127,23 +127,28 @@ private:
   }
 
   void timer_hardware_ctrl()
-  { /* Send commands to hardware */
+  {
+    /* Send commands to hardware */
     if (control_cmd_received_status_ == true) {
       // Send commands to hardware
-      std::vector<uint8_t> can_data(8);
-      for (size_t i = 0; i < 8; ++i) {
-        can_data[i] = static_cast<uint8_t>(i);
+      for (uint8_t i = 0; i < proceed_control_cmd_.size(); ++i) {
+        // std::cout << "proceed_control_cmd_[" << i << "]: ";
+        std::vector<uint8_t> can_data(8);
+        for (uint8_t j = 0; j < 8; j++) {
+          can_data[j] = static_cast<uint8_t>(j);
+        }
+        uart2can_->sendMsg(proceed_control_cmd_[i][0], 0, 0x80, 8, can_data.data());
       }
-      uart2can_->sendMsg(0x100101, 0, 0x80, 8, can_data.data());
 
+      // Clear the command buffer and reset the flag
+      proceed_control_cmd_.clear();
       control_cmd_received_status_ = false;
     }
   }
 
-  size_t count_;
-
   rclcpp::TimerBase::SharedPtr timer_heartbeat_;
   rclcpp::TimerBase::SharedPtr timer_imu_;
+  rclcpp::TimerBase::SharedPtr timer_hardware_ctrl_;
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr pub_heartbeat_;
   rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr pub_imu_;
   rclcpp::Subscription<asr_sdm_control_msgs::msg::ControlCmd>::SharedPtr sub_robot_cmd_;
