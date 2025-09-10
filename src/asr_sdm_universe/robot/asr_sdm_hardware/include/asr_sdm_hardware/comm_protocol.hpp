@@ -50,6 +50,8 @@ public:
   CommProtocol();
   ~CommProtocol();
 
+  bool setActuatorCMD(std::vector<std::vector<float>> & actuator_cmd, std::vector<uint8_t> * msg);
+
   // bool convertProtocol(std::vector<std::vector<float>> & msg, std::vector<uint8_t> *
   // msg_converted); void writeCANMsg(uint16_t screwUnitID, std::vector<uint8_t> & msg); void
   // readCANMsg(uint16_t screwUnitID, std::vector<uint8_t> * msg);

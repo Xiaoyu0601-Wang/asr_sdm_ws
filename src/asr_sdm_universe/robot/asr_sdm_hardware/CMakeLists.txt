@@ -36,7 +36,7 @@ add_library(data_structure INTERFACE)
 # ament_target_dependencies(mcp_can rclcpp)
 
 # ament_auto_add_executable(asr_sdm_hardware_node src/asr_sdm_hardware_node.cpp src/uart2can.cpp)
-add_executable(asr_sdm_hardware_node src/asr_sdm_hardware_node.cpp src/uart2can.cpp)
+add_executable(asr_sdm_hardware_node src/asr_sdm_hardware_node.cpp src/uart2can.cpp src/comm_protocol.cpp)
 target_include_directories(asr_sdm_hardware_node PUBLIC
   $<BUILD_INTERFACE:${data_structure_INCLUDE_DIRS}>
   $<INSTALL_INTERFACE:${data_structure_INCLUDE_DIRS}>

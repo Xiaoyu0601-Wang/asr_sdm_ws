@@ -11,6 +11,7 @@
 #include <vector>
 
 /* ROS2 headers */
+#include "asr_sdm_hardware/comm_protocol.hpp"
 #include "asr_sdm_hardware/uart2can.hpp"
 
 #include <rclcpp/rclcpp.hpp>
@@ -29,13 +30,13 @@ public:
   AsrSdmHardwareNode() : Node("asrsdm_hardware"), control_cmd_received_status_(false)
   {
     // Declare parameters with default values
-    this->declare_parameter("uart2can.uart_port", "/dev/tty0");
+    this->declare_parameter("uart2can.uart_port", "/tty0");
     this->declare_parameter("uart2can.uart_baudrate", 57600);
     this->declare_parameter("uart2can.can_id_mask", 0x100100);
     this->declare_parameter("uart2can.can_frame_length", 8);
     this->declare_parameter("uart2can.uart_frame_head", 0xAA);
     this->declare_parameter("uart2can.uart_frame_tail", 0xBB);
-    this->declare_parameter("imu_wheeltec_n100.uart_port", "/dev/tty1");
+    this->declare_parameter("imu_wheeltec_n100.uart_port", "/tty1");
     this->declare_parameter("imu_wheeltec_n100.uart_baudrate", 57600);
     // Get parameters
     const std::string uart2can_port =
@@ -133,11 +134,12 @@ private:
       // Send commands to hardware
       for (uint8_t i = 0; i < proceed_control_cmd_.size(); ++i) {
         // std::cout << "proceed_control_cmd_[" << i << "]: ";
-        std::vector<uint8_t> can_data(8);
+        std::vector<uint8_t> uart2can_msg;
+        comm_protocol_.setActuatorCMD(proceed_control_cmd_, &uart2can_msg);
         for (uint8_t j = 0; j < 8; j++) {
-          can_data[j] = static_cast<uint8_t>(j);
+          uart2can_msg.push_back(static_cast<uint8_t>(j));
         }
-        uart2can_->sendMsg(proceed_control_cmd_[i][0], 0, 0x80, 8, can_data.data());
+        uart2can_->sendMsg(proceed_control_cmd_[i][0], 0, 0x80, 8, uart2can_msg.data());
       }
 
       // Clear the command buffer and reset the flag
@@ -158,6 +160,7 @@ private:
   std::vector<std::vector<float>> proceed_control_cmd_;
   // asr_sdm_hardware_msgs::msg::HardwareCmd msg_hardware_cmd_;
   bool control_cmd_received_status_;
+  amp::CommProtocol comm_protocol_;
 };
 
 int main(int argc, char * argv[])
