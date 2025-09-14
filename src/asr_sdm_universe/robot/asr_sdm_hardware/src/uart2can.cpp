@@ -74,7 +74,7 @@ bool UART2CAN::uartTransfer(uint8_t byte_number)
   uint8_t popped_val;
 
   while (data_buffer_.pop(popped_val)) {
-    // std::cout << "popped_val: 0x" << std::hex << std::setw(2) << std::setfill('0')
+    // std::cout << "popped_val_head: 0x" << std::hex << std::setw(2) << std::setfill('0')
     //           << static_cast<int>(popped_val) << std::endl;
     // std::cout << "size=" << data_buffer_.size() << " (cap=" << data_buffer_.capacity() << ")"
     //           << std::endl;
@@ -82,16 +82,18 @@ bool UART2CAN::uartTransfer(uint8_t byte_number)
     // std::setfill('0')
     //           << static_cast<int>(uart2can_frame_.frame_head) << std::endl;
     if (popped_val == uart2can_frame_.frame_head) {
-      tx_buf[0] = uart2can_frame_.frame_head;
-      for (uint8_t i = 1; i < uart2can_frame_.can_dlc + 7; i++) {
+      tx_buf[0] = popped_val;
+      for (uint8_t i = 1; i < 15; i++) {
         data_buffer_.pop(popped_val);
         tx_buf[i] = popped_val;
       }
 
       /* Check for frame tail */
       data_buffer_.pop(popped_val);
+      // std::cout << "popped_val_tail: 0x" << std::hex << std::setw(2) << std::setfill('0')
+      //           << static_cast<int>(popped_val) << std::endl;
       if (popped_val == uart2can_frame_.frame_tail) {
-        tx_buf[byte_number - 1] = uart2can_frame_.frame_tail;
+        tx_buf[byte_number - 1] = popped_val;
       } else {
         continue;
       }
@@ -147,27 +149,28 @@ bool UART2CAN::setMsg(uint8_t * buf, uint8_t rtr, uint8_t ext, uint8_t len)
   uart2can_frame_.can_ext_flag = ext;
   uart2can_frame_.can_dlc = len;
 
-  data_buffer_.push_overwrite(uart2can_frame_.frame_head);
+  data_buffer_.push_overwrite(uart2can_frame_.frame_head);  // Start frame
   // std::cout << "size=" << data_buffer_.size() << " (cap=" << data_buffer_.capacity() << ")"
   //           << std::endl;
   if (ext == CAN_EXT_FRAME) {
     uart2can_frame_.frame_size = len + 5;
+    // std::cout << "uart2can_frame_.frame_size: " << static_cast<int>(uart2can_frame_.frame_size)
+    //           << std::endl;
     data_buffer_.push_overwrite(uart2can_frame_.frame_size);
     data_buffer_.push_overwrite(ext);
-    for (uint8_t i = 0; i < uart2can_frame_.frame_size; i++) {
+    for (uint8_t i = 0; i < uart2can_frame_.frame_size - 1; i++) {
       data_buffer_.push_overwrite(buf[i]);
     }
   } else if (ext == CAN_STD_FRAME) {
-    uart2can_frame_.frame_size = len + 3;
+    uart2can_frame_.frame_size = len + 2;
     data_buffer_.push_overwrite(uart2can_frame_.frame_size);
     data_buffer_.push_overwrite(ext);
-    for (uint8_t i = 0; i < uart2can_frame_.frame_size; i++) {
+    for (uint8_t i = 0; i < uart2can_frame_.frame_size - 1; i++) {
       data_buffer_.push_overwrite(buf[i]);
     }
   }
   data_buffer_.push_overwrite(uart2can_frame_.frame_tail);
-  // std::cout << "size=" << data_buffer_.size() << " (cap=" << data_buffer_.capacity() << ")"
-  //           << std::endl;
+  // std::cout << "data_buffer_.size=" << data_buffer_.size() << std::endl;
 
   return true;
 }
@@ -191,9 +194,9 @@ bool UART2CAN::clearMsg(void)
 
 bool UART2CAN::sendMsg(uint8_t * buf, uint8_t rtr, uint8_t ext, uint8_t len)
 {
-  // printVector(buf, len, "CAN Data to send");
+  // printVector(buf, len + 4, "CAN Data to send");
   setMsg(buf, rtr, ext, len);
-  return uartTransfer(uart2can_frame_.frame_size);
+  return uartTransfer(uart2can_frame_.frame_size + 3);
 }
 
 /*********************************************************************************************************

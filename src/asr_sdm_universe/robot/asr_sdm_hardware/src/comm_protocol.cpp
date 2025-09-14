@@ -36,6 +36,7 @@ bool CommProtocol::setActuatorCMD(
     msg->push_back(operation);
     msg->push_back(reg);
     if (reg == REGISTER_SCREW_VEL) {
+      // std::cout << "REGISTER_SCREW_VEL" << std::endl;
       int16_t screw1_vel = static_cast<int16_t>(actuator_cmd[i][1]);
       msg->push_back(screw1_vel >> 8);
       msg->push_back(screw1_vel & 0xFF);

@@ -114,6 +114,17 @@ private:
 
   void timer_heartbeat()
   {
+    /** Test */
+    // control_cmd_received_status_ = true;
+
+    // std::vector<int32_t> unit_cmd;
+    // unit_cmd.push_back(0x00100101);
+    // unit_cmd.push_back(0x0000010D);
+    // unit_cmd.push_back(0x0000010D);
+    // unit_cmd.push_back(0);
+    // unit_cmd.push_back(0);
+    // proceed_control_cmd_.push_back(unit_cmd);
+
     auto message = std_msgs::msg::String();
     message.data = "Hello ROS2: " + std::to_string(1);
     RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());

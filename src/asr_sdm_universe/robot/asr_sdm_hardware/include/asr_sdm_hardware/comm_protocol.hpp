@@ -16,7 +16,7 @@ class CommProtocol
 {
 public:
   enum {
-    HEADER = 0xAA,  // Header byte
+    HEADER = 0xCC,  // Header byte
     READ = 0x02,    // Read command
     WRITE = 0x03,   // Write command
   };
