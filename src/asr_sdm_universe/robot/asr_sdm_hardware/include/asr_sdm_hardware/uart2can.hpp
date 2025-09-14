@@ -24,8 +24,8 @@
 #define FRAME_TAIL_LENGTH 1
 #define MAX_FRAME_DATA_LENGTH 128
 
-#define CAN_EXT_FRAME 0x80
-#define CAN_STD_FRAME 0x00
+// #define CAN_EXT_FRAME 0x80
+// #define CAN_STD_FRAME 0x00
 
 namespace amp
 {
@@ -47,6 +47,11 @@ struct Uart2CanFrame
 class UART2CAN
 {
 public:
+  enum {
+    CAN_EXT_FRAME = 0x80,  // Header byte
+    CAN_STD_FRAME = 0x00,  // Read command
+  };
+
   UART2CAN();
   ~UART2CAN();
 
@@ -73,12 +78,12 @@ private:
   /*************************************************************
    *  CAN operator function
    *************************************************************/
-  bool setMsg(uint32_t can_id, uint8_t rtr, uint8_t ext, uint8_t len, uint8_t * pData);
+  bool setMsg(uint8_t * buf, uint8_t rtr, uint8_t ext, uint8_t len);
   bool clearMsg(void);
 
 public:
   // void uart_send(uint32_t can_id, uint8_t * buf, uint8_t len);
-  bool sendMsg(uint32_t can_id, uint8_t rtr, uint8_t ext, uint8_t len, uint8_t * buf);
+  bool sendMsg(uint8_t * buf, uint8_t rtr, uint8_t ext, uint8_t len);
   // uint8_t readMsg(uint32_t * id, uint8_t * ext, uint8_t * len, uint8_t * buf);
 
   typedef std::unique_ptr<UART2CAN> Ptr;

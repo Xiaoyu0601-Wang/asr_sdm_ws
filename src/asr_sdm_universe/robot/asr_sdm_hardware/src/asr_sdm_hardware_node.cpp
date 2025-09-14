@@ -102,7 +102,7 @@ private:
     control_cmd_received_status_ = true;
 
     for (uint8_t i = 0; i < msg_control_cmd.units_cmd.size(); i++) {
-      std::vector<float> unit_cmd;
+      std::vector<int32_t> unit_cmd;
       unit_cmd.push_back(msg_control_cmd.units_cmd[i].unit_id);
       unit_cmd.push_back(msg_control_cmd.units_cmd[i].screw1_vel);
       unit_cmd.push_back(msg_control_cmd.units_cmd[i].screw2_vel);
@@ -135,11 +135,10 @@ private:
       for (uint8_t i = 0; i < proceed_control_cmd_.size(); ++i) {
         // std::cout << "proceed_control_cmd_[" << i << "]: ";
         std::vector<uint8_t> uart2can_msg;
-        comm_protocol_.setActuatorCMD(proceed_control_cmd_, &uart2can_msg);
-        for (uint8_t j = 0; j < 8; j++) {
-          uart2can_msg.push_back(static_cast<uint8_t>(j));
-        }
-        uart2can_->sendMsg(proceed_control_cmd_[i][0], 0, 0x80, 8, uart2can_msg.data());
+        comm_protocol_.setActuatorCMD(
+          amp::CommProtocol::REGISTER_SCREW_VEL, amp::CommProtocol::WRITE, proceed_control_cmd_,
+          &uart2can_msg);
+        uart2can_->sendMsg(uart2can_msg.data(), 0, amp::UART2CAN::CAN_EXT_FRAME, 8);
       }
 
       // Clear the command buffer and reset the flag
@@ -157,7 +156,7 @@ private:
 
   amp::UART2CAN::Ptr uart2can_;
   // asr_sdm_control_msgs::msg::ControlCmd msg_robot_cmd_;
-  std::vector<std::vector<float>> proceed_control_cmd_;
+  std::vector<std::vector<int32_t>> proceed_control_cmd_;
   // asr_sdm_hardware_msgs::msg::HardwareCmd msg_hardware_cmd_;
   bool control_cmd_received_status_;
   amp::CommProtocol comm_protocol_;
