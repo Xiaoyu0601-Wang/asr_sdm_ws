@@ -77,7 +77,7 @@ public:
     // Initialize publishers and subscribers
     pub_heartbeat_ = this->create_publisher<std_msgs::msg::String>("~/hardware/heartbeat", 1);
     pub_imu_ = this->create_publisher<sensor_msgs::msg::Imu>("~/hardware/imu", 1);
-    sub_robot_cmd_ = this->create_subscription<asr_sdm_control_msgs::msg::ControlCmd>(
+    sub_control_cmd_ = this->create_subscription<asr_sdm_control_msgs::msg::ControlCmd>(
       topic_asr_sdm_cmd, rclcpp::SensorDataQoS{}.keep_last(1),
       std::bind(&AsrSdmHardwareNode::hardware_control, this, std::placeholders::_1));
 
@@ -163,7 +163,7 @@ private:
   rclcpp::TimerBase::SharedPtr timer_hardware_ctrl_;
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr pub_heartbeat_;
   rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr pub_imu_;
-  rclcpp::Subscription<asr_sdm_control_msgs::msg::ControlCmd>::SharedPtr sub_robot_cmd_;
+  rclcpp::Subscription<asr_sdm_control_msgs::msg::ControlCmd>::SharedPtr sub_control_cmd_;
 
   amp::UART2CAN::Ptr uart2can_;
   // asr_sdm_control_msgs::msg::ControlCmd msg_robot_cmd_;

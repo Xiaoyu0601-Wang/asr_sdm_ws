@@ -1,25 +1,26 @@
 #include "rclcpp/rclcpp.hpp"
 
-#include "geometry_msgs/msg/twist.hpp"
-#include "sensor_msgs/msg/joy.hpp"
+#include "asr_sdm_control_msgs/msg/control_cmd.hpp"
+#include <geometry_msgs/msg/twist.hpp>
+#include <sensor_msgs/msg/joy.hpp>
 
 class JoystickTeleop : public rclcpp::Node
 {
 public:
   JoystickTeleop() : Node("joystick_teleop")
   {
-    // 声明参数
-    this->declare_parameter<int>("linear_axis", 1);   // 左摇杆上下
-    this->declare_parameter<int>("angular_axis", 0);  // 左摇杆左右
+    // Declare parameters
+    this->declare_parameter<int>("linear_axis", 1);   // left joystick up/down
+    this->declare_parameter<int>("angular_axis", 0);  // left joystick left/right
     this->declare_parameter<double>("linear_scale", 0.5);
     this->declare_parameter<double>("angular_scale", 1.0);
 
-    // 创建订阅者
+    // Create subscriber
     joy_sub_ = this->create_subscription<sensor_msgs::msg::Joy>(
       "joy", 10, std::bind(&JoystickTeleop::joy_callback, this, std::placeholders::_1));
 
-    // 创建发布者
-    cmd_pub_ = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
+    // Create publisher
+    pub_control_cmd_ = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
 
     RCLCPP_INFO(this->get_logger(), "Joystick Teleop Node started.");
   }
@@ -41,11 +42,11 @@ private:
       twist.angular.z = msg->axes[angular_axis] * angular_scale;
     }
 
-    cmd_pub_->publish(twist);
+    pub_control_cmd_->publish(twist);
   }
 
   rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_sub_;
-  rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_pub_;
+  rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_control_cmd_;
 };
 
 int main(int argc, char * argv[])
