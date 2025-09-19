@@ -1,6 +1,6 @@
 {
     "C_Cpp.errorSquiggles": "disabled",
-    "editor.formatOnSave": false,
+    "editor.formatOnSave": true,
     "editor.defaultFormatter": "ms-vscode.cpptools",
     "files.associations": {
         "any": "cpp",
@@ -69,19 +69,6 @@
         "thread": "cpp",
         "cinttypes": "cpp",
         "typeindex": "cpp",
-        "typeinfo": "cpp",
-        "variant": "cpp",
-        "strstream": "cpp",
-        "bitset": "cpp",
-        "cfenv": "cpp",
-        "codecvt": "cpp",
-        "list": "cpp",
-        "hash_map": "cpp",
-        "hash_set": "cpp",
-        "slist": "cpp",
-        "fstream": "cpp",
-        "ranges": "cpp",
-        "shared_mutex": "cpp",
-        "valarray": "cpp"
+        "typeinfo": "cpp"
     }
 }
