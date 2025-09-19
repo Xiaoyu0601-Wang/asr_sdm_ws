@@ -9,6 +9,28 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(cv_bridge REQUIRED)
+find_package(OpenCV REQUIRED)
+
+add_executable(asr_sdm_video_enhancement src/asr_sdm_video_enhancement.cpp)
+
+target_include_directories(asr_sdm_video_enhancement
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+
+ament_target_dependencies(
+  asr_sdm_video_enhancement
+  rclcpp sensor_msgs
+  cv_bridge
+  OpenCV)
+
+install(TARGETS
+  asr_sdm_video_enhancement
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
