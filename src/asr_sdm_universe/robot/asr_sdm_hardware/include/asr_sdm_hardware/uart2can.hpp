@@ -63,7 +63,8 @@ private:
   serial_t * serial_;
   Uart2CanFrame uart2can_frame_;
   const char * uart_port_;
-  CircularQueue<uint8_t> data_buffer_;
+  CircularQueue<uint8_t> data_txbuffer_;
+  CircularQueue<uint8_t> data_rxbuffer_;
 
   /*************************************************************
    *  uart driver function
@@ -84,9 +85,10 @@ private:
 public:
   // void uart_send(uint32_t can_id, uint8_t * buf, uint8_t len);
   bool sendMsg(uint8_t * buf, uint8_t rtr, uint8_t ext, uint8_t len);
-  // uint8_t readMsg(uint32_t * id, uint8_t * ext, uint8_t * len, uint8_t * buf);
+  bool readMsg(
+    uint8_t * buf, uint8_t rtr, uint8_t ext, uint8_t len, std::vector<uint8_t> * buf_out);
 
-  typedef std::unique_ptr<UART2CAN> Ptr;
+  typedef std::shared_ptr<UART2CAN> Ptr;
 };
 
 }  // namespace amp

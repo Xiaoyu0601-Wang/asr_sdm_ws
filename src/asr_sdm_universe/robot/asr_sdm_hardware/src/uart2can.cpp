@@ -8,7 +8,9 @@ namespace amp
 {
 
 UART2CAN::UART2CAN()
-: serial_(serial_new()), data_buffer_(MAX_FRAME_DATA_LENGTH)  // initialize with desired capacity
+: serial_(serial_new()),
+  data_txbuffer_(MAX_FRAME_DATA_LENGTH),
+  data_rxbuffer_(MAX_FRAME_DATA_LENGTH)  // initialize with desired capacity
 
 {
 }
@@ -73,10 +75,10 @@ bool UART2CAN::uartTransfer(uint8_t byte_number)
   std::vector<uint8_t> tx_buf(byte_number);
   uint8_t popped_val;
 
-  while (data_buffer_.pop(popped_val)) {
+  while (data_txbuffer_.pop(popped_val)) {
     // std::cout << "popped_val_head: 0x" << std::hex << std::setw(2) << std::setfill('0')
     //           << static_cast<int>(popped_val) << std::endl;
-    // std::cout << "size=" << data_buffer_.size() << " (cap=" << data_buffer_.capacity() << ")"
+    // std::cout << "size=" << data_txbuffer_.size() << " (cap=" << data_txbuffer_.capacity() << ")"
     //           << std::endl;
     // std::cout << "uart2can_frame_.frame_head: 0x" << std::hex << std::setw(2) <<
     // std::setfill('0')
@@ -84,12 +86,12 @@ bool UART2CAN::uartTransfer(uint8_t byte_number)
     if (popped_val == uart2can_frame_.frame_head) {
       tx_buf[0] = popped_val;
       for (uint8_t i = 1; i < 15; i++) {
-        data_buffer_.pop(popped_val);
+        data_txbuffer_.pop(popped_val);
         tx_buf[i] = popped_val;
       }
 
       /* Check for frame tail */
-      data_buffer_.pop(popped_val);
+      data_txbuffer_.pop(popped_val);
       // std::cout << "popped_val_tail: 0x" << std::hex << std::setw(2) << std::setfill('0')
       //           << static_cast<int>(popped_val) << std::endl;
       if (popped_val == uart2can_frame_.frame_tail) {
@@ -149,28 +151,28 @@ bool UART2CAN::setMsg(uint8_t * buf, uint8_t rtr, uint8_t ext, uint8_t len)
   uart2can_frame_.can_ext_flag = ext;
   uart2can_frame_.can_dlc = len;
 
-  data_buffer_.push_overwrite(uart2can_frame_.frame_head);  // Start frame
-  // std::cout << "size=" << data_buffer_.size() << " (cap=" << data_buffer_.capacity() << ")"
+  data_txbuffer_.push_overwrite(uart2can_frame_.frame_head);  // Start frame
+  // std::cout << "size=" << data_txbuffer_.size() << " (cap=" << data_txbuffer_.capacity() << ")"
   //           << std::endl;
   if (ext == CAN_EXT_FRAME) {
     uart2can_frame_.frame_size = len + 5;
     // std::cout << "uart2can_frame_.frame_size: " << static_cast<int>(uart2can_frame_.frame_size)
     //           << std::endl;
-    data_buffer_.push_overwrite(uart2can_frame_.frame_size);
-    data_buffer_.push_overwrite(ext);
+    data_txbuffer_.push_overwrite(uart2can_frame_.frame_size);
+    data_txbuffer_.push_overwrite(ext);
     for (uint8_t i = 0; i < uart2can_frame_.frame_size - 1; i++) {
-      data_buffer_.push_overwrite(buf[i]);
+      data_txbuffer_.push_overwrite(buf[i]);
     }
   } else if (ext == CAN_STD_FRAME) {
     uart2can_frame_.frame_size = len + 2;
-    data_buffer_.push_overwrite(uart2can_frame_.frame_size);
-    data_buffer_.push_overwrite(ext);
+    data_txbuffer_.push_overwrite(uart2can_frame_.frame_size);
+    data_txbuffer_.push_overwrite(ext);
     for (uint8_t i = 0; i < uart2can_frame_.frame_size - 1; i++) {
-      data_buffer_.push_overwrite(buf[i]);
+      data_txbuffer_.push_overwrite(buf[i]);
     }
   }
-  data_buffer_.push_overwrite(uart2can_frame_.frame_tail);
-  // std::cout << "data_buffer_.size=" << data_buffer_.size() << std::endl;
+  data_txbuffer_.push_overwrite(uart2can_frame_.frame_tail);
+  // std::cout << "data_txbuffer_.size=" << data_txbuffer_.size() << std::endl;
 
   return true;
 }
@@ -203,9 +205,23 @@ bool UART2CAN::sendMsg(uint8_t * buf, uint8_t rtr, uint8_t ext, uint8_t len)
 ** Function name:           readMsg
 ** Descriptions:            Public function, Reads message from receive buffer.
 *********************************************************************************************************/
-// uint8_t UART2CAN::readMsg(uint32_t * id, uint8_t * ext, uint8_t * len, uint8_t buf[])
-// {
-//   return 0x00;
-// }
+bool UART2CAN::readMsg(
+  uint8_t * buf, uint8_t rtr, uint8_t ext, uint8_t len, std::vector<uint8_t> * buf_out)
+{
+  if (buf_out == nullptr) {
+    return false;
+  }
+
+  setMsg(buf, rtr, ext, len);
+  uartTransfer(uart2can_frame_.frame_size + 3);
+
+  // Simulate reading a message into buf_out
+  buf_out->clear();
+  for (uint8_t i = 0; i < len; ++i) {
+    buf_out->push_back(buf[i]);
+  }
+  // printVector(buf_out->data(), buf_out->size(), "CAN Data read");
+  return true;
+}
 
 }  // namespace amp

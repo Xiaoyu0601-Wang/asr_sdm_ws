@@ -31,6 +31,7 @@ public:
     REGISTER_JOINT_POS = 0x02,
     REGISTER_JOINT_VEL = 0x03,
     REGISTER_JOINT_TORQUE = 0x04,
+    REGISTER_IMU_RAW = 0x05,
     // MSG_GET_ENCODER_ERROR,
     // MSG_GET_SENSORLESS_ERROR,
     // MSG_SET_AXIS_NODE_ID,
@@ -60,9 +61,10 @@ public:
     // MSG_CO_HEARTBEAT_CMD = 0x700,  // CANOpen NMT Heartbeat  SEND
   };
 
-  CommProtocol();
+  CommProtocol(amp::UART2CAN::Ptr device);
   ~CommProtocol();
 
+  bool getIMU(std::vector<uint8_t> * msg);
   bool setActuatorCMD(
     uint8_t reg, uint8_t operation, std::vector<std::vector<int32_t>> & actuator_cmd,
     std::vector<uint8_t> * msg);
@@ -70,6 +72,8 @@ public:
   // bool convertProtocol(std::vector<std::vector<float>> & msg, std::vector<uint8_t> *
   // msg_converted); void writeCANMsg(uint16_t screwUnitID, std::vector<uint8_t> & msg); void
   // readCANMsg(uint16_t screwUnitID, std::vector<uint8_t> * msg);
+private:
+  UART2CAN::Ptr device_;
 };
 
 }  // namespace amp

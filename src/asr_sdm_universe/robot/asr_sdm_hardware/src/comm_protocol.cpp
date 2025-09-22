@@ -2,12 +2,37 @@
 
 namespace amp
 {
-CommProtocol::CommProtocol()
+CommProtocol::CommProtocol(amp::UART2CAN::Ptr device) : device_(device)
 {
 }
 
 CommProtocol::~CommProtocol()
 {
+}
+
+bool CommProtocol::getIMU(std::vector<uint8_t> * msg)
+{
+  if (msg == nullptr) {
+    return false;
+  }
+
+  // Clear the message vector
+  msg->clear();
+
+  msg->push_back(HEADER);
+  msg->push_back(HEADER);
+  msg->push_back(READ);
+  msg->push_back(REGISTER_IMU_RAW);
+  // Pad the message to ensure it has exactly 8 bytes
+  while (msg->size() < 8) {
+    msg->push_back(0x00);
+  }
+
+  // Send the message via UART2CAN
+  std::vector<uint8_t> imu_msg;
+  device_->readMsg(msg->data(), 0, UART2CAN::CAN_EXT_FRAME, 8, &imu_msg);
+
+  return true;
 }
 
 bool CommProtocol::setActuatorCMD(

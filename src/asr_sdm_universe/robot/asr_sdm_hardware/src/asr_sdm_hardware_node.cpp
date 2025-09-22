@@ -27,7 +27,8 @@ using namespace std::chrono_literals;
 class AsrSdmHardwareNode : public rclcpp::Node
 {
 public:
-  AsrSdmHardwareNode() : Node("asrsdm_hardware"), control_cmd_received_status_(false)
+  AsrSdmHardwareNode()
+  : Node("asrsdm_hardware"), control_cmd_received_status_(false), comm_protocol_(uart2can_)
   {
     // Declare parameters with default values
     this->declare_parameter("uart2can.uart_port", "/tty0");
