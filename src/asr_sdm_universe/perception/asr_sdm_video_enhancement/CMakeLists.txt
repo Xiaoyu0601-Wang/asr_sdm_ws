@@ -19,13 +19,22 @@ target_include_directories(asr_sdm_video_enhancement
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
+    ${cv_bridge_INCLUDE_DIRS}
+    ${OpenCV_INCLUDE_DIRS}
 )
 
-ament_target_dependencies(
-  asr_sdm_video_enhancement
-  rclcpp sensor_msgs
-  cv_bridge
-  OpenCV)
+target_link_libraries(asr_sdm_video_enhancement PUBLIC
+  ${sensor_msgs_TARGETS}
+  rclcpp::rclcpp
+  ${cv_bridge_TARGETS}
+  ${OpenCV_LIBRARIES}
+)
+
+# ament_target_dependencies(
+#   asr_sdm_video_enhancement
+#   rclcpp sensor_msgs
+#   cv_bridge
+#   OpenCV)
 
 install(TARGETS
   asr_sdm_video_enhancement
