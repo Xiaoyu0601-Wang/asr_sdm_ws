@@ -89,6 +89,7 @@ bool CommProtocol::setActuatorCMD(
     // msg->push_back(joint2_pos & 0xFF);
   }
 
+  device_->sendMsg(msg->data(), 0, amp::UART2CAN::CAN_EXT_FRAME, 8);
   return true;
 }
 // // Pad the message to ensure it has exactly 8 bytes
