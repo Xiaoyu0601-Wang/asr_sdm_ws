@@ -1,3 +1,12 @@
+# CAN ID Structure
+
+EXT CAN Frame, 4 Bytes:
+
+|         | MSB (High) |          |         | LSB (Low)             |
+| ------- | ---------- | -------- | ------- | --------------------- |
+| Btyes   | Empty      | Robot ID | Unit ID | Device ID in the Unit |
+| Example | 0x00       | 0x01     | 0x01    | 0x01                  |
+
 # ASRSDM Control Table
 
 The Dynamixel Control Table is a structured set of data that defines the configuration, status, and control parameters of a Dynamixel actuator. Below is an overview of the key components:
