@@ -61,7 +61,7 @@ public:
     // MSG_CO_HEARTBEAT_CMD = 0x700,  // CANOpen NMT Heartbeat  SEND
   };
 
-  CommProtocol(amp::UART2CAN::Ptr device);
+  CommProtocol(UART2CAN::Ptr device);
   ~CommProtocol();
 
   bool getIMU(std::vector<uint8_t> * msg);

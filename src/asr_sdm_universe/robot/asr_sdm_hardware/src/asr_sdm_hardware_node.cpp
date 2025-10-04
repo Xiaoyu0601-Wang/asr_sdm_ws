@@ -27,8 +27,7 @@ using namespace std::chrono_literals;
 class AsrSdmHardwareNode : public rclcpp::Node
 {
 public:
-  AsrSdmHardwareNode()
-  : Node("asrsdm_hardware"), control_cmd_received_status_(false), comm_protocol_(uart2can_)
+  AsrSdmHardwareNode() : Node("asrsdm_hardware"), control_cmd_received_status_(false)
   {
     // Declare parameters with default values
     this->declare_parameter("uart2can.uart_port", "/tty0");
@@ -69,6 +68,8 @@ public:
     uart2can_->initModules(
       uart2can_port, uart2can_baudrate, uart2can_can_id_mask, uart2can_can_frame_length,
       uart2can_uart_frame_head, uart2can_uart_frame_tail);
+
+    comm_protocol_ = std::make_unique<amp::CommProtocol>(uart2can_);
 
     // Declare the topic name parameter with default value
     this->declare_parameter<std::string>("topic_asr_sdm_cmd", "~/input/asr_sdm_cmd");
@@ -119,11 +120,11 @@ private:
     // control_cmd_received_status_ = true;
 
     // std::vector<int32_t> unit_cmd;
-    // unit_cmd.push_back(0x00100101);
-    // unit_cmd.push_back(0x0000010D);
-    // unit_cmd.push_back(0x0000010D);
-    // unit_cmd.push_back(0);
-    // unit_cmd.push_back(0);
+    // unit_cmd.push_back(0x00010101);
+    // unit_cmd.push_back(0x00000102);
+    // unit_cmd.push_back(0x00000304);
+    // unit_cmd.push_back(0x00000506);
+    // unit_cmd.push_back(0x00000708);
     // proceed_control_cmd_.push_back(unit_cmd);
 
     auto message = std_msgs::msg::String();
@@ -147,10 +148,10 @@ private:
       for (uint8_t i = 0; i < proceed_control_cmd_.size(); ++i) {
         // std::cout << "proceed_control_cmd_[" << i << "]: ";
         std::vector<uint8_t> uart2can_msg;
-        comm_protocol_.setActuatorCMD(
+        comm_protocol_->setActuatorCMD(
           amp::CommProtocol::REGISTER_SCREW_VEL, amp::CommProtocol::WRITE, proceed_control_cmd_,
           &uart2can_msg);
-        uart2can_->sendMsg(uart2can_msg.data(), 0, amp::UART2CAN::CAN_EXT_FRAME, 8);
+        // uart2can_->sendMsg(uart2can_msg.data(), 0, amp::UART2CAN::CAN_EXT_FRAME, 8);
       }
 
       // Clear the command buffer and reset the flag
@@ -171,7 +172,7 @@ private:
   std::vector<std::vector<int32_t>> proceed_control_cmd_;
   // asr_sdm_hardware_msgs::msg::HardwareCmd msg_hardware_cmd_;
   bool control_cmd_received_status_;
-  amp::CommProtocol comm_protocol_;
+  std::unique_ptr<amp::CommProtocol> comm_protocol_;
 };
 
 int main(int argc, char * argv[])
