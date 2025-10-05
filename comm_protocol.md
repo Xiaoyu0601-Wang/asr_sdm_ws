@@ -7,11 +7,20 @@ EXT CAN Frame, 4 Bytes:
 | Btyes   | Empty      | Robot ID | Unit ID | Device ID in the Unit |
 | Example | 0x00       | 0x01     | 0x01    | 0x01                  |
 
+# CAN Message Frame
+| data(uint8_t)   | msg[0] | msg[1] | msg[2]      | msg[3]   | msg[4~7]                  |
+| --------------- | ------ | ------ | ----------- | -------- | ------------------------- |
+| frame structure | header | header | Instruction | Register | Data: msg[4]=H ~ msg[7]=L |
+| Example         | 0xCC   | 0xCC   | Operation   | Register | ---                       |
+*Operation: READ = 0x02; WRITE = 0x03.
+
 # ASRSDM Control Table
 
-The Dynamixel Control Table is a structured set of data that defines the configuration, status, and control parameters of a Dynamixel actuator. Below is an overview of the key components:
+The register is a structured set of data that defines the configuration, status, and control parameters of an unit. Below is an overview of the key components:
 
 ## CAN Control Table Overview
+
+## Register
 
 | Address | Name                  | Description                    | Access | Default Value | Type/Range |
 | ------- | --------------------- | ------------------------------ | ------ | ------------- | ---------- |
