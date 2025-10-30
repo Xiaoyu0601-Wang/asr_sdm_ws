@@ -10,6 +10,39 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(data_structure REQUIRED)
+find_package(periphery REQUIRED)
+
+include_directories(
+  include
+  /usr/local/include
+)
+
+# # Declare a header-only "library"
+add_library(data_structure INTERFACE)
+
+add_executable(asr_sdm_imu_hiwonder_10axis_node src/asr_sdm_imu_hiwonder_10axis_node.cpp)
+target_include_directories(asr_sdm_imu_hiwonder_10axis_node PUBLIC
+  $<BUILD_INTERFACE:${data_structure_INCLUDE_DIRS}>
+  $<INSTALL_INTERFACE:${data_structure_INCLUDE_DIRS}>
+)
+target_link_libraries(asr_sdm_imu_hiwonder_10axis_node PUBLIC
+  ${std_msgs_TARGETS}
+  ${sensor_msgs_TARGETS}
+  data_structure
+  rclcpp::rclcpp
+  periphery
+)
+
+install(TARGETS
+  asr_sdm_imu_hiwonder_10axis_node
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+# install(
+#   DIRECTORY config
+#   DESTINATION share/${PROJECT_NAME}
+# )
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
