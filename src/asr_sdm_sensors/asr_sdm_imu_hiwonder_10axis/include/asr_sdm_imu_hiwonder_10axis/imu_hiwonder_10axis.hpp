@@ -1,5 +1,5 @@
-#ifndef HIWONDER_10AXIS_HPP_
-#define HIWONDER_10AXIS_HPP_
+#ifndef IMU_HIWONDER_10AXIS_HPP_
+#define IMU_HIWONDER_10AXIS_HPP_
 
 #include <iostream>
 #include <memory>
@@ -17,11 +17,11 @@
 
 namespace amp
 {
-class HiWonderIMU
+class ImuHiWonder10Axis
 {
 public:
-  HiWonderIMU();
-  ~HiWonderIMU();
+  ImuHiWonder10Axis();
+  ~ImuHiWonder10Axis();
 
   void initModules(const std::string & uart_port, uint32_t uart_baudrate);
   void ImuLoopCallback();
@@ -46,8 +46,8 @@ private:
   const char * uart_port_;
   CircularQueue<uint8_t> data_rxbuffer_;
 
-  typedef std::shared_ptr<HiWonderIMU> Ptr;
+  typedef std::shared_ptr<ImuHiWonder10Axis> Ptr;
 };
 }  // namespace amp
 
-#endif /* HIWONDER_10AXIS_HPP_ */
+#endif /* IMU_HIWONDER_10AXIS_HPP_ */

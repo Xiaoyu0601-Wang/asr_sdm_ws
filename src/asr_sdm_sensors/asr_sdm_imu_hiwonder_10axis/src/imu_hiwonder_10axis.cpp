@@ -1,16 +1,16 @@
-#include "asr_sdm_imu_hiwonder_10axis/hiwonder_10axis.hpp"
+#include "asr_sdm_imu_hiwonder_10axis/imu_hiwonder_10axis.hpp"
 
 namespace amp
 {
-HiWonderIMU::HiWonderIMU(UART2CAN::Ptr device) : device_(device)
+ImuHiWonder10Axis::ImuHiWonder10Axis(UART2CAN::Ptr device) : device_(device)
 {
 }
 
-HiWonderIMU::~HiWonderIMU()
+ImuHiWonder10Axis::~ImuHiWonder10Axis()
 {
 }
 
-void HiWonderIMU::initModules(
+void ImuHiWonder10Axis::initModules(
   const std::string & uart_port, uint32_t uart_baudrate, uint8_t uart_frame_head,
   uint8_t uart_frame_tail)
 {
@@ -22,7 +22,7 @@ void HiWonderIMU::initModules(
   }
 }
 
-void HiWonderIMU::ImuLoopCallback()
+void ImuHiWonder10Axis::ImuLoopCallback()
 {
   std::vector<uint8_t> buff;
   while (running_) {
