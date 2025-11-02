@@ -15,6 +15,7 @@
   <depend>asr_sdm_control_msgs</depend>
   <depend>asr_sdm_hardware_msgs</depend>
   <depend>data_structure</depend>
+  <depend>asr_sdm_imu_hiwonder_10axis</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

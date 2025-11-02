@@ -9,7 +9,6 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-# ===================================================
 # Dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
@@ -18,41 +17,31 @@ find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(asr_sdm_control_msgs REQUIRED)
 find_package(asr_sdm_hardware_msgs REQUIRED)
+find_package(asr_sdm_imu_hiwonder_10axis REQUIRED)
 find_package(data_structure REQUIRED)
 find_package(periphery REQUIRED)
 
 include_directories(
   include
-  # ${GPIOD_INCLUDE_DIRS}
   /usr/local/include
-  # data_structure_INCLUDE_DIRS
+  ${asr_sdm_imu_hiwonder_10axis_INCLUDE_DIRS}
+  ${data_structure_INCLUDE_DIRS}
 )
 
-# # Declare a header-only "library"
-add_library(data_structure INTERFACE)
-
-# add_executable(mcp_can src/mcp_can.cpp)
-# target_link_libraries(mcp_can ${MRAA_LIB})
-# ament_target_dependencies(mcp_can rclcpp)
-
-# ament_auto_add_executable(asr_sdm_hardware_node src/asr_sdm_hardware_node.cpp src/uart2can.cpp)
-add_executable(asr_sdm_hardware_node src/asr_sdm_hardware_node.cpp src/uart2can.cpp src/comm_protocol.cpp)
-target_include_directories(asr_sdm_hardware_node PUBLIC
-  $<BUILD_INTERFACE:${data_structure_INCLUDE_DIRS}>
-  $<INSTALL_INTERFACE:${data_structure_INCLUDE_DIRS}>
-)
-target_link_libraries(asr_sdm_hardware_node PUBLIC
-  ${asr_sdm_control_msgs_TARGETS}
-  ${asr_sdm_hardware_msgs_TARGETS}
+add_executable(${PROJECT_NAME} src/asr_sdm_hardware_node.cpp src/uart2can.cpp src/comm_protocol.cpp)
+target_link_libraries(${PROJECT_NAME} PUBLIC
+  rclcpp::rclcpp
   ${std_msgs_TARGETS}
   ${sensor_msgs_TARGETS}
-  data_structure
-  rclcpp::rclcpp
-  periphery#::periphery
+  ${asr_sdm_control_msgs_TARGETS}
+  ${asr_sdm_hardware_msgs_TARGETS}
+  ${asr_sdm_imu_hiwonder_10axis_TARGETS}  # asr_sdm_imu_hiwonder_10axis
+  data_structure::data_structure
+  periphery
 )
 
 install(TARGETS
-  asr_sdm_hardware_node
+  ${PROJECT_NAME}
   DESTINATION lib/${PROJECT_NAME}
 )
 

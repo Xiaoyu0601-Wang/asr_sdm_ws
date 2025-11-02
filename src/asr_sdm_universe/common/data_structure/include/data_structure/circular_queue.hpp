@@ -1,3 +1,6 @@
+#ifndef CIRCULAR_QUEUE_HPP_
+#define CIRCULAR_QUEUE_HPP_
+
 #include <iomanip>
 #include <iostream>
 #include <sstream>
@@ -95,6 +98,8 @@ private:
   size_t tail_ = 0;  // Current oldest element position
   size_t count_ = 0;
 };
+
+#endif  // CIRCULAR_QUEUE_HPP
 
 // Example usage
 // int main()

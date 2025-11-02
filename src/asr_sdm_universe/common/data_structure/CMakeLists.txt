@@ -7,25 +7,31 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-find_package(rclcpp REQUIRED)
 
-# # Declare a header-only "library"
-# add_library(${PROJECT_NAME} INTERFACE)
-
-# target_include_directories(${PROJECT_NAME} INTERFACE
-#   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-#   $<INSTALL_INTERFACE:include>
-# )
-
-install(
-  DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION include/${PROJECT_NAME}
+# Include headers
+include_directories(
+  include
 )
 
-# # Install the "library target"
-# install(TARGETS ${PROJECT_NAME}
-#   EXPORT export_${PROJECT_NAME}
-# )
+# Declare a header-only "library"
+add_library(${PROJECT_NAME} INTERFACE)
+
+target_include_directories(${PROJECT_NAME} INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
+# export the interface target so other packages can link against `data_structure`
+install(TARGETS ${PROJECT_NAME}
+  EXPORT "export_${PROJECT_NAME}"
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION lib
+  INCLUDES DESTINATION include
+)
+
+# Install public headers
+install(DIRECTORY include/ DESTINATION include)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -39,5 +45,7 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-ament_export_include_directories(include)
+# ament_export_include_directories(include)
+#ament_export_libraries(${PROJECT_NAME})
+ament_export_targets("export_${PROJECT_NAME}")
 ament_package()

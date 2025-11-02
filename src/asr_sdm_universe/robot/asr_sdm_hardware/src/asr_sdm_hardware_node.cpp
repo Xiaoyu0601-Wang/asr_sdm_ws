@@ -13,6 +13,7 @@
 /* ROS2 headers */
 #include "asr_sdm_hardware/comm_protocol.hpp"
 #include "asr_sdm_hardware/uart2can.hpp"
+#include "asr_sdm_imu_hiwonder_10axis/imu_hiwonder_10axis.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -36,8 +37,11 @@ public:
     this->declare_parameter("uart2can.can_frame_length", 8);
     this->declare_parameter("uart2can.uart_frame_head", 0xAA);
     this->declare_parameter("uart2can.uart_frame_tail", 0xBB);
-    this->declare_parameter("imu_wheeltec_n100.uart_port", "/tty1");
-    this->declare_parameter("imu_wheeltec_n100.uart_baudrate", 57600);
+
+    this->declare_parameter("imu.enable", false);
+    this->declare_parameter("imu.imu_name", "no_device_found");
+    this->declare_parameter("imu.uart_port", "/tty1");
+    this->declare_parameter("imu.uart_baudrate", 57600);
     // Get parameters
     const std::string uart2can_port =
       this->get_parameter("uart2can.uart_port").get_parameter_value().get<std::string>();
@@ -55,13 +59,16 @@ public:
       this->get_logger(), "UART2CAN Port: %s, Baudrate: %u, CAN_ID: %x", uart2can_port.c_str(),
       uart2can_baudrate, uart2can_can_id_mask);
 
-    const std::string imu_wheeltec_n100_port =
-      this->get_parameter("imu_wheeltec_n100.uart_port").get_parameter_value().get<std::string>();
-    const uint32_t imu_wheeltec_n100_baudrate =
-      this->get_parameter("imu_wheeltec_n100.uart_baudrate").get_parameter_value().get<uint32_t>();
+    const std::string imu_name =
+      this->get_parameter("imu.imu_name").get_parameter_value().get<std::string>();
+    const bool imu_enable = this->get_parameter("imu.enable").get_parameter_value().get<bool>();
+    const std::string imu_port =
+      this->get_parameter("imu.uart_port").get_parameter_value().get<std::string>();
+    const uint32_t imu_baudrate =
+      this->get_parameter("imu.uart_baudrate").get_parameter_value().get<uint32_t>();
     RCLCPP_INFO(
-      this->get_logger(), "IMU Wheeltec N100 Port: %s, Baudrate: %u",
-      imu_wheeltec_n100_port.c_str(), imu_wheeltec_n100_baudrate);
+      this->get_logger(), "IMU name: %s, IMU Port: %s, Baudrate: %u", imu_name.c_str(),
+      imu_port.c_str(), imu_baudrate);
 
     // Initialize UART2CAN instance
     uart2can_.reset(new amp::UART2CAN);
@@ -70,6 +77,12 @@ public:
       uart2can_uart_frame_head, uart2can_uart_frame_tail);
 
     comm_protocol_ = std::make_unique<amp::CommProtocol>(uart2can_);
+
+    // Initialize IMU instance
+    if (imu_enable) {
+      imu_hiwonder_10axis_.reset(new amp::ImuHiWonder10Axis);
+      imu_hiwonder_10axis_->initModules(imu_port, imu_baudrate);
+    }
 
     // Declare the topic name parameter with default value
     this->declare_parameter<std::string>("topic_asr_sdm_cmd", "~/input/asr_sdm_cmd");
@@ -135,6 +148,7 @@ private:
 
   void timer_imu()
   {
+    imu_hiwonder_10axis_->readImuData();
     auto message = sensor_msgs::msg::Imu();
     // Fill the IMU message with data
     pub_imu_->publish(message);
@@ -168,11 +182,13 @@ private:
   rclcpp::Subscription<asr_sdm_control_msgs::msg::ControlCmd>::SharedPtr sub_control_cmd_;
 
   amp::UART2CAN::Ptr uart2can_;
+  std::unique_ptr<amp::CommProtocol> comm_protocol_;
+  std::unique_ptr<amp::ImuHiWonder10Axis> imu_hiwonder_10axis_;
+
   // asr_sdm_control_msgs::msg::ControlCmd msg_robot_cmd_;
   std::vector<std::vector<int32_t>> proceed_control_cmd_;
   // asr_sdm_hardware_msgs::msg::HardwareCmd msg_hardware_cmd_;
   bool control_cmd_received_status_;
-  std::unique_ptr<amp::CommProtocol> comm_protocol_;
 };
 
 int main(int argc, char * argv[])

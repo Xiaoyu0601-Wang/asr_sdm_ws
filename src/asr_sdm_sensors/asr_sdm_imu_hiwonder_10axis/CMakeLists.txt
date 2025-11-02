@@ -8,41 +8,35 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(std_msgs REQUIRED)
-find_package(sensor_msgs REQUIRED)
 find_package(data_structure REQUIRED)
 find_package(periphery REQUIRED)
 
 include_directories(
   include
   /usr/local/include
+  ${data_structure_INCLUDE_DIRS}
 )
 
-# # Declare a header-only "library"
-add_library(data_structure INTERFACE)
-
-add_executable(asr_sdm_imu_hiwonder_10axis_node src/asr_sdm_imu_hiwonder_10axis_node.cpp)
-target_include_directories(asr_sdm_imu_hiwonder_10axis_node PUBLIC
-  $<BUILD_INTERFACE:${data_structure_INCLUDE_DIRS}>
-  $<INSTALL_INTERFACE:${data_structure_INCLUDE_DIRS}>
+# library for IMU driver implementation
+add_library(${PROJECT_NAME} SHARED
+  src/imu_hiwonder_10axis.cpp
 )
-target_link_libraries(asr_sdm_imu_hiwonder_10axis_node PUBLIC
-  ${std_msgs_TARGETS}
-  ${sensor_msgs_TARGETS}
-  data_structure
+target_link_libraries(${PROJECT_NAME} PUBLIC
   rclcpp::rclcpp
+  data_structure::data_structure
   periphery
 )
 
-install(TARGETS
-  asr_sdm_imu_hiwonder_10axis_node
+install(TARGETS ${PROJECT_NAME}
   DESTINATION lib/${PROJECT_NAME}
+  EXPORT export_${PROJECT_NAME} # Recommended to use a different export name
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin # For shared libraries
 )
 
-# install(
-#   DIRECTORY config
-#   DESTINATION share/${PROJECT_NAME}
-# )
+# install headers
+install(DIRECTORY include/ DESTINATION include)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -56,4 +50,7 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
+ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
+# ament_export_dependencies(ament_cmake)
+ament_export_include_directories(include)
 ament_package()

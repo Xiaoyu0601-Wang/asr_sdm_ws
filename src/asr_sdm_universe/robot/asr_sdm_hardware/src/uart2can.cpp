@@ -24,7 +24,8 @@ void UART2CAN::initModules(
 
   /* Open /dev/ttyS3 with baudrate 115200, and defaults of 8N1, no flow control */
   if (serial_open(serial_, uart_port_, uart_baudrate) < 0) {
-    RCLCPP_INFO(rclcpp::get_logger("hardware"), "serial_ttyS3_open(): %s", serial_errmsg(serial_));
+    RCLCPP_ERROR(
+      rclcpp::get_logger("hardware"), "Serial port %s: %s", uart_port_, serial_errmsg(serial_));
   }
 
   uart2can_frame_.can_id_mask = can_id_mask;
