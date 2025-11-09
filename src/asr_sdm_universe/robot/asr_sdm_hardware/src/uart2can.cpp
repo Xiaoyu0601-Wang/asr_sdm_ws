@@ -11,7 +11,6 @@ UART2CAN::UART2CAN()
 : serial_(serial_new()),
   data_txbuffer_(MAX_FRAME_DATA_LENGTH),
   data_rxbuffer_(MAX_FRAME_DATA_LENGTH)  // initialize with desired capacity
-
 {
 }
 

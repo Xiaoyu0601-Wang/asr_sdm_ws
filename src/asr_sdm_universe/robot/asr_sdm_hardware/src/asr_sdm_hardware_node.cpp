@@ -98,9 +98,12 @@ public:
 
     // Initialize timers
     timer_heartbeat_ =
-      this->create_wall_timer(1000ms, std::bind(&AsrSdmHardwareNode::timer_heartbeat, this));
+      this->create_wall_timer(2000ms, std::bind(&AsrSdmHardwareNode::timer_heartbeat, this));
     timer_hardware_ctrl_ =
       this->create_wall_timer(1000ms, std::bind(&AsrSdmHardwareNode::timer_hardware_ctrl, this));
+    if (imu_enable) {
+      timer_imu_ = this->create_wall_timer(500ms, std::bind(&AsrSdmHardwareNode::timer_imu, this));
+    }
 
     // // CAN test
     // std::vector<uint8_t> can_data(8);
@@ -148,10 +151,12 @@ private:
 
   void timer_imu()
   {
-    imu_hiwonder_10axis_->readImuData();
-    auto message = sensor_msgs::msg::Imu();
-    // Fill the IMU message with data
-    pub_imu_->publish(message);
+    std::array<double, 3> acceleration, angularVelocity, angle_deg;
+    std::array<double, 2> pressure;
+    imu_hiwonder_10axis_->readDataLoop(acceleration, angularVelocity, angle_deg, pressure);
+    // auto message = sensor_msgs::msg::Imu();
+    // // Fill the IMU message with data
+    // pub_imu_->publish(message);
   }
 
   void timer_hardware_ctrl()
