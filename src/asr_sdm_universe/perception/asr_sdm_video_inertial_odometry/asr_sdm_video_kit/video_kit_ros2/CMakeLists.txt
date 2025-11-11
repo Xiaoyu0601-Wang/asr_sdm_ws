@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.20)
-project(asr_sdm_video_kit)
+cmake_minimum_required(VERSION 3.8)
+project(video_kit_ros2)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -8,9 +8,31 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(sensor_msgs REQUIRED)
-find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
+
+find_package(catkin_simple REQUIRED)
+catkin_simple(ALL_DEPS_REQUIRED)
+
+include(SvoSetup)
+
+set(HEADERS
+  include/video_kit/img_type_conversion.h
+  include/video_kit/output_helper.h
+  include/video_kit/params_helper.h
+  )
+
+set(SOURCES
+  src/output_helper.cpp
+  src/img_type_conversion.cpp
+  )
+
+# Create vikit library
+cs_add_library(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+
+################################################################################
+cs_install()
+cs_export()
+
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
