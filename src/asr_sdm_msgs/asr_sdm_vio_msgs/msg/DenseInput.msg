@@ -1,4 +1,4 @@
-Header header
+std_msgs/Header header
 uint32 frame_id
 geometry_msgs/Pose pose
 sensor_msgs/Image image

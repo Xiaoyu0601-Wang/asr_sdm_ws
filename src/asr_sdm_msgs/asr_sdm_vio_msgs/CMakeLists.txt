@@ -7,10 +7,24 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
+
+# Message & Service
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/DenseInput.msg"
+  "msg/DenseInputWithFeatures.msg"
+  "msg/Feature.msg"
+  "msg/Info.msg"
+  "msg/NbvTrajectory.msg"
+  DEPENDENCIES
+  sensor_msgs
+  geometry_msgs
+  std_msgs
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

@@ -1,4 +1,4 @@
-Header      header
+std_msgs/Header      header
 float32     processing_time
 int32[]     keyframes
 int32       num_matches
