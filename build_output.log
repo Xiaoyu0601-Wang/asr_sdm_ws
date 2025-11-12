@@ -1,0 +1,70 @@
+Starting >>> asr_sdm_control_msgs
+Starting >>> svo_cmake
+Starting >>> asr_sdm_hardware_msgs
+Starting >>> data_structure
+Starting >>> asr_sdm_camera_realsense_d405
+Starting >>> asr_sdm_imu_wheeltec_n100
+Starting >>> asr_sdm_individual_parameters
+Starting >>> asr_sdm_launch
+Starting >>> asr_sdm_object_classifier
+Starting >>> asr_sdm_object_detectior
+Starting >>> asr_sdm_video_enhancement
+Starting >>> asr_sdm_vio
+Starting >>> asr_sdm_vio_msgs
+Starting >>> video_kit_py
+Starting >>> video_kit_solver
+Finished <<< video_kit_solver [0.20s]
+Finished <<< data_structure [0.44s]
+Starting >>> asr_sdm_imu_hiwonder_10axis
+Finished <<< svo_cmake [0.45s]
+Starting >>> video_kit_common
+Finished <<< asr_sdm_imu_wheeltec_n100 [0.67s]
+Finished <<< asr_sdm_vio [0.68s]
+Finished <<< asr_sdm_object_classifier [0.71s]
+Finished <<< asr_sdm_individual_parameters [0.72s]
+Finished <<< asr_sdm_object_detectior [0.73s]
+Finished <<< asr_sdm_launch [0.78s]
+--- stderr: video_kit_py
+/home/lxy/asr_sdm_ws/install/video_kit_py/lib/python3.12/site-packages/video_kit_py/transformations.py:32: SyntaxWarning: invalid escape sequence '\*'
+  """Homogeneous Transformation Matrices and Quaternions.
+/home/lxy/asr_sdm_ws/install/video_kit_py/lib/python3.12/site-packages/video_kit_py/transformations.py:1077: SyntaxWarning: invalid escape sequence '\*'
+  """Return matrix to transform given vector set into second vector set.
+  File "/home/lxy/asr_sdm_ws/install/video_kit_py/lib/python3.12/site-packages/video_kit_py/depthmap_utils.py", line 15
+    print 'Could not open file ' + depthmap_full_file_path + ' for reading binary data.'
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+SyntaxError: Missing parentheses in call to 'print'. Did you mean print(...)?
+
+---
+Finished <<< video_kit_py [0.77s]
+Finished <<< asr_sdm_camera_realsense_d405 [0.92s]
+--- stderr: asr_sdm_imu_hiwonder_10axis
+CMake Error at CMakeLists.txt:12 (find_package):
+  By not providing "Findperiphery.cmake" in CMAKE_MODULE_PATH this project
+  has asked CMake to find a package configuration file provided by
+  "periphery", but CMake did not find one.
+
+  Could not find a package configuration file provided by "periphery" with
+  any of the following names:
+
+    peripheryConfig.cmake
+    periphery-config.cmake
+
+  Add the installation prefix of "periphery" to CMAKE_PREFIX_PATH or set
+  "periphery_DIR" to a directory containing one of the above files.  If
+  "periphery" provides a separate development package or SDK, be sure it has
+  been installed.
+
+
+---
+Failed   <<< asr_sdm_imu_hiwonder_10axis [0.57s, exited with code 1]
+Aborted  <<< video_kit_common [0.58s]
+Aborted  <<< asr_sdm_hardware_msgs [1.78s]
+Aborted  <<< asr_sdm_control_msgs [1.78s]
+Aborted  <<< asr_sdm_vio_msgs [1.89s]
+Aborted  <<< asr_sdm_video_enhancement [5.23s]
+
+Summary: 11 packages finished [5.34s]
+  1 package failed: asr_sdm_imu_hiwonder_10axis
+  5 packages aborted: asr_sdm_control_msgs asr_sdm_hardware_msgs asr_sdm_video_enhancement asr_sdm_vio_msgs video_kit_common
+  3 packages had stderr output: asr_sdm_imu_hiwonder_10axis video_kit_common video_kit_py
+  5 packages not processed
