@@ -11,6 +11,30 @@
 
   <depend>rclcpp</depend>
   <depend>std_msgs</depend>
+  <depend>cmake_modules</depend> <!-- for FindEigen.cmake -->
+  <depend>svo_cmake</depend>
+  <depend>svo_common</depend>
+  <depend>svo_direct</depend>
+  <depend>svo_tracker</depend>
+  <depend>svo_test_utils</depend>
+  <depend>svo_img_align</depend>
+  <depend>svo_online_loopclosing</depend>
+  <depend>svo_global_map</depend>
+  <depend>svo_vio_common</depend>
+  <depend>roscpp</depend>
+  <depend>roslib</depend>
+  <depend>rpg_common</depend>
+  <depend>video_kit_common</depend>
+  <depend>video_kit_cameras</depend>
+  <depend>video_kit_solver</depend>
+  <depend>video_kit_ros2</depend>
+  <depend>eigen_catkin</depend>
+  <depend>minkindr</depend>
+  <depend>fast</depend>
+  <depend>opengv</depend>
+  <depend>cv_bridge</depend>
+  <depend>glog_catkin</depend>
+  
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
