@@ -11,6 +11,11 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(video_kit_common REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(cv_bridge REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(visualization_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 
 
 
@@ -28,7 +33,7 @@ set(SOURCES
 
 # Create vikit library
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
-ament_target_dependencies(${PROJECT_NAME} rclcpp std_msgs video_kit_common)
+ament_target_dependencies(${PROJECT_NAME} rclcpp std_msgs video_kit_common sensor_msgs cv_bridge tf2_ros visualization_msgs geometry_msgs)
 target_link_libraries(${PROJECT_NAME} Eigen3::Eigen)
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -49,7 +54,7 @@ install(
 )
 
 ament_export_targets(export_${PROJECT_NAME})
-ament_export_dependencies(rclcpp std_msgs video_kit_common)
+ament_export_dependencies(rclcpp std_msgs video_kit_common sensor_msgs cv_bridge tf2_ros visualization_msgs geometry_msgs)
 
 
 if(BUILD_TESTING)

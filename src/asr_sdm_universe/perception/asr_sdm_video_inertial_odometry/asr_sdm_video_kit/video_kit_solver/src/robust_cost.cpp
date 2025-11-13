@@ -36,7 +36,7 @@ float NormalDistributionScaleEstimator::compute(std::vector<float>& errors) cons
 /* ************************************************************************* */
 // Weight Functions
 /* ************************************************************************* */
-float UnitWeightFunction::weight(const float& error) const
+float UnitWeightFunction::weight(const float& /*error*/) const
 {
   return 1.0f;
 }

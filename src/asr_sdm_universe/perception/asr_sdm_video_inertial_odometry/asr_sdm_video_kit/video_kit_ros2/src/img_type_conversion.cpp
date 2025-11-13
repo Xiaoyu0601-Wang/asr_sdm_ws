@@ -129,7 +129,7 @@ int sensorMsgsEncodingToOpenCVType(const std::string &encoding)
   }
 
   // invalid sensor_msgs encoding was passed
-  ROS_ERROR("[sensorMsgsEncodingToOpenCVType] Invalid sensor_msgs encoding was passed");
+  RCLCPP_ERROR(rclcpp::get_logger("img_type_conversion"), "[sensorMsgsEncodingToOpenCVType] Invalid sensor_msgs encoding was passed");
   return -1;
 }
 
@@ -249,7 +249,7 @@ std::string openCVTypeToSensorMsgsEncoding(const int opencv_type)
   }
 
   // invalid opencv type was passed
-  ROS_ERROR("[openCVTypeToSensorMsgsEncoding] Invalid OpenCV type was passed");
+  RCLCPP_ERROR(rclcpp::get_logger("img_type_conversion"), "[openCVTypeToSensorMsgsEncoding] Invalid OpenCV type was passed");
   return "";
 }
 

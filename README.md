@@ -95,6 +95,14 @@ ip link show
 ip -details -statistics link show can0
 ```
 
+## Dependencies
+
+### glog
+Install the official glog library. This is used instead of the `glog_vendor` package.
+```sh
+sudo apt-get update && sudo apt-get install -y libgoogle-glog-dev
+```
+
 ## ROS
 
 ### Source code compilation
