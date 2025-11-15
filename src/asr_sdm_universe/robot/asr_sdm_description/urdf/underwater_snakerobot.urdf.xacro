@@ -1,0 +1,107 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="underwater_snakerobot_description">
+<!--................................. Definition ...................................-->
+  <xacro:property name="pi" value="3.141592654" />
+  <xacro:property name="ext" value="osg" />
+  <xacro:property name="robot_parts_path" value="$(find underwater_snakerobot_description)/meshes" />
+
+<!---............................. Link Definitions ................................-->
+  <link name="base_link">
+    <inertial>
+      <mass value="4" />
+      <inertia ixx="4"  ixy="0"  ixz="0" iyy="4" iyz="0" izz="0.0144" />
+    </inertial>
+    <visual>
+      <origin rpy="${pi} 0 ${-pi/2}" xyz="0.0 0.0 0.0"/>
+      <geometry>
+        <mesh filename="${robot_parts_path}/body_2links_head-blender.${ext}"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <link name="screw_1_left">
+    <visual>
+      <origin rpy="${-pi} 0 ${pi/2}" xyz="0.0 0.0 0.0"/>
+      <geometry>
+        <mesh filename="${robot_parts_path}/screw_left_CFD-blender.${ext}"/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="screw_1_right">
+    <visual>
+      <origin rpy="0 ${pi/2*3} 0" xyz="-0.0 0.0 0.0"/>
+      <geometry>
+        <mesh filename="${robot_parts_path}/screw_right_CFD.${ext}"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <link name="link_2">
+    <inertial>
+      <mass value="4" />
+      <inertia ixx="4"  ixy="0"  ixz="0" iyy="4" iyz="0" izz="0.0144" />
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+      <geometry>
+        <mesh filename="${robot_parts_path}/body_2links.${ext}"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <link name="screw_2_left" >
+    <visual>
+      <origin rpy="0 ${pi/2*3} 0" xyz="0.0 0.0 0.0"/>
+      <geometry>
+        <mesh filename="${robot_parts_path}/screw_left_CFD.${ext}"/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="screw_2_right">
+    <visual>
+      <origin rpy="0 ${-pi/2} 0" xyz="-0.0 0.0 0.0"/>
+      <geometry>
+        <mesh filename="${robot_parts_path}/screw_right_CFD.${ext}"/>
+      </geometry>
+    </visual>
+  </link>
+<!--...........................Joint Definitions.....................................-->
+  <joint name="base_link_to_screw_1_left_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="screw_1_left"/>
+    <origin rpy="0 ${pi} 0" xyz="0.181 0 0"/>
+    <limit effort="1000.0" lower="-inf" upper="inf" velocity="10.0"/>
+    <safety_controller k_velocity="10" k_position="5"/>
+  </joint>
+  <joint name="base_link_to_screw_1_right_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="screw_1_right"/>
+    <origin rpy="0 0 0" xyz="0.117 0 0"/>
+    <limit effort="1000.0" lower="-inf" upper="inf" velocity="10.0"/>
+    <safety_controller k_velocity="10" k_position="5"/>
+  </joint>
+
+  <joint name="base_link_to_link_2" type="continuous">
+    <parent link="base_link"/>
+    <child link="link_2"/>
+    <origin rpy="0 -${pi/2} 0" xyz="0 0 0.0"/>
+    <limit effort="100.0" lower="-1.0" upper="1.0" velocity="10.0"/>
+    <safety_controller k_velocity="20" k_position="20"/>
+  </joint>
+
+  <joint name="link_2_to_screw_2_left_joint" type="continuous">
+    <parent link="link_2"/>
+    <child link="screw_2_left"/>
+    <origin rpy="0 ${pi/2*3} 0" xyz="0 0 0.117"/>
+    <limit effort="1000.0" lower="-inf" upper="inf" velocity="10.0"/>
+    <safety_controller k_velocity="5" k_position="5"/>
+  </joint>
+  <joint name="link_2_to_screw_2_right_joint" type="continuous">
+    <parent link="link_2"/>
+    <child link="screw_2_right"/>
+    <origin rpy="0 ${pi/2} 0" xyz="0 0 0.181"/>
+    <limit effort="1000.0" lower="-inf" upper="inf" velocity="10.0"/>
+    <safety_controller k_velocity="5" k_position="5"/>
+  </joint>
+</robot>
