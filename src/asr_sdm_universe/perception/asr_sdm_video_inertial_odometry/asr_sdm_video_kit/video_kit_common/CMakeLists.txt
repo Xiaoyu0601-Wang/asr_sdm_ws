@@ -56,12 +56,22 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   $<INSTALL_INTERFACE:include>
   ${EIGEN3_INCLUDE_DIR}
 )
-target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBRARIES} yaml-cpp glog::glog)
+target_link_libraries(${PROJECT_NAME} PUBLIC
+  ${std_msgs_TARGETS}
+  ${OpenCV_LIBRARIES}
+  rclcpp::rclcpp
+  cv_bridge::cv_bridge
+  yaml-cpp
+  glog::glog
+  Eigen3::Eigen
+  # minkindr
+  # svo_cmake
+)
 ament_target_dependencies(${PROJECT_NAME}
-  rclcpp
-  std_msgs
-  cv_bridge
-  Eigen3
+#   rclcpp
+#   std_msgs
+#   cv_bridge
+#   Eigen3
   minkindr
   svo_cmake
 )
