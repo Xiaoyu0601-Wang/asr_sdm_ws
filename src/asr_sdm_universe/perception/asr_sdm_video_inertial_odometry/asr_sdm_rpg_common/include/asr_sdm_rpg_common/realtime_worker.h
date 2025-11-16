@@ -2,7 +2,7 @@
 
 #include <thread>
 
-#include "rpg_common/threadsafe_queue.h"
+#include "asr_sdm_rpg_common/threadsafe_queue.h"
 
 namespace rpg_common {
 

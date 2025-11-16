@@ -1,6 +1,6 @@
 #pragma once
 
-#include <svo/common/types.h>
+#include <asr_sdm_vio_common/common/types.h>
 #include <glog/logging.h>
 namespace svo
 {

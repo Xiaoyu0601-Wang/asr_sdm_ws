@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include <svo/common/types.h>
+#include <asr_sdm_vio_common/common/types.h>
 
 namespace svo {
 

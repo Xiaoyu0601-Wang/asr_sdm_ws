@@ -9,7 +9,7 @@
 #pragma once
 
 #include <glog/logging.h>
-#include <svo/common/types.h>
+#include <asr_sdm_vio_common/common/types.h>
 
 namespace svo {
 namespace seed {

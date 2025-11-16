@@ -6,8 +6,8 @@
 #include <svo/common/types.h>
 #include <svo/common/transformation.h>
 
-#include "svo/online_loopclosing/ceres/epipolar_error.h"
-#include "svo/online_loopclosing/ceres/reprojection_error_simple.h"
+#include "asr_sdm_vio_online_loopclosing/online_loopclosing/ceres/epipolar_error.h"
+#include "asr_sdm_vio_online_loopclosing/online_loopclosing/ceres/reprojection_error_simple.h"
 
 namespace svo
 {

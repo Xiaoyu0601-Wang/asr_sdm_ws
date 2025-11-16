@@ -1,4 +1,4 @@
-#include "svo/online_loopclosing/map_alignment.h"
+#include "asr_sdm_vio_online_loopclosing/online_loopclosing/map_alignment.h"
 
 #include <iomanip>
 #include <iostream>
@@ -316,14 +316,14 @@ bool MapAlignmentSE3::getTransformRansac(const int min_num_3d,
 
 bool MapAlignmentSE3::solveJointOptimisation(
     const std::vector<cv::Point3f>& landmarks_lc,
-    const std::vector<cv::Point3f>& landmarks_cf,
+    const std::vector<cv::Point3f>& /* landmarks_cf */,
     const std::vector<cv::Point2f>& keypoints_lc,
     const std::vector<cv::Point2f>& keypoints_cf,
     const std::vector<std::pair<size_t, size_t> >& keypoint_correspondences,
     const std::vector<std::pair<size_t, size_t> >& point_correspondences,
     const Eigen::MatrixXd& rel_pose, const Transformation& T_w_lc,
     const size_t& num_bow_features_lc, const size_t& num_bow_features_cf,
-    const int& min_num_3d)
+    const int& /* min_num_3d */)
 {
   ceres::Problem problem;
   ceres::Solver::Options options;
@@ -331,8 +331,8 @@ bool MapAlignmentSE3::solveJointOptimisation(
   options.linear_solver_type = ceres::SPARSE_NORMAL_CHOLESKY;
   ceres::Solver::Summary summary;
   ceres::LossFunction* loss_function = new ceres::CauchyLoss(1.0);
-  ceres::LocalParameterization* quaternion_local_parameterization =
-      new ceres::EigenQuaternionParameterization;
+  ceres::Manifold* quaternion_manifold =
+      new ceres::EigenQuaternionManifold;
   Eigen::Matrix3d R = rel_pose.block(0, 0, 3, 3);
   Eigen::Vector3d t = rel_pose.block(0, 3, 3, 1);
   Eigen::Quaterniond q(R);
@@ -381,8 +381,8 @@ bool MapAlignmentSE3::solveJointOptimisation(
     problem.AddResidualBlock(cost_function, loss_function, t.data(),
                              q.coeffs().data());
   }
-  problem.SetParameterization(q.coeffs().data(),
-                              quaternion_local_parameterization);
+  problem.SetManifold(q.coeffs().data(),
+                      quaternion_manifold);
   ceres::Solve(options, &problem, &summary);
   std::cout << summary.FullReport() << std::endl;
   t_rel_combined_.getRotation() = Transformation::Rotation(q);

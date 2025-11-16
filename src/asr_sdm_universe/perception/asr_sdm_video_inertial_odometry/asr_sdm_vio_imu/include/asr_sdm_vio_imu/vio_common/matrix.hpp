@@ -9,7 +9,7 @@
 
 #include <svo/common/types.h>
 
-#include "svo/vio_common/logging.hpp"
+#include "asr_sdm_vio_imu/vio_common/logging.hpp"
 
 //! @file matrix.hpp
 //! Common matrix utilities.

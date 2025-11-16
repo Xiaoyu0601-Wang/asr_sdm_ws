@@ -1,4 +1,4 @@
-#include "svo/tracker/feature_tracker.h"
+#include <asr_sdm_vio_tracker/tracker/feature_tracker.h>
 
 #include <svo/common/camera.h>
 #include <svo/common/container_helpers.h>
@@ -8,7 +8,7 @@
 #include <svo/direct/feature_detection.h>
 #include <svo/direct/feature_detection_utils.h>
 
-#include "svo/tracker/feature_tracking_utils.h"
+#include <asr_sdm_vio_tracker/tracker/feature_tracking_utils.h>
 
 namespace svo {
 

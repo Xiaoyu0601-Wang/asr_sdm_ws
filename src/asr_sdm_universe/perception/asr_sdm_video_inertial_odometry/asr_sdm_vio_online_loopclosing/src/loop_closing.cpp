@@ -9,13 +9,13 @@
  * Place Recognition pipeline.
  */
 
-#include "svo/online_loopclosing/loop_closing.h"
+#include "asr_sdm_vio_online_loopclosing/online_loopclosing/loop_closing.h"
 
 #include <unistd.h>
 
 #include <glog/logging.h>
 
-#include "svo/online_loopclosing/map_alignment.h"
+#include "asr_sdm_vio_online_loopclosing/online_loopclosing/map_alignment.h"
 
 using namespace std;
 using namespace DBoW2;

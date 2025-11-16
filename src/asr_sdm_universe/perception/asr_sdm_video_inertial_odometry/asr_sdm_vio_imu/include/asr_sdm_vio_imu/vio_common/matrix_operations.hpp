@@ -14,7 +14,7 @@
 
 #include <svo/common/types.h>
 
-#include "svo/vio_common/matrix.hpp"
+#include "asr_sdm_vio_imu/vio_common/matrix.hpp"
 
 namespace svo {
 

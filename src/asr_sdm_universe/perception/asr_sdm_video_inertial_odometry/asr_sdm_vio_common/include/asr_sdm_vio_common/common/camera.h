@@ -1,6 +1,6 @@
 #pragma once
 
-#include <svo/common/camera_fwd.h>
+#include <asr_sdm_vio_common/common/camera_fwd.h>
 
-# include <vikit/cameras/ncamera.h>
-# include <vikit/cameras/camera_geometry_base.h>
+# include <video_kit/cameras/ncamera.h>
+# include <video_kit/cameras/camera_geometry_base.h>

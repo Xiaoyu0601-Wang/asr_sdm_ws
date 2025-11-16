@@ -35,8 +35,8 @@ bool saveMap(
   for(const auto& keyval : map->keyframes_)
   {
     const FramePtr& frame = keyval.second;
-    const Vector3d& t = frame->T_world_cam().getPosition();
-    const Eigen::Quaterniond& q = frame->T_world_cam().getRotation().toImplementation();
+    const Vector3d t = frame->T_world_cam().getPosition();
+    const Eigen::Quaterniond q = frame->T_world_cam().getRotation().toImplementation();
     out << YAML::BeginMap
         << YAML::Key << "frame_id" << YAML::Value << frame->id()
         << YAML::Key << "cam_name" << YAML::Value << frame->cam()->getLabel()
@@ -87,7 +87,7 @@ bool saveMap(
       << YAML::BeginSeq;
 
   // safe points
-  for(const PointPtr point : points)
+  for(const PointPtr& point : points)
   {
     out << YAML::BeginMap
         << YAML::Key << "point_id" << YAML::Value << point->id()

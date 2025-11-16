@@ -15,8 +15,8 @@
 #include <string>
 #include <sstream>
 
-#include "svo/online_loopclosing/bow.h"
-#include "svo/online_loopclosing/geometric_verification.h"
+#include "asr_sdm_vio_online_loopclosing/online_loopclosing/bow.h"
+#include "asr_sdm_vio_online_loopclosing/online_loopclosing/geometric_verification.h"
 
 namespace svo
 {

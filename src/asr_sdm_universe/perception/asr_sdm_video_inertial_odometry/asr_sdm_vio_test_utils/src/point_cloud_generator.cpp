@@ -1,7 +1,9 @@
-#include <svo/test_utils/point_cloud_generator.h>
-#include <svo/test_utils/test_utils.h>
-#include <vikit/sample.h>
+#include <asr_sdm_vio_test_utils/test_utils/point_cloud_generator.h>
+#include <asr_sdm_vio_test_utils/test_utils/test_utils.h>
+#include <video_kit/sample.h>
 #include <fstream>
+#include <random>
+#include <algorithm>
 
 namespace svo {
 namespace test_utils {
@@ -50,7 +52,9 @@ FromFilePCG::FromFilePCG(const std::string& filename)
 
 std::vector<Vector3d> FromFilePCG::generatePointCloud(size_t /*num_points*/)
 {
-  std::random_shuffle(points_.begin(), points_.end());
+  static std::random_device rd;
+  static std::mt19937 g(rd());
+  std::shuffle(points_.begin(), points_.end(), g);
   return points_;
 }
 

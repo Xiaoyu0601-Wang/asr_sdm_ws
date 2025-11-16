@@ -6,7 +6,7 @@
 #include <random>
 
 #include <eigen-checks/gtest.h>
-#include <svo/common/feature_wrapper.h>
+#include <asr_sdm_vio_common/common/feature_wrapper.h>
 
 template<class T>
 typename std::enable_if<std::is_integral<T>::value, std::function<T()> >::type

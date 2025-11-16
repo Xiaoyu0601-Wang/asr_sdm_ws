@@ -5,8 +5,8 @@
 
 #include <glog/logging.h>
 
-#include "rpg_common/batch_worker.h"
-#include "rpg_common/realtime_worker.h"
+#include "asr_sdm_rpg_common/batch_worker.h"
+#include "asr_sdm_rpg_common/realtime_worker.h"
 
 namespace rpg_common {
 

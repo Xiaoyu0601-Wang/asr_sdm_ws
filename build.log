@@ -1,0 +1,130 @@
+Starting >>> eigen_checks
+Starting >>> asr_sdm_vio_cmake
+Starting >>> fast
+Starting >>> video_kit_solver
+Starting >>> asr_sdm_rpg_common
+Starting >>> dbow2_vendor
+Starting >>> opengv
+Finished <<< asr_sdm_vio_cmake [0.05s]
+Finished <<< eigen_checks [0.07s]
+Starting >>> minkindr
+Finished <<< asr_sdm_rpg_common [0.07s]
+Finished <<< fast [0.08s]
+Finished <<< video_kit_solver [0.09s]
+Finished <<< dbow2_vendor [0.09s]
+Finished <<< opengv [0.10s]
+Finished <<< minkindr [0.09s]
+Starting >>> video_kit_common
+Finished <<< video_kit_common [0.08s]
+Starting >>> video_kit_cameras
+Starting >>> video_kit_ros2
+Finished <<< video_kit_cameras [0.08s]
+Starting >>> asr_sdm_vio_common
+Finished <<< asr_sdm_vio_common [0.08s]
+Starting >>> asr_sdm_vio_pgo
+Finished <<< asr_sdm_vio_pgo [0.07s]
+Starting >>> asr_sdm_vio_online_loopclosing
+Finished <<< asr_sdm_vio_online_loopclosing [0.09s]
+Finished <<< video_kit_ros2 [3.55s]
+Starting >>> asr_sdm_vio_test_utils
+Finished <<< asr_sdm_vio_test_utils [0.48s]
+Starting >>> asr_sdm_vio_direct
+Finished <<< asr_sdm_vio_direct [0.50s]
+Starting >>> asr_sdm_vio_img_align
+Starting >>> asr_sdm_vio_tracker
+Finished <<< asr_sdm_vio_img_align [0.59s]
+Finished <<< asr_sdm_vio_tracker [3.09s]
+Starting >>> asr_sdm_vio
+--- stderr: asr_sdm_vio
+CMake Warning at CMakeLists.txt:113 (add_library):
+  Cannot generate a safe runtime search path for target svo because files in
+  some directories may conflict with libraries in implicit directories:
+
+    runtime library [libcurl.so.4] in /usr/lib/x86_64-linux-gnu may be hidden by files in:
+      /home/lxy/anaconda3/lib
+
+  Some of these libraries may not be found correctly.
+
+
+CMake Warning at /opt/ros/jazzy/share/ament_cmake_gtest/cmake/ament_add_gtest_executable.cmake:50 (add_executable):
+  Cannot generate a safe runtime search path for target
+  asr_sdm_vio-test-frame because files in some directories may conflict with
+  libraries in implicit directories:
+
+    runtime library [libcurl.so.4] in /usr/lib/x86_64-linux-gnu may be hidden by files in:
+      /home/lxy/anaconda3/lib
+
+  Some of these libraries may not be found correctly.
+Call Stack (most recent call first):
+  /opt/ros/jazzy/share/ament_cmake_gtest/cmake/ament_add_gtest_executable.cmake:37 (_ament_add_gtest_executable)
+  /opt/ros/jazzy/share/ament_cmake_gtest/cmake/ament_add_gtest.cmake:68 (ament_add_gtest_executable)
+  CMakeLists.txt:149 (ament_add_gtest)
+
+
+In file included from /home/lxy/asr_sdm_ws/src/asr_sdm_universe/perception/asr_sdm_video_inertial_odometry/asr_sdm_vio/include/svo/frame_handler_base.h:19,
+                 from /home/lxy/asr_sdm_ws/src/asr_sdm_universe/perception/asr_sdm_video_inertial_odometry/asr_sdm_vio/include/svo/frame_handler_array.h:11,
+                 from /home/lxy/asr_sdm_ws/src/asr_sdm_universe/perception/asr_sdm_video_inertial_odometry/asr_sdm_vio/src/frame_handler_array.cpp:9:
+/home/lxy/asr_sdm_ws/install/video_kit_ros2/include/vikit/params_helper.h:14:10: fatal error: ros/ros.h: No such file or directory
+   14 | #include <ros/ros.h>
+      |          ^~~~~~~~~~~
+In file included from /home/lxy/asr_sdm_ws/src/asr_sdm_universe/perception/asr_sdm_video_inertial_odometry/asr_sdm_vio/include/svo/frame_handler_base.h:19,
+                 from /home/lxy/asr_sdm_ws/src/asr_sdm_universe/perception/asr_sdm_video_inertial_odometry/asr_sdm_vio/include/svo/frame_handler_stereo.h:11,
+                 from /home/lxy/asr_sdm_ws/src/asr_sdm_universe/perception/asr_sdm_video_inertial_odometry/asr_sdm_vio/src/frame_handler_stereo.cpp:9:
+/home/lxy/asr_sdm_ws/install/video_kit_ros2/include/vikit/params_helper.h:14:10: fatal error: ros/ros.h: No such file or directory
+   14 | #include <ros/ros.h>
+      |          ^~~~~~~~~~~
+compilation terminated.
+compilation terminated.
+In file included from /home/lxy/asr_sdm_ws/src/asr_sdm_universe/perception/asr_sdm_video_inertial_odometry/asr_sdm_vio/include/svo/frame_handler_base.h:19,
+                 from /home/lxy/asr_sdm_ws/src/asr_sdm_universe/perception/asr_sdm_video_inertial_odometry/asr_sdm_vio/src/frame_handler_base.cpp:9:
+/home/lxy/asr_sdm_ws/install/video_kit_ros2/include/vikit/params_helper.h:14:10: fatal error: ros/ros.h: No such file or directory
+   14 | #include <ros/ros.h>
+      |          ^~~~~~~~~~~
+compilation terminated.
+gmake[2]: *** [CMakeFiles/svo.dir/build.make:104: CMakeFiles/svo.dir/src/frame_handler_array.cpp.o] Error 1
+gmake[2]: *** Waiting for unfinished jobs....
+gmake[2]: *** [CMakeFiles/svo.dir/build.make:118: CMakeFiles/svo.dir/src/frame_handler_base.cpp.o] Error 1
+gmake[2]: *** [CMakeFiles/svo.dir/build.make:90: CMakeFiles/svo.dir/src/frame_handler_stereo.cpp.o] Error 1
+In file included from /home/lxy/asr_sdm_ws/src/asr_sdm_universe/perception/asr_sdm_video_inertial_odometry/asr_sdm_vio/include/svo/frame_handler_base.h:19,
+                 from /home/lxy/asr_sdm_ws/src/asr_sdm_universe/perception/asr_sdm_video_inertial_odometry/asr_sdm_vio/include/svo/frame_handler_mono.h:11,
+                 from /home/lxy/asr_sdm_ws/src/asr_sdm_universe/perception/asr_sdm_video_inertial_odometry/asr_sdm_vio/src/frame_handler_mono.cpp:9:
+/home/lxy/asr_sdm_ws/install/video_kit_ros2/include/vikit/params_helper.h:14:10: fatal error: ros/ros.h: No such file or directory
+   14 | #include <ros/ros.h>
+      |          ^~~~~~~~~~~
+compilation terminated.
+gmake[2]: *** [CMakeFiles/svo.dir/build.make:76: CMakeFiles/svo.dir/src/frame_handler_mono.cpp.o] Error 1
+/home/lxy/asr_sdm_ws/src/asr_sdm_universe/perception/asr_sdm_video_inertial_odometry/asr_sdm_vio/src/initialization.cpp:26:10: fatal error: vikit/cameras/ncamera.h: No such file or directory
+   26 | #include <vikit/cameras/ncamera.h>
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+gmake[2]: *** [CMakeFiles/svo.dir/build.make:160: CMakeFiles/svo.dir/src/initialization.cpp.o] Error 1
+/home/lxy/asr_sdm_ws/src/asr_sdm_universe/perception/asr_sdm_video_inertial_odometry/asr_sdm_vio/src/stereo_triangulation.cpp: In member function ‘void svo::StereoTriangulation::compute(const svo::FramePtr&, const svo::FramePtr&)’:
+/home/lxy/asr_sdm_ws/src/asr_sdm_universe/perception/asr_sdm_video_inertial_odometry/asr_sdm_vio/src/stereo_triangulation.cpp:77:22: error: ‘void std::random_shuffle(_RAIter, _RAIter) [with _RAIter = __gnu_cxx::__normal_iterator<long unsigned int*, vector<long unsigned int> >]’ is deprecated: use 'std::shuffle' instead [-Werror=deprecated-declarations]
+   77 |   std::random_shuffle(indices.begin(), indices.begin()+n_corners);
+      |   ~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /usr/include/c++/13/algorithm:61,
+                 from /usr/include/opencv4/opencv2/core/base.hpp:55,
+                 from /usr/include/opencv4/opencv2/core.hpp:53,
+                 from /usr/include/opencv4/opencv2/core/core.hpp:48,
+                 from /home/lxy/asr_sdm_ws/install/asr_sdm_vio_common/include/svo/common/types.h:6,
+                 from /home/lxy/asr_sdm_ws/install/asr_sdm_vio_direct/include/svo/direct/matcher.h:12,
+                 from /home/lxy/asr_sdm_ws/src/asr_sdm_universe/perception/asr_sdm_video_inertial_odometry/asr_sdm_vio/src/stereo_triangulation.cpp:7:
+/usr/include/c++/13/bits/stl_algo.h:4581:5: note: declared here
+ 4581 |     random_shuffle(_RandomAccessIterator __first, _RandomAccessIterator __last)
+      |     ^~~~~~~~~~~~~~
+/home/lxy/asr_sdm_ws/src/asr_sdm_universe/perception/asr_sdm_video_inertial_odometry/asr_sdm_vio/src/stereo_triangulation.cpp:78:22: error: ‘void std::random_shuffle(_RAIter, _RAIter) [with _RAIter = __gnu_cxx::__normal_iterator<long unsigned int*, vector<long unsigned int> >]’ is deprecated: use 'std::shuffle' instead [-Werror=deprecated-declarations]
+   78 |   std::random_shuffle(indices.begin()+n_corners, indices.end());
+      |   ~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/c++/13/bits/stl_algo.h:4581:5: note: declared here
+ 4581 |     random_shuffle(_RandomAccessIterator __first, _RandomAccessIterator __last)
+      |     ^~~~~~~~~~~~~~
+cc1plus: all warnings being treated as errors
+gmake[2]: *** [CMakeFiles/svo.dir/build.make:202: CMakeFiles/svo.dir/src/stereo_triangulation.cpp.o] Error 1
+gmake[1]: *** [CMakeFiles/Makefile2:157: CMakeFiles/svo.dir/all] Error 2
+gmake: *** [Makefile:146: all] Error 2
+---
+Failed   <<< asr_sdm_vio [7.00s, exited with code 2]
+
+Summary: 18 packages finished [15.0s]
+  1 package failed: asr_sdm_vio
+  1 package had stderr output: asr_sdm_vio

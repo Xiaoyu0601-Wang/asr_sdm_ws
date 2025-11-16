@@ -8,12 +8,12 @@
 #endif
 
 #ifdef SVO_USE_ROS
-# include <ros/console.h>
-# define SVO_DEBUG_STREAM(x) ROS_DEBUG_STREAM(x)
-# define SVO_INFO_STREAM(x) ROS_INFO_STREAM(x)
-# define SVO_WARN_STREAM(x) ROS_WARN_STREAM(x)
-# define SVO_WARN_STREAM_THROTTLE(rate, x) ROS_WARN_STREAM_THROTTLE(rate, x)
-# define SVO_ERROR_STREAM(x) ROS_ERROR_STREAM(x)
+# include <rclcpp/rclcpp.hpp>
+# define SVO_DEBUG_STREAM(x) RCLCPP_DEBUG_STREAM(rclcpp::get_logger("svo"), x)
+# define SVO_INFO_STREAM(x) RCLCPP_INFO_STREAM(rclcpp::get_logger("svo"), x)
+# define SVO_WARN_STREAM(x) RCLCPP_WARN_STREAM(rclcpp::get_logger("svo"), x)
+# define SVO_WARN_STREAM_THROTTLE(rate, x) RCLCPP_WARN_STREAM_THROTTLE(rclcpp::get_logger("svo"), *rclcpp::Clock::make_shared(), rate * 1000, x)
+# define SVO_ERROR_STREAM(x) RCLCPP_ERROR_STREAM(rclcpp::get_logger("svo"), x)
 #else
 # ifdef LUCY_LOGGING
 #   define SVO_INFO_STREAM(x) {std::stringstream ss; ss << x; LOGI("%s", ss.str().c_str()); }

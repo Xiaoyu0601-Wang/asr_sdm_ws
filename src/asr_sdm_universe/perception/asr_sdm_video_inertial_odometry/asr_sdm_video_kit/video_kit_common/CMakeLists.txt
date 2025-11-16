@@ -13,7 +13,7 @@ find_package(cv_bridge REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(glog REQUIRED)
 find_package(minkindr REQUIRED)
-find_package(svo_cmake REQUIRED)
+find_package(asr_sdm_vio_cmake REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(OpenCV REQUIRED)
 
@@ -55,15 +55,15 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
   ${EIGEN3_INCLUDE_DIR}
+  ${minkindr_INCLUDE_DIRS}
 )
-target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBRARIES} yaml-cpp glog::glog)
-ament_target_dependencies(${PROJECT_NAME}
-  rclcpp
-  std_msgs
-  cv_bridge
-  Eigen3
-  minkindr
-  svo_cmake
+target_link_libraries(${PROJECT_NAME} 
+  ${OpenCV_LIBRARIES} 
+  yaml-cpp 
+  glog::glog
+  rclcpp::rclcpp
+  ${std_msgs_TARGETS}
+  ${cv_bridge_TARGETS}
 )
 
 ################################################################################
@@ -99,10 +99,10 @@ install(
     DESTINATION include
 )
 
-
-ament_export_dependencies(rclcpp std_msgs cv_bridge Eigen3 glog minkindr svo_cmake yaml-cpp)
+ament_export_dependencies(rclcpp std_msgs cv_bridge Eigen3 glog minkindr asr_sdm_vio_cmake yaml-cpp)
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
+ament_export_targets(export_${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

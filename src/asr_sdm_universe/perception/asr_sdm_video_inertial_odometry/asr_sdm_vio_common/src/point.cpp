@@ -6,11 +6,11 @@
 // This file is subject to the terms and conditions defined in the file
 // 'LICENSE', which is part of this source code package.
 
-#include <svo/common/point.h>
+#include <asr_sdm_vio_common/common/point.h>
 
-#include <vikit/math_utils.h>
-#include <svo/common/logging.h>
-#include <svo/common/frame.h>
+#include <video_kit/math_utils.h>
+#include <asr_sdm_vio_common/common/logging.h>
+#include <asr_sdm_vio_common/common/frame.h>
 
 namespace svo {
 

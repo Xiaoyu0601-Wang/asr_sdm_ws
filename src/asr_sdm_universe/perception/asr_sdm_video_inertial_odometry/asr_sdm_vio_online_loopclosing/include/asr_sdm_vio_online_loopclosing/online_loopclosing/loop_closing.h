@@ -20,20 +20,20 @@
 #include <deque>
 #include <fstream>
 
-#include <vikit/timer.h>
-#include <vikit/cameras/ncamera.h>
-#include <vikit/cameras/camera_geometry_base.h>
+#include <video_kit/timer.h>
+#include <video_kit/cameras/ncamera.h>
+#include <video_kit/cameras/camera_geometry_base.h>
 #include <svo/common/frame.h>
 #include <svo/common/point.h>
-#include <svo/pgo/pgo.h>
-#include <rpg_common/eigen_type.h>
-#include <rpg_common/aligned.h>
-#include <ros/ros.h>
+#include <asr_sdm_vio_pgo/pgo/pgo.h>
+#include <asr_sdm_rpg_common/eigen_type.h>
+#include <asr_sdm_rpg_common/aligned.h>
+#include <rclcpp/rclcpp.hpp>
 
-#include "svo/online_loopclosing/bow.h"
-#include "svo/online_loopclosing/geometric_verification.h"
-#include "svo/online_loopclosing/read_file.h"
-#include "svo/online_loopclosing/loop_closing_types.h"
+#include "asr_sdm_vio_online_loopclosing/online_loopclosing/bow.h"
+#include "asr_sdm_vio_online_loopclosing/online_loopclosing/geometric_verification.h"
+#include "asr_sdm_vio_online_loopclosing/online_loopclosing/read_file.h"
+#include "asr_sdm_vio_online_loopclosing/online_loopclosing/loop_closing_types.h"
 #include "keyframe.h"
 
 namespace svo

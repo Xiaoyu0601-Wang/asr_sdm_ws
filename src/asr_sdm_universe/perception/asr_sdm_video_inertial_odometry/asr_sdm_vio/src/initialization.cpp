@@ -382,7 +382,7 @@ InitResult OneShotInit::addFrameBundle(const FrameBundlePtr &frames_cur)
   FramePtr frame_cur = frames_cur->at(0);
   FeatureMatches matches_cur_ref;
   feature_tracking_utils::getFeatureMatches(*frame_cur, *frame_ref, &matches_cur_ref);
-  for(const std::pair<size_t, size_t> it : matches_cur_ref)
+  for(const std::pair<size_t, size_t>& it : matches_cur_ref)
   {
     const BearingVector f_ref = frame_ref->f_vec_.col(it.second);
     const Vector3d xyz_in_cam = (f_ref/f_ref.z()) * depth_at_current_frame_;
@@ -447,7 +447,7 @@ InitResult StereoInit::addFrameBundle(
 }
 
 InitResult ArrayInitGeometric::addFrameBundle(
-    const FrameBundlePtr& frames_cur)
+    const FrameBundlePtr& /*frames_cur*/)
 {
 
 #ifdef SVO_USE_OPENGV
@@ -590,7 +590,7 @@ InitResult ArrayInitGeometric::addFrameBundle(
 }
 
 InitResult ArrayInitOptimization::addFrameBundle(
-    const FrameBundlePtr& frames_cur)
+    const FrameBundlePtr& /*frames_cur*/)
 {
 #ifdef SVO_USE_GTSAM
 
@@ -841,7 +841,7 @@ void rescaleAndInitializePoints(
 
 void displayFeatureTracks(
     const FramePtr& frame_cur,
-    const FramePtr& frame_ref)
+    const FramePtr& /*frame_ref*/)
 {
   cv::Mat img_rgb(frame_cur->img().size(), CV_8UC3);
   cv::cvtColor(frame_cur->img(), img_rgb, cv::COLOR_GRAY2RGB);

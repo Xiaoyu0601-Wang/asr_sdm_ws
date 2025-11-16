@@ -4,10 +4,10 @@
 #include <iostream>
 #include <fstream>
 #include <opencv2/highgui/highgui.hpp>
-#include <vikit/blender_utils.h>
-#include <svo/common/transformation.h>
-#include <svo/common/camera_fwd.h>
-#include <svo/common/types.h>
+#include <video_kit/blender_utils.h>
+#include <asr_sdm_vio_common/common/transformation.h>
+#include <asr_sdm_vio_common/common/camera_fwd.h>
+#include <asr_sdm_vio_common/common/types.h>
 
 namespace svo {
 namespace test_utils {

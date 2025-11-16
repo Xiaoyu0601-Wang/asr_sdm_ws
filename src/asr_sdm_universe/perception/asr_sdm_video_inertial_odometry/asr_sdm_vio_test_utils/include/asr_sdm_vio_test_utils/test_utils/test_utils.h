@@ -12,9 +12,9 @@
 #include <algorithm>
 #include <vector>
 
-# include <vikit/cameras/ncamera.h>
+# include <video_kit/cameras/ncamera.h>
 
-#include <svo/common/frame.h>
+#include <asr_sdm_vio_common/common/frame.h>
 
 
 #define SVO_TEST_STREAM(x) {std::cerr<<"\033[0;0m[          ] * "<<x<<"\033[0;0m"<<std::endl; }

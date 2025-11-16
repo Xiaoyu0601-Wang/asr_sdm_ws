@@ -15,7 +15,7 @@
   <depend>glog_catkin</depend>
   <depend>gflags_catkin</depend>
   <depend>minkindr</depend>
-  <depend>geometry_msgs</depend>
+  <depend>asr_sdm_msgs</depend>
   <depend>asr_sdm_vio_common</depend>
 
   <test_depend>ament_lint_auto</test_depend>

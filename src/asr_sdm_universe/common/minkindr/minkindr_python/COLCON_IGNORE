@@ -1,0 +1,3 @@
+# This package uses catkin_simple and other ROS 1 dependencies
+# that are not available in ROS 2. Skipping this package.
+

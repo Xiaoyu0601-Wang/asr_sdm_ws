@@ -4,7 +4,7 @@
 
 #include <kindr/minimal/quat-transformation.h>
 
-#include "rpg_common/aligned.h"
+#include "asr_sdm_rpg_common/aligned.h"
 
 namespace rpg_common {
 

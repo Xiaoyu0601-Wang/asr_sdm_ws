@@ -97,10 +97,17 @@ ip -details -statistics link show can0
 
 ## Dependencies
 
-### glog
-Install the official glog library. This is used instead of the `glog_vendor` package.
+### VIO Dependencies
+Install the system dependencies required for the VIO packages.
 ```sh
-sudo apt-get update && sudo apt-get install -y libgoogle-glog-dev
+sudo apt-get update && sudo apt-get install -y \
+  libgoogle-glog-dev \
+  libeigen3-dev \
+  libopencv-dev \
+  libyaml-cpp-dev \
+  libgflags-dev
+
+git clone git@github.com:azxyqian/asr_sdm_video_inertial_odometry_dependency.git
 ```
 
 ## ROS

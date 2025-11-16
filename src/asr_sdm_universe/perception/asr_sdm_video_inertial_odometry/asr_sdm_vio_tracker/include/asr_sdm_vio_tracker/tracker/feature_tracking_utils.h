@@ -2,7 +2,7 @@
 
 #include <utility>
 #include <svo/common/types.h>
-#include <svo/tracker/feature_tracking_types.h>
+#include <asr_sdm_vio_tracker/tracker/feature_tracking_types.h>
 
 namespace svo {
 

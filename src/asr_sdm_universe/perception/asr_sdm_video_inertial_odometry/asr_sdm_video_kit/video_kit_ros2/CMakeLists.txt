@@ -17,9 +17,6 @@ find_package(tf2_ros REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 
-
-
-
 set(HEADERS
   include/video_kit/img_type_conversion.h
   include/video_kit/output_helper.h
@@ -31,10 +28,33 @@ set(SOURCES
   src/img_type_conversion.cpp
   )
 
+# Create a symbolic link for vikit includes at configure time
+# This allows #include <vikit/...> to work with files in include/video_kit/
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/include/vikit")
+  execute_process(
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+      ${CMAKE_CURRENT_SOURCE_DIR}/include/video_kit
+      ${CMAKE_CURRENT_SOURCE_DIR}/include/vikit
+    RESULT_VARIABLE SYMLINK_RESULT
+  )
+  if(NOT SYMLINK_RESULT EQUAL 0)
+    message(WARNING "Failed to create symbolic link for vikit includes")
+  endif()
+endif()
+
 # Create vikit library
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
-ament_target_dependencies(${PROJECT_NAME} rclcpp std_msgs video_kit_common sensor_msgs cv_bridge tf2_ros visualization_msgs geometry_msgs)
-target_link_libraries(${PROJECT_NAME} Eigen3::Eigen)
+target_link_libraries(${PROJECT_NAME} 
+  Eigen3::Eigen
+  rclcpp::rclcpp
+  ${std_msgs_TARGETS}
+  video_kit_common::video_kit_common
+  ${sensor_msgs_TARGETS}
+  ${cv_bridge_TARGETS}
+  ${tf2_ros_TARGETS}
+  ${visualization_msgs_TARGETS}
+  ${geometry_msgs_TARGETS}
+)
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
@@ -56,15 +76,9 @@ install(
 ament_export_targets(export_${PROJECT_NAME})
 ament_export_dependencies(rclcpp std_msgs video_kit_common sensor_msgs cv_bridge tf2_ros visualization_msgs geometry_msgs)
 
-
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
-  # the following line skips the linter which checks for copyrights
-  # comment the line when a copyright and license is added to all source files
   set(ament_cmake_copyright_FOUND TRUE)
-  # the following line skips cpplint (only works in a git repo)
-  # comment the line when this package is in a git repo and when
-  # a copyright and license is added to all source files
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()

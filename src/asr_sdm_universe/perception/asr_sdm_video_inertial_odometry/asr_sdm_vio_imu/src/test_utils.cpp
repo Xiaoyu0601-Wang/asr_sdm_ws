@@ -2,14 +2,14 @@
 // Unauthorized copying of this file, via any medium is strictly prohibited
 // Proprietary and confidential
 
-#include "svo/vio_common/test_utils.hpp"
+#include "asr_sdm_vio_imu/vio_common/test_utils.hpp"
 
 #include <random>
 
 #include <svo/common/types.h>
 #include <svo/common/transformation.h>
 
-#include "svo/vio_common/logging.hpp"
+#include "asr_sdm_vio_imu/vio_common/logging.hpp"
 
 namespace svo {
 namespace test_utils {

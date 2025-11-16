@@ -11,14 +11,14 @@
 #include <mutex>
 #include <unordered_map>
 #include <opencv2/core/core.hpp>
-#include <vikit/math_utils.h>
-#include <svo/common/types.h>
-#include <svo/common/transformation.h>
-#include <svo/common/camera_fwd.h>
-#include <svo/common/feature_wrapper.h>
-#include <svo/common/point.h>
-#include <svo/common/seed.h>
-#include <svo/common/conversions.h>
+#include <video_kit/math_utils.h>
+#include <asr_sdm_vio_common/common/types.h>
+#include <asr_sdm_vio_common/common/transformation.h>
+#include <asr_sdm_vio_common/common/camera_fwd.h>
+#include <asr_sdm_vio_common/common/feature_wrapper.h>
+#include <asr_sdm_vio_common/common/point.h>
+#include <asr_sdm_vio_common/common/seed.h>
+#include <asr_sdm_vio_common/common/conversions.h>
 
 namespace svo {
 

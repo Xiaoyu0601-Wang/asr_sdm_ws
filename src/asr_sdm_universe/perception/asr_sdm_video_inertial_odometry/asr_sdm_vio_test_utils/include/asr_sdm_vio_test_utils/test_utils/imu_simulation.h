@@ -1,7 +1,7 @@
 #pragma once
 
-#include <svo/common/types.h>
-#include <svo/common/imu_calibration.h>
+#include <asr_sdm_vio_common/common/types.h>
+#include <asr_sdm_vio_common/common/imu_calibration.h>
 
 namespace svo {
 namespace simulation {
