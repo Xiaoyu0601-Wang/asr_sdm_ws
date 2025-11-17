@@ -22,8 +22,8 @@ find_package(eigen_checks REQUIRED)
 include(SvoSetup)
 
 # Override C++ standard to C++17 for ROS2 compatibility
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# set(CMAKE_CXX_STANDARD 17)
+# set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
 # Add additional warning suppressions for ROS2/modern compiler compatibility

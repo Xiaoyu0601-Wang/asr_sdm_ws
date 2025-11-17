@@ -25,8 +25,8 @@ find_package(OpenCV REQUIRED)
 include(SvoSetup)
 
 # Override C++ standard to C++17 for ROS2 compatibility
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# set(CMAKE_CXX_STANDARD 17)
+# set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Add additional warning suppressions for ROS2/modern compiler compatibility
 add_compile_options(-Wno-unused-parameter -Wno-vla)

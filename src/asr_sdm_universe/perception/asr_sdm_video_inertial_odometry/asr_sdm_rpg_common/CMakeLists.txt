@@ -7,7 +7,7 @@ endif()
 
 # C++14 standard
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
+  # set(CMAKE_CXX_STANDARD 14)
 endif()
 
 # find dependencies
