@@ -13,7 +13,7 @@
 #include <fstream>
 #include <ament_index_cpp/get_package_share_directory.hpp>
 
-#include "asr_sdm_vio_online_loopclosing/online_loopclosing/bow.h"
+#include "asr_sdm_vio/online_loopclosing/bow.h"
 
 using namespace std;
 using namespace svo;

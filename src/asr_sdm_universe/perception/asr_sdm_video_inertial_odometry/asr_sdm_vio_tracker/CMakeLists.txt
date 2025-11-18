@@ -32,10 +32,10 @@ include(SvoSetup)
 add_compile_options(-Wno-unused-parameter -Wno-vla)
 
 set(HEADERS
-  include/asr_sdm_vio_tracker/tracker/feature_tracking_types.h
-  include/asr_sdm_vio_tracker/tracker/feature_tracking_utils.h
-  include/asr_sdm_vio_tracker/tracker/feature_tracking_viz.h
-  include/asr_sdm_vio_tracker/tracker/feature_tracker.h
+  include/asr_sdm_vio/tracker/feature_tracking_types.h
+  include/asr_sdm_vio/tracker/feature_tracking_utils.h
+  include/asr_sdm_vio/tracker/feature_tracking_viz.h
+  include/asr_sdm_vio/tracker/feature_tracker.h
 )
 
 set(SOURCES
@@ -44,20 +44,6 @@ set(SOURCES
   src/feature_tracking_viz.cpp
   src/feature_tracker.cpp
 )
-
-# Create a symbolic link for svo includes at configure time
-# This allows #include <svo/...> to work with files in include/asr_sdm_vio_tracker/
-if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/include/svo")
-  execute_process(
-    COMMAND ${CMAKE_COMMAND} -E create_symlink
-      ${CMAKE_CURRENT_SOURCE_DIR}/include/asr_sdm_vio_tracker
-      ${CMAKE_CURRENT_SOURCE_DIR}/include/svo
-    RESULT_VARIABLE SYMLINK_RESULT
-  )
-  if(NOT SYMLINK_RESULT EQUAL 0)
-    message(WARNING "Failed to create symbolic link for svo includes")
-  endif()
-endif()
 
 # Create library
 add_library(${PROJECT_NAME} SHARED ${SOURCES})

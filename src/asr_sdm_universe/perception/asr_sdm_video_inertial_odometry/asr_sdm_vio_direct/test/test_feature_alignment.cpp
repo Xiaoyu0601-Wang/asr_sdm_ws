@@ -2,15 +2,15 @@
 #include <ros/package.h>
 
 // svo
-#include <svo/test_utils/synthetic_dataset.h>
-#include <svo/common/frame.h>
-#include <svo/common/camera.h>
-#include <svo/direct/matcher.h>
-#include <svo/direct/feature_detection.h>
-#include <svo/direct/feature_detection_utils.h>
-#include <svo/direct/feature_alignment.h>
-#include <svo/direct/patch_warp.h>
-#include <svo/direct/patch_utils.h>
+#include <asr_sdm_vio/test_utils/synthetic_dataset.h>
+#include <asr_sdm_vio/common/frame.h>
+#include <asr_sdm_vio/common/camera.h>
+#include <asr_sdm_vio/direct/matcher.h>
+#include <asr_sdm_vio/direct/feature_detection.h>
+#include <asr_sdm_vio/direct/feature_detection_utils.h>
+#include <asr_sdm_vio/direct/feature_alignment.h>
+#include <asr_sdm_vio/direct/patch_warp.h>
+#include <asr_sdm_vio/direct/patch_utils.h>
 
 // others
 #include <opencv2/highgui/highgui.hpp> // imread

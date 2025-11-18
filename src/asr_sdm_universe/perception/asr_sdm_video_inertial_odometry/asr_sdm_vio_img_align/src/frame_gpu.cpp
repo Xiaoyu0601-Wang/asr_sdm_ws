@@ -6,13 +6,13 @@
 // This file is subject to the terms and conditions defined in the file
 // 'LICENSE', which is part of this source code package.
 
-#include <svo/img_align/frame_gpu.h>
+#include <asr_sdm_vio/img_align/frame_gpu.h>
 
 #include <algorithm>
 #include <stdexcept>
 #include <fast/fast.h>
-#include <vikit/math_utils.h>
-#include <vikit/vision.h>
+#include <video_kit/math_utils.h>
+#include <video_kit/vision.h>
 
 /// @todo move to camera.h ?
 #ifndef SVO_USE_VIKIT_CAMERA
@@ -22,9 +22,9 @@
 #endif
 #include <imp/bridge/opencv/cu_cv_bridge.hpp>
 
-#include <svo/common/logging.h>
-#include <svo/common/point.h>
-#include <svo/common/camera.h>
+#include <asr_sdm_vio/common/logging.h>
+#include <asr_sdm_vio/common/point.h>
+#include <asr_sdm_vio/common/camera.h>
 
 
 namespace svo {

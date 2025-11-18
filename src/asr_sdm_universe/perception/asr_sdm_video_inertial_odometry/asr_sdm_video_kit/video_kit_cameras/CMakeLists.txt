@@ -53,20 +53,6 @@ set(SOURCES
   src/ncamera_yaml_serialization.cpp
   )
 
-# Create a symbolic link for vikit includes at configure time
-# This allows #include <vikit/...> to work with files in include/video_kit/
-if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/include/vikit")
-  execute_process(
-    COMMAND ${CMAKE_COMMAND} -E create_symlink
-      ${CMAKE_CURRENT_SOURCE_DIR}/include/video_kit
-      ${CMAKE_CURRENT_SOURCE_DIR}/include/vikit
-    RESULT_VARIABLE SYMLINK_RESULT
-  )
-  if(NOT SYMLINK_RESULT EQUAL 0)
-    message(WARNING "Failed to create symbolic link for vikit includes")
-  endif()
-endif()
-
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 
 target_include_directories(${PROJECT_NAME} PUBLIC

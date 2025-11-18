@@ -6,19 +6,19 @@
 // This file is subject to the terms and conditions defined in the file
 // 'LICENSE', which is part of this source code package.
 
-#include <svo/frame_handler_stereo.h>
-#include <svo/map.h>
-#include <svo/common/frame.h>
-#include <svo/common/point.h>
-#include <svo/pose_optimizer.h>
-#include <svo/img_align/sparse_img_align.h>
-#include <svo/direct/depth_filter.h>
-#include <svo/stereo_triangulation.h>
-#include <svo/direct/feature_detection.h>
-#include <svo/direct/feature_detection_utils.h>
-#include <svo/reprojector.h>
-#include <svo/initialization.h>
-#include <vikit/performance_monitor.h>
+#include <asr_sdm_vio/frame_handler_stereo.h>
+#include <asr_sdm_vio/map.h>
+#include <asr_sdm_vio/common/frame.h>
+#include <asr_sdm_vio/common/point.h>
+#include <asr_sdm_vio/pose_optimizer.h>
+#include <asr_sdm_vio/img_align/sparse_img_align.h>
+#include <asr_sdm_vio/direct/depth_filter.h>
+#include <asr_sdm_vio/stereo_triangulation.h>
+#include <asr_sdm_vio/direct/feature_detection.h>
+#include <asr_sdm_vio/direct/feature_detection_utils.h>
+#include <asr_sdm_vio/reprojector.h>
+#include <asr_sdm_vio/initialization.h>
+#include <video_kit/performance_monitor.h>
 
 namespace svo {
 

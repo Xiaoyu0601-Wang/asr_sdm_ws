@@ -18,12 +18,12 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <opencv2/core/core.hpp>
-#include <vikit/performance_monitor.h>
+#include <video_kit/performance_monitor.h>
 
-#include <svo/common/logging.h>
-#include <svo/common/types.h>
-#include <svo/common/camera.h>
-#include <svo/common/transformation.h>
+#include <asr_sdm_vio/common/logging.h>
+#include <asr_sdm_vio/common/types.h>
+#include <asr_sdm_vio/common/camera.h>
+#include <asr_sdm_vio/common/transformation.h>
 
 
 namespace svo

@@ -1,8 +1,8 @@
-#include "asr_sdm_vio_online_loopclosing/online_loopclosing/map_alignment.h"
+#include "asr_sdm_vio/online_loopclosing/map_alignment.h"
 
 #include <iomanip>
 #include <iostream>
-#include <svo/common/frame.h>
+#include <asr_sdm_vio/common/frame.h>
 
 namespace svo
 {

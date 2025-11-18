@@ -1,14 +1,14 @@
-#include <asr_sdm_vio_tracker/tracker/feature_tracker.h>
+#include <asr_sdm_vio/tracker/feature_tracker.h>
 
-#include <svo/common/camera.h>
-#include <svo/common/container_helpers.h>
-#include <svo/common/frame.h>
-#include <svo/common/point.h>
-#include <svo/direct/feature_alignment.h>
-#include <svo/direct/feature_detection.h>
-#include <svo/direct/feature_detection_utils.h>
+#include <asr_sdm_vio/common/camera.h>
+#include <asr_sdm_vio/common/container_helpers.h>
+#include <asr_sdm_vio/common/frame.h>
+#include <asr_sdm_vio/common/point.h>
+#include <asr_sdm_vio/direct/feature_alignment.h>
+#include <asr_sdm_vio/direct/feature_detection.h>
+#include <asr_sdm_vio/direct/feature_detection_utils.h>
 
-#include <asr_sdm_vio_tracker/tracker/feature_tracking_utils.h>
+#include <asr_sdm_vio/tracker/feature_tracking_utils.h>
 
 namespace svo {
 

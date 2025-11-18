@@ -1,12 +1,12 @@
-#include <asr_sdm_vio_test_utils/test_utils/synthetic_dataset.h>
+#include <asr_sdm_vio/test_utils/synthetic_dataset.h>
 
 #include <random>
 
 #include <glog/logging.h>
 
-#include <asr_sdm_vio_common/common/camera.h>
-#include <asr_sdm_vio_common/common/frame.h>
-#include <asr_sdm_vio_common/common/point.h>
+#include <asr_sdm_vio/common/camera.h>
+#include <asr_sdm_vio/common/frame.h>
+#include <asr_sdm_vio/common/point.h>
 
 #include <video_kit/sample.h>
 

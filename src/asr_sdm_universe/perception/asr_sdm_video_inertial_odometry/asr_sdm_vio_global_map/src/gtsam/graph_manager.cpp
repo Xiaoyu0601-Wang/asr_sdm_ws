@@ -2,10 +2,10 @@
 #include "svo/gtsam/camera_bearing_factor.h"
 #include "svo/gtsam/camera_bearing_extrinsics_factor.h"
 
-#include <svo/common/frame.h>
-#include <svo/common/point.h>
-#include <svo/common/imu_calibration.h>
-#include <vikit/math_utils.h>
+#include <asr_sdm_vio/common/frame.h>
+#include <asr_sdm_vio/common/point.h>
+#include <asr_sdm_vio/common/imu_calibration.h>
+#include <video_kit/math_utils.h>
 
 // boost
 #include <boost/make_shared.hpp>

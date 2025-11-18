@@ -6,7 +6,7 @@
 #include <condition_variable>
 #include <unordered_map>
 
-#include <svo/common/types.h>
+#include <asr_sdm_vio/common/types.h>
 
 #include <gtsam/linear/NoiseModel.h>
 #include <gtsam/nonlinear/Values.h>

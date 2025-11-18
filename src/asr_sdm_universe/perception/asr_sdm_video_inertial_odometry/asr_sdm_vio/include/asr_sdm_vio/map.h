@@ -11,7 +11,7 @@
 #include <unordered_map>
 #include <deque>
 #include <mutex>
-#include <svo/global.h>
+#include <asr_sdm_vio/global.h>
 
 namespace svo {
 

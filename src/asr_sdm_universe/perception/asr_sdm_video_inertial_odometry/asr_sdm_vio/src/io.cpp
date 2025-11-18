@@ -10,11 +10,11 @@
 #include <unordered_map>
 
 // svo
-#include <svo/io.h>
-#include <svo/global.h>
-#include <svo/map.h>
-#include <svo/common/frame.h>
-#include <svo/common/point.h>
+#include <asr_sdm_vio/io.h>
+#include <asr_sdm_vio/global.h>
+#include <asr_sdm_vio/map.h>
+#include <asr_sdm_vio/common/frame.h>
+#include <asr_sdm_vio/common/point.h>
 
 namespace svo {
 namespace io {

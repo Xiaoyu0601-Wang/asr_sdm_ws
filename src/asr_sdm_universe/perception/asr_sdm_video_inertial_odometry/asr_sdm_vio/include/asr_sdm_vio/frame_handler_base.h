@@ -13,16 +13,16 @@
 #include <functional>
 #include <unordered_map>
 
-#include <vikit/timer.h>
-#include <vikit/ringbuffer.h>
+#include <video_kit/timer.h>
+#include <video_kit/ringbuffer.h>
 
-#include <vikit/params_helper.h>
-#include <vikit/cameras/ncamera.h>
-#include <rpg_common/callback_host.h>
+#include <video_kit/params_helper.h>
+#include <video_kit/cameras/ncamera.h>
+#include <asr_sdm_rpg_common/callback_host.h>
 
-#include "svo/common/frame.h"
-#include "svo/map.h"
-#include "svo/global.h"
+#include "asr_sdm_vio/common/frame.h"
+#include "asr_sdm_vio/map.h"
+#include "asr_sdm_vio/global.h"
 
 // forward declarations:
 namespace vk

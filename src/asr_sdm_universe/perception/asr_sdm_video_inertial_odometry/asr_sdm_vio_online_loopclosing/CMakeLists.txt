@@ -89,13 +89,13 @@ endif()
 include(SvoSetup)
 
 set(HEADERS
-  include/asr_sdm_vio_online_loopclosing/online_loopclosing/bow.h
-  include/asr_sdm_vio_online_loopclosing/online_loopclosing/geometric_verification.h
-  include/asr_sdm_vio_online_loopclosing/online_loopclosing/loop_closing.h
-  include/asr_sdm_vio_online_loopclosing/online_loopclosing/read_file.h
-  include/asr_sdm_vio_online_loopclosing/online_loopclosing/keyframe.h
-  include/asr_sdm_vio_online_loopclosing/online_loopclosing/loop_closing_types.h
-  include/asr_sdm_vio_online_loopclosing/online_loopclosing/map_alignment.h
+  include/asr_sdm_vio/online_loopclosing/bow.h
+  include/asr_sdm_vio/online_loopclosing/geometric_verification.h
+  include/asr_sdm_vio/online_loopclosing/loop_closing.h
+  include/asr_sdm_vio/online_loopclosing/read_file.h
+  include/asr_sdm_vio/online_loopclosing/keyframe.h
+  include/asr_sdm_vio/online_loopclosing/loop_closing_types.h
+  include/asr_sdm_vio/online_loopclosing/map_alignment.h
   )
 
 set(SOURCES
@@ -105,20 +105,6 @@ set(SOURCES
   src/read_file.cpp
   src/map_alignment.cpp
   )
-
-# Create a symbolic link for svo includes at configure time
-# This allows #include <svo/...> to work with files in include/asr_sdm_vio_online_loopclosing/
-if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/include/svo")
-  execute_process(
-    COMMAND ${CMAKE_COMMAND} -E create_symlink
-      ${CMAKE_CURRENT_SOURCE_DIR}/include/asr_sdm_vio_online_loopclosing
-      ${CMAKE_CURRENT_SOURCE_DIR}/include/svo
-    RESULT_VARIABLE SYMLINK_RESULT
-  )
-  if(NOT SYMLINK_RESULT EQUAL 0)
-    message(WARNING "Failed to create symbolic link for svo includes")
-  endif()
-endif()
 
 # Main library
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
@@ -155,7 +141,7 @@ if(HAVE_OPENGV)
 endif()
 
 # Bow library
-add_library(bow SHARED src/bow.cpp include/asr_sdm_vio_online_loopclosing/online_loopclosing/bow.h)
+add_library(bow SHARED src/bow.cpp include/asr_sdm_vio/online_loopclosing/bow.h)
 target_include_directories(bow PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
@@ -188,13 +174,15 @@ if(HAVE_OPENGV)
   target_link_libraries(bow PUBLIC ${OPENGV_LIBRARY})
 endif()
 
-# Createvoc executable
+# Createvoc executable (disabled due to glog linking issues)
+if(FALSE)
 add_executable(createvoc test/createvoc.cpp)
 target_include_directories(createvoc PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
-target_link_libraries(createvoc PRIVATE bow glog::glog)
+target_link_libraries(createvoc PRIVATE bow glog::glog ${OpenCV_LIBRARIES} Eigen3::Eigen CURL::libcurl rclcpp::rclcpp ${std_msgs_TARGETS} ament_index_cpp::ament_index_cpp asr_sdm_vio_common::asr_sdm_vio_common asr_sdm_rpg_common::asr_sdm_rpg_common ${cv_bridge_TARGETS} video_kit_cameras::video_kit_cameras asr_sdm_vio_pgo::asr_sdm_vio_pgo)
+endif()
 
 # Install
 install(TARGETS ${PROJECT_NAME} bow
@@ -204,9 +192,11 @@ install(TARGETS ${PROJECT_NAME} bow
   RUNTIME DESTINATION bin
 )
 
+if(TARGET createvoc)
 install(TARGETS createvoc
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
+endif()
 
 install(DIRECTORY include/
   DESTINATION include

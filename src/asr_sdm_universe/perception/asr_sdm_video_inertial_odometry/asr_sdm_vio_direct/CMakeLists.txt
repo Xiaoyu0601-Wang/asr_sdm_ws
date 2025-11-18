@@ -31,17 +31,17 @@ include(SvoSetup)
 add_compile_options(-Wno-unused-parameter -Wno-vla)
 
 set(HEADERS
-  include/asr_sdm_vio_direct/direct/patch_warp.h
-  include/asr_sdm_vio_direct/direct/patch_score.h
-  include/asr_sdm_vio_direct/direct/patch_utils.h
-  include/asr_sdm_vio_direct/direct/feature_alignment.h
-  include/asr_sdm_vio_direct/direct/feature_detection_types.h
-  include/asr_sdm_vio_direct/direct/feature_detection.h
-  include/asr_sdm_vio_direct/direct/feature_detection_utils.h
-  include/asr_sdm_vio_direct/direct/matcher.h
-  include/asr_sdm_vio_direct/direct/depth_filter.h
-  include/asr_sdm_vio_direct/direct/depth_estimation.h
-  include/asr_sdm_vio_direct/direct/elder_zucker.h
+  include/asr_sdm_vio/direct/patch_warp.h
+  include/asr_sdm_vio/direct/patch_score.h
+  include/asr_sdm_vio/direct/patch_utils.h
+  include/asr_sdm_vio/direct/feature_alignment.h
+  include/asr_sdm_vio/direct/feature_detection_types.h
+  include/asr_sdm_vio/direct/feature_detection.h
+  include/asr_sdm_vio/direct/feature_detection_utils.h
+  include/asr_sdm_vio/direct/matcher.h
+  include/asr_sdm_vio/direct/depth_filter.h
+  include/asr_sdm_vio/direct/depth_estimation.h
+  include/asr_sdm_vio/direct/elder_zucker.h
 )
 
 set(SOURCES
@@ -63,20 +63,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
-
-# Create a symbolic link for svo includes at configure time
-# This allows #include <svo/...> to work with files in include/asr_sdm_vio_direct/
-if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/include/svo")
-  execute_process(
-    COMMAND ${CMAKE_COMMAND} -E create_symlink
-      ${CMAKE_CURRENT_SOURCE_DIR}/include/asr_sdm_vio_direct
-      ${CMAKE_CURRENT_SOURCE_DIR}/include/svo
-    RESULT_VARIABLE SYMLINK_RESULT
-  )
-  if(NOT SYMLINK_RESULT EQUAL 0)
-    message(WARNING "Failed to create symbolic link for svo includes")
-  endif()
-endif()
 
 # Link dependencies
 target_link_libraries(${PROJECT_NAME} 

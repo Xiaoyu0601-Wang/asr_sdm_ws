@@ -19,45 +19,17 @@ find_package(asr_sdm_vio_common REQUIRED)
 # LIBRARIES #
 #############
 set(HEADERS
-  include/asr_sdm_vio_imu/vio_common/logging.hpp
-  include/asr_sdm_vio_imu/vio_common/matrix_operations.hpp
-  include/asr_sdm_vio_imu/vio_common/matrix.hpp
-  include/asr_sdm_vio_imu/vio_common/test_utils.hpp
-  include/asr_sdm_vio_imu/vio_common/backend_types.hpp
+  include/asr_sdm_vio/vio_common/logging.hpp
+  include/asr_sdm_vio/vio_common/matrix_operations.hpp
+  include/asr_sdm_vio/vio_common/matrix.hpp
+  include/asr_sdm_vio/vio_common/test_utils.hpp
+  include/asr_sdm_vio/vio_common/backend_types.hpp
   )
 
 set(SOURCES
   src/vio_common.cpp
   src/test_utils.cpp
   )
-
-# Create a symbolic link for svo includes at configure time
-# This allows #include <svo/...> to work with files in include/asr_sdm_vio_imu/
-if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/include/svo")
-  execute_process(
-    COMMAND ${CMAKE_COMMAND} -E create_symlink
-      ${CMAKE_CURRENT_SOURCE_DIR}/include/asr_sdm_vio_imu
-      ${CMAKE_CURRENT_SOURCE_DIR}/include/svo
-    RESULT_VARIABLE SYMLINK_RESULT
-  )
-  if(NOT SYMLINK_RESULT EQUAL 0)
-    message(WARNING "Failed to create symbolic link for svo includes")
-  endif()
-endif()
-
-# Create a symbolic link for svo includes at configure time
-# This allows #include <svo/...> to work with files in include/asr_sdm_vio_imu/
-if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/include/svo")
-  execute_process(
-    COMMAND ${CMAKE_COMMAND} -E create_symlink
-      ${CMAKE_CURRENT_SOURCE_DIR}/include/asr_sdm_vio_imu
-      ${CMAKE_CURRENT_SOURCE_DIR}/include/svo
-    RESULT_VARIABLE SYMLINK_RESULT
-  )
-  if(NOT SYMLINK_RESULT EQUAL 0)
-    message(WARNING "Failed to create symbolic link for svo includes")
-  endif()
-endif()
 
 add_library(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 

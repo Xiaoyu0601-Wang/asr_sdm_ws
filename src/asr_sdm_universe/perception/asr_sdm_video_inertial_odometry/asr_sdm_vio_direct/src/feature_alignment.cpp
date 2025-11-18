@@ -6,7 +6,7 @@
 // This file is subject to the terms and conditions defined in the file
 // 'LICENSE', which is part of this source code package.
 
-#include <svo/direct/feature_alignment.h>
+#include <asr_sdm_vio/direct/feature_alignment.h>
 
 #ifdef __SSE2__
 # include <emmintrin.h>
@@ -19,7 +19,7 @@
 #include <Eigen/Dense>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include <svo/direct/patch_utils.h>
+#include <asr_sdm_vio/direct/patch_utils.h>
 
 namespace svo {
 namespace feature_alignment {

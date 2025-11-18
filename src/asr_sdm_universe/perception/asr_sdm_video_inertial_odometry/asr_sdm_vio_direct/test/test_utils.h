@@ -17,10 +17,10 @@
 #include <Eigen/Core>
 #include <opencv2/opencv.hpp>
 #include <ros/package.h>
-#include <vikit/params_helper.h>
-#include <svo/common/camera.h>
+#include <video_kit/params_helper.h>
+#include <asr_sdm_vio/common/camera.h>
 
-#include <svo/common/frame.h>
+#include <asr_sdm_vio/common/frame.h>
 
 
 #define SVO_TEST_STREAM(x) {std::cerr<<"\033[0;0m[          ] * "<<x<<"\033[0;0m"<<std::endl; }

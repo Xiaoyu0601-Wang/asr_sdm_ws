@@ -30,8 +30,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 add_compile_options(-Wno-unused-parameter -Wno-vla)
 
 set(HEADERS
-  include/asr_sdm_vio_img_align/img_align/sparse_img_align_base.h
-  include/asr_sdm_vio_img_align/img_align/sparse_img_align.h
+  include/asr_sdm_vio/img_align/sparse_img_align_base.h
+  include/asr_sdm_vio/img_align/sparse_img_align.h
   )
 
 set(SOURCES
@@ -48,20 +48,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   $<INSTALL_INTERFACE:include>
   ${EIGEN3_INCLUDE_DIR}
 )
-
-# Create a symbolic link for svo includes at configure time
-# This allows #include <svo/...> to work with files in include/asr_sdm_vio_img_align/
-if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/include/svo")
-  execute_process(
-    COMMAND ${CMAKE_COMMAND} -E create_symlink
-      ${CMAKE_CURRENT_SOURCE_DIR}/include/asr_sdm_vio_img_align
-      ${CMAKE_CURRENT_SOURCE_DIR}/include/svo
-    RESULT_VARIABLE SYMLINK_RESULT
-  )
-  if(NOT SYMLINK_RESULT EQUAL 0)
-    message(WARNING "Failed to create symbolic link for svo includes")
-  endif()
-endif()
 
 target_link_libraries(${PROJECT_NAME} 
   ${OpenCV_LIBRARIES} 

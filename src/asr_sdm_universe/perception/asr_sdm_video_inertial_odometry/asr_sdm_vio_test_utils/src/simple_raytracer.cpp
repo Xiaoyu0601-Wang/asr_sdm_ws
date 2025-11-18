@@ -1,12 +1,12 @@
-#include "asr_sdm_vio_test_utils/test_utils/simple_raytracer.h"
+#include "asr_sdm_vio/test_utils/simple_raytracer.h"
 
 #include <opencv2/highgui/highgui.hpp>
-#include <asr_sdm_vio_common/common/camera.h>
-#include <asr_sdm_vio_common/common/conversions.h>
+#include <asr_sdm_vio/common/camera.h>
+#include <asr_sdm_vio/common/conversions.h>
 #include <video_kit/cameras/camera_factory.h>
 #include <video_kit/cameras/equidistant_fisheye_geometry.h>
 
-#include "asr_sdm_vio_test_utils/test_utils/trajectory_generator.h"
+#include "asr_sdm_vio/test_utils/trajectory_generator.h"
 
 namespace svo {
 namespace raytracer {

@@ -6,16 +6,16 @@
 // This file is subject to the terms and conditions defined in the file
 // 'LICENSE', which is part of this source code package.
 
-#include <svo/direct/depth_filter.h>
-#include <svo/direct/feature_detection.h>
-#include <svo/tracker/feature_tracker.h>
-#include <svo/common/frame.h>
-#include <svo/frame_handler_mono.h>
-#include <svo/frame_handler_stereo.h>
-#include <svo/frame_handler_array.h>
-#include <svo/global.h>
-#include <svo/imu_handler.h>
-#include <svo/initialization.h>
-#include <svo/map.h>
-#include <svo/reprojector.h>
-#include <svo/stereo_triangulation.h>
+#include <asr_sdm_vio/direct/depth_filter.h>
+#include <asr_sdm_vio/direct/feature_detection.h>
+#include <asr_sdm_vio/tracker/feature_tracker.h>
+#include <asr_sdm_vio/common/frame.h>
+#include <asr_sdm_vio/frame_handler_mono.h>
+#include <asr_sdm_vio/frame_handler_stereo.h>
+#include <asr_sdm_vio/frame_handler_array.h>
+#include <asr_sdm_vio/global.h>
+#include <asr_sdm_vio/imu_handler.h>
+#include <asr_sdm_vio/initialization.h>
+#include <asr_sdm_vio/map.h>
+#include <asr_sdm_vio/reprojector.h>
+#include <asr_sdm_vio/stereo_triangulation.h>

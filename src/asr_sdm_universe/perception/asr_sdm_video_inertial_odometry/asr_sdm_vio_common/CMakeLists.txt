@@ -26,67 +26,25 @@ include(SvoSetup)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
 set(HEADERS
-  include/asr_sdm_vio_common/common/camera.h
-  include/asr_sdm_vio_common/common/camera_fwd.h
-  include/asr_sdm_vio_common/common/container_helpers.h
-  include/asr_sdm_vio_common/common/conversions.h
-  include/asr_sdm_vio_common/common/feature_wrapper.h
-  include/asr_sdm_vio_common/common/frame.h
-  include/asr_sdm_vio_common/common/imu_calibration.h
-  include/asr_sdm_vio_common/common/logging.h
-  include/asr_sdm_vio_common/common/occupancy_grid_2d.h
-  include/asr_sdm_vio_common/common/point.h
-  include/asr_sdm_vio_common/common/seed.h
-  include/asr_sdm_vio_common/common/transformation.h
-  include/asr_sdm_vio_common/common/types.h
+  include/asr_sdm_vio/common/camera.h
+  include/asr_sdm_vio/common/camera_fwd.h
+  include/asr_sdm_vio/common/container_helpers.h
+  include/asr_sdm_vio/common/conversions.h
+  include/asr_sdm_vio/common/feature_wrapper.h
+  include/asr_sdm_vio/common/frame.h
+  include/asr_sdm_vio/common/imu_calibration.h
+  include/asr_sdm_vio/common/logging.h
+  include/asr_sdm_vio/common/occupancy_grid_2d.h
+  include/asr_sdm_vio/common/point.h
+  include/asr_sdm_vio/common/seed.h
+  include/asr_sdm_vio/common/transformation.h
+  include/asr_sdm_vio/common/types.h
   )
 
 set(SOURCES
   src/frame.cpp
   src/point.cpp
   )
-
-# Create a symbolic link for svo includes at configure time
-# This allows #include <svo/...> to work with files in include/asr_sdm_vio_common/
-if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/include/svo")
-  execute_process(
-    COMMAND ${CMAKE_COMMAND} -E create_symlink
-      ${CMAKE_CURRENT_SOURCE_DIR}/include/asr_sdm_vio_common
-      ${CMAKE_CURRENT_SOURCE_DIR}/include/svo
-    RESULT_VARIABLE SYMLINK_RESULT
-  )
-  if(NOT SYMLINK_RESULT EQUAL 0)
-    message(WARNING "Failed to create symbolic link for svo includes")
-  endif()
-endif()
-
-# Create a symbolic link for svo includes at configure time
-# This allows #include <svo/...> to work with files in include/asr_sdm_vio_common/
-if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/include/svo")
-  execute_process(
-    COMMAND ${CMAKE_COMMAND} -E create_symlink
-      ${CMAKE_CURRENT_SOURCE_DIR}/include/asr_sdm_vio_common
-      ${CMAKE_CURRENT_SOURCE_DIR}/include/svo
-    RESULT_VARIABLE SYMLINK_RESULT
-  )
-  if(NOT SYMLINK_RESULT EQUAL 0)
-    message(WARNING "Failed to create symbolic link for svo includes")
-  endif()
-endif()
-
-# Create a symbolic link for svo includes at configure time
-# This allows #include <svo/...> to work with files in include/asr_sdm_vio_common/
-if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/include/svo")
-  execute_process(
-    COMMAND ${CMAKE_COMMAND} -E create_symlink
-      ${CMAKE_CURRENT_SOURCE_DIR}/include/asr_sdm_vio_common
-      ${CMAKE_CURRENT_SOURCE_DIR}/include/svo
-    RESULT_VARIABLE SYMLINK_RESULT
-  )
-  if(NOT SYMLINK_RESULT EQUAL 0)
-    message(WARNING "Failed to create symbolic link for svo includes")
-  endif()
-endif()
 
 # Create shared library
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})

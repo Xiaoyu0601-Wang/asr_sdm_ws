@@ -20,20 +20,6 @@ find_package(glog REQUIRED)
 # Source files
 set(SOURCES src/fs.cpp)
 
-# Create a symbolic link for rpg_common includes at configure time
-# This allows #include <rpg_common/...> to work with files in include/asr_sdm_rpg_common/
-if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/include/rpg_common")
-  execute_process(
-    COMMAND ${CMAKE_COMMAND} -E create_symlink
-      ${CMAKE_CURRENT_SOURCE_DIR}/include/asr_sdm_rpg_common
-      ${CMAKE_CURRENT_SOURCE_DIR}/include/rpg_common
-    RESULT_VARIABLE SYMLINK_RESULT
-  )
-  if(NOT SYMLINK_RESULT EQUAL 0)
-    message(WARNING "Failed to create symbolic link for rpg_common includes")
-  endif()
-endif()
-
 # Create library
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 

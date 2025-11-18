@@ -1,4 +1,4 @@
-#include <svo/reprojector.h>
+#include <asr_sdm_vio/reprojector.h>
 
 #include <set>
 #include <random> // std::mt19937
@@ -6,15 +6,15 @@
 #include <stdexcept>
 #include <future>
 
-#include <svo/common/camera.h>
-#include <svo/common/point.h>
-#include <svo/common/frame.h>
-#include <svo/common/occupancy_grid_2d.h>
-#include <svo/direct/matcher.h>
-#include <svo/direct/depth_filter.h>
-#include <svo/direct/feature_detection_utils.h>
-#include <vikit/math_utils.h>
-#include <vikit/timer.h>
+#include <asr_sdm_vio/common/camera.h>
+#include <asr_sdm_vio/common/point.h>
+#include <asr_sdm_vio/common/frame.h>
+#include <asr_sdm_vio/common/occupancy_grid_2d.h>
+#include <asr_sdm_vio/direct/matcher.h>
+#include <asr_sdm_vio/direct/depth_filter.h>
+#include <asr_sdm_vio/direct/feature_detection_utils.h>
+#include <video_kit/math_utils.h>
+#include <video_kit/timer.h>
 
 namespace svo {
 

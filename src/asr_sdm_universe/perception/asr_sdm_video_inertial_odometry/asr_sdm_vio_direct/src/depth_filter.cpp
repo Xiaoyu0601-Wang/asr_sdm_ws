@@ -6,19 +6,19 @@
 // This file is subject to the terms and conditions defined in the file
 // 'LICENSE', which is part of this source code package.
 
-#include <svo/direct/depth_filter.h>
+#include <asr_sdm_vio/direct/depth_filter.h>
 
 #include <algorithm>
-#include <vikit/math_utils.h>
-#include <vikit/vision.h>
-#include <svo/common/camera.h>
-#include <svo/common/frame.h>
-#include <svo/common/point.h>
-#include <svo/common/logging.h>
-#include <svo/common/seed.h>
-#include <svo/direct/matcher.h>
-#include <svo/direct/feature_detection.h>
-#include <svo/direct/feature_detection_utils.h>
+#include <video_kit/math_utils.h>
+#include <video_kit/vision.h>
+#include <asr_sdm_vio/common/camera.h>
+#include <asr_sdm_vio/common/frame.h>
+#include <asr_sdm_vio/common/point.h>
+#include <asr_sdm_vio/common/logging.h>
+#include <asr_sdm_vio/common/seed.h>
+#include <asr_sdm_vio/direct/matcher.h>
+#include <asr_sdm_vio/direct/feature_detection.h>
+#include <asr_sdm_vio/direct/feature_detection_utils.h>
 
 
 namespace svo {

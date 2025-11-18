@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include <svo/common/types.h>
-#include<svo/common/frame.h>
-#include <svo/common/feature_wrapper.h>
+#include <asr_sdm_vio/common/types.h>
+#include<asr_sdm_vio/common/frame.h>
+#include <asr_sdm_vio/common/feature_wrapper.h>
 
 namespace vk {
 class AbstractCamera;

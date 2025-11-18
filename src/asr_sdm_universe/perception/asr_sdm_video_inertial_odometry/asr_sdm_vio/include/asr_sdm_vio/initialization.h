@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include <svo/common/types.h>
-#include <svo/common/transformation.h>
-#include <svo/common/camera_fwd.h>
+#include <asr_sdm_vio/common/types.h>
+#include <asr_sdm_vio/common/transformation.h>
+#include <asr_sdm_vio/common/camera_fwd.h>
 
 namespace svo {
 

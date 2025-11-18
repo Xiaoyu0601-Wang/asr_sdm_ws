@@ -1,1 +1,0 @@
-/home/lxy/asr_sdm_ws/src/asr_sdm_universe/perception/asr_sdm_video_inertial_odometry/asr_sdm_vio_img_align/include/svo/img_align/frame_gpu.h

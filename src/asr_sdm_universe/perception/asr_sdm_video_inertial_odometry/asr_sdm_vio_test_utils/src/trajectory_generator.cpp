@@ -1,4 +1,4 @@
-#include <asr_sdm_vio_test_utils/test_utils/trajectory_generator.h>
+#include <asr_sdm_vio/test_utils/trajectory_generator.h>
 #include <fstream>
 
 namespace svo {

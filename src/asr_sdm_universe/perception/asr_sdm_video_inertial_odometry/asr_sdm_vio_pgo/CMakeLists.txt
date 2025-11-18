@@ -19,7 +19,7 @@ find_package(glog REQUIRED)
 include(SvoSetup)
 
 set(HEADERS
-  include/asr_sdm_vio_pgo/pgo/pgo.h
+  include/asr_sdm_vio/pgo/pgo.h
   )
 
 set(SOURCES

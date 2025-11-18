@@ -20,12 +20,12 @@ find_package(glog REQUIRED)
 
 ################################################################################
 set(HEADERS
-  include/asr_sdm_vio_test_utils/test_utils/test_utils.h
-  include/asr_sdm_vio_test_utils/test_utils/imu_simulation.h
-  include/asr_sdm_vio_test_utils/test_utils/synthetic_dataset.h
-  include/asr_sdm_vio_test_utils/test_utils/simple_raytracer.h
-  include/asr_sdm_vio_test_utils/test_utils/trajectory_generator.h
-  include/asr_sdm_vio_test_utils/test_utils/point_cloud_generator.h
+  include/asr_sdm_vio/test_utils/test_utils.h
+  include/asr_sdm_vio/test_utils/imu_simulation.h
+  include/asr_sdm_vio/test_utils/synthetic_dataset.h
+  include/asr_sdm_vio/test_utils/simple_raytracer.h
+  include/asr_sdm_vio/test_utils/trajectory_generator.h
+  include/asr_sdm_vio/test_utils/point_cloud_generator.h
 )
 
 set(SOURCES
@@ -36,20 +36,6 @@ set(SOURCES
   src/trajectory_generator.cpp
   src/point_cloud_generator.cpp
 )
-
-# Create a symbolic link for svo includes at configure time
-# This allows #include <svo/...> to work with files in include/asr_sdm_vio_test_utils/
-if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/include/svo")
-  execute_process(
-    COMMAND ${CMAKE_COMMAND} -E create_symlink
-      ${CMAKE_CURRENT_SOURCE_DIR}/include/asr_sdm_vio_test_utils
-      ${CMAKE_CURRENT_SOURCE_DIR}/include/svo
-    RESULT_VARIABLE SYMLINK_RESULT
-  )
-  if(NOT SYMLINK_RESULT EQUAL 0)
-    message(WARNING "Failed to create symbolic link for svo includes")
-  endif()
-endif()
 
 # Create library
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
