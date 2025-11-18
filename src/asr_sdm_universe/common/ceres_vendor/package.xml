@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>ceres_vendor</name>
+  <version>1.14.0</version>
+  <description>Ceres Solver vendor package for ROS 2</description>
+  <maintainer email="sameeragarwal@google.com">Sameer Agarwal</maintainer>
+  <license>BSD</license>
+
+  <url type="website">http://ceres-solver.org/</url>
+
+  <author>Sameer Agarwal</author>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>cmake</buildtool_depend>
+
+  <depend>eigen</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

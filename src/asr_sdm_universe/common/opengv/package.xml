@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>opengv</name>
+  <version>1.0.0</version>
+  <description>opengv - A library for calibrated camera pose computation</description>
+  <maintainer email="laurent.kneip@anu.edu.au">Laurent Kneip</maintainer>
+  <license>FreeBSD</license>
+  <author>Laurent Kneip</author>
+  <url>http://ros.org/wiki/opengv</url>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>cmake</buildtool_depend>
+
+  <depend>eigen</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
