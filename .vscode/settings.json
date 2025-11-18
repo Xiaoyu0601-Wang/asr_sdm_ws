@@ -72,6 +72,7 @@
         "typeinfo": "cpp",
         "variant": "cpp",
         "list": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "bitset": "cpp"
     }
 }
