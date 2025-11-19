@@ -13,6 +13,7 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 
+find_package(opengv REQUIRED)
 find_package(asr_sdm_vio_cmake REQUIRED)
 find_package(asr_sdm_vio_common REQUIRED)
 find_package(asr_sdm_rpg_common REQUIRED)
@@ -135,10 +136,10 @@ if(HAVE_DBOW2)
   target_link_libraries(${PROJECT_NAME} PUBLIC ${DBOW2_LIBRARY})
 endif()
 
-if(HAVE_OPENGV)
-  target_include_directories(${PROJECT_NAME} PUBLIC ${OPENGV_INCLUDE_DIR})
-  target_link_libraries(${PROJECT_NAME} PUBLIC ${OPENGV_LIBRARY})
-endif()
+
+target_include_directories(${PROJECT_NAME} PUBLIC ${OPENGV_INCLUDE_DIR})
+target_link_libraries(${PROJECT_NAME} PUBLIC ${OPENGV_LIBRARY})
+
 
 # Bow library
 add_library(bow SHARED src/bow.cpp include/asr_sdm_vio/online_loopclosing/bow.h)

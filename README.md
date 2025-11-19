@@ -105,7 +105,8 @@ sudo apt-get update && sudo apt-get install -y \
   libeigen3-dev \
   libopencv-dev \
   libyaml-cpp-dev \
-  libgflags-dev
+  libgflags-dev\
+  libceres-dev
 
 git clone git@github.com:azxyqian/asr_sdm_video_inertial_odometry_dependency.git
 ```
