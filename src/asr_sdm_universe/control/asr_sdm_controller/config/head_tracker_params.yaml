@@ -1,0 +1,30 @@
+/**:
+  ros__parameters:
+    # 机器人物理参数
+    link_front_length: 0.103      # 关节到单元前端的距离 (m)
+    link_rear_length: 0.123       # 关节到单元后端的距离 (m)
+    screw_radius: 0.075           # 螺旋轮半径 (m)
+    joint_limit: 1.570796         # 关节最大偏转角 (rad, pi/2)
+
+    # 控制器参数
+    control_rate_hz: 50.0         # 控制循环频率 (Hz)
+    cmd_timeout: 0.5              # 指令超时时间 (s)
+    max_linear_speed: 0.2         # 最大线速度 (m/s)
+    max_angular_speed: 0.5        # 最大角速度 (rad/s)
+
+    # 执行器映射与缩放
+    screw_velocity_scale: 9.549296  # 螺旋角速度(rad/s)到电机指令的缩放系数
+    max_screw_command: 1500.0       # 最大螺旋电机指令值
+    joint_angle_scale: 1000.0       # 关节角度(rad)到电机指令的缩放系数
+
+    # 节点行为参数
+    heartbeat_period_ms: 1500       # 心跳消息周期 (ms)
+
+    # 单元特定参数
+    # 螺旋轮螺旋角 (rad)
+    helix_alpha: [-0.785398, 0.785398, -0.785398, 0.785398]
+    # 单元ID，与硬件通信对应
+    unit_ids: [1, 2, 3, 4]
+    # 关节索引映射，-1表示该单元无关节
+    joint_index_map: [0, 1, 2, -1]
+

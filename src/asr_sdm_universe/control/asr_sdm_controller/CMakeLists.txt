@@ -16,6 +16,7 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(asr_sdm_control_msgs REQUIRED)
 find_package(asr_sdm_hardware_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(periphery REQUIRED)
 # Find libgpiod
 # find_package(PkgConfig REQUIRED)
@@ -42,6 +43,7 @@ add_executable(asr_sdm_controller src/asr_sdm_controller_node.cpp)
 target_link_libraries(asr_sdm_controller PUBLIC
   ${asr_sdm_control_msgs_TARGETS}
   ${asr_sdm_hardware_msgs_TARGETS}
+  ${geometry_msgs_TARGETS}
   ${std_msgs_TARGETS}
   rclcpp::rclcpp
   periphery
@@ -51,6 +53,16 @@ target_link_libraries(asr_sdm_controller PUBLIC
 install(TARGETS
   asr_sdm_controller
   DESTINATION lib/${PROJECT_NAME}
+)
+
+install(
+  DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}
+)
+
+install(
+  DIRECTORY config
+  DESTINATION share/${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)
