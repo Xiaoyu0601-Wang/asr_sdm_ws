@@ -65,4 +65,26 @@
      
      观察pointclouds信息
   - - -         
+### Related problems：
+#### 1.After the host runs the launch file
 
+When the host runs the launch file, the ROS 2 node starts and publishes the relevant topic. If the host is configured correctly, Radxa 3E should be able to subscribe to these topics via ROS 2's communication mechanism without having to run the launch file again on Radxa 3E.
+
+#### 2.Radxa 3E only needs to make sure the following:
+- ROS 2 is installed and configured correctly
+- The Radxa 3E is able to connect to the network where the host is located.
+- Radxa 3E is able to discover topics published by the host.
+
+#### 3.Distributed communication for ROS 2
+The nodes of ROS 2 use DDS for distributed communication. After the node on the host is started, it automatically broadcasts topic information on the network, and Radxa 3E only needs to discover these topics through DDS.
+
+If the host and Radxa 3E's ROS 2 environment are configured correctly, they should be able to automatically discover each other's nodes and topics.
+
+#### 4.Network configuration:
+Ensure that the Radxa 3E is able to access the host over the network. For example, whether the IP addresses of the host and Radxa 3E are in the same subnet, and whether the network is unblocked. You can use the ping command to test it.
+
+####  5.ROS 2 configuration check
+- **ROS_DOMAIN_ID**: If two devices use different **ROS_DOMAIN_ID**, they may not be able to discover each other in the same network. Make sure both devices use the same ROS_DOMAIN_ID, otherwise explicit settings are required:
+
+          export ROS_DOMAIN_ID=<Your Host DOMAIN_ID>
+          source ~/.bashrc
