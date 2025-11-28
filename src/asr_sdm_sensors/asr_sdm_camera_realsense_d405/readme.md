@@ -88,3 +88,47 @@ Ensure that the Radxa 3E is able to access the host over the network. For exampl
 
           export ROS_DOMAIN_ID=<Your Host DOMAIN_ID>
           source ~/.bashrc
+### 2.When the Radxa 3E runs the launch file,  enter the rqt command on the host, and the terminal will display,and it will not automatically show the camera feed for you.
+
+          user@user:~/ros2_ws$ rqt
+          QSocketNotifier: Can only be used with threads started with QThread
+          Wayland does not support QWindow::requestActivate()
+    
+### Solution:Radxa 3E only needs to make sure the following:
+
+#### Step 1:check if the host can "see" the camera topic on the board
+
+          source /opt/ros/humble/setup.bash
+
+  **Then look at the topic list on the host:**
+
+          ros2 topic list
+  **You can see something like the following on the host**
+
+          /camera/camera/color/camera_info
+          /camera/camera/color/image_rect_raw
+          /camera/camera/depth/image_rect_raw
+          ...
+
+
+**NEXT**
+#### Step 2:See if there is any data flowing on this topic
+          ros2 topic echo /camera/camera/color/image_rect_raw --qos-profile sensor_data
+
+**If a large lump keeps printing on the screen header / height / width / encoding / data , it means:**
+
+**The image data of the Radxa → host is already being transmitted  normally**
+
+### Finally
+#### Step 3:Then use rqt to open the Image View + Select topic correctly
+
+
+Turn on rqt on the host (add a prefix for Wayland):
+
+          env QT_QPA_PLATFORM=xcb rqt
+          Plugins → Visualization → Image View
+
+Just cutting the backend of Qt to X11, the main function is:
+- Avoid window focus/pinning issues in a few cases
+- Eliminate warning these warnings
+
