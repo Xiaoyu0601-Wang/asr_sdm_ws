@@ -7,10 +7,44 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(ament_index_cpp REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(pinocchio REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(urdfdom_headers REQUIRED)
+
+add_executable(pinocchio_dynamics_node
+  src/pinocchio_dynamics_node.cpp
+)
+
+target_include_directories(pinocchio_dynamics_node
+  PRIVATE
+    ${EIGEN3_INCLUDE_DIRS}
+)
+
+target_link_libraries(pinocchio_dynamics_node
+  PRIVATE
+    ament_index_cpp::ament_index_cpp
+    pinocchio::pinocchio
+    rclcpp::rclcpp
+    Eigen3::Eigen
+    ${geometry_msgs_LIBRARIES}
+    ${sensor_msgs_LIBRARIES}
+    ${std_msgs_LIBRARIES}
+)
+
+install(
+  TARGETS pinocchio_dynamics_node
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+install(
+  DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
