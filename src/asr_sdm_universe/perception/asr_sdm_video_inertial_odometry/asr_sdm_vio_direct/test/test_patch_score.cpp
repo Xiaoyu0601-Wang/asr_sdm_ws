@@ -7,8 +7,8 @@
 
 #include <stdio.h>
 #include <opencv2/opencv.hpp>
-#include <svo/direct/patch_score.h>
-#include <vikit/timer.h>
+#include <asr_sdm_vio/direct/patch_score.h>
+#include <video_kit/timer.h>
 
 namespace {
 

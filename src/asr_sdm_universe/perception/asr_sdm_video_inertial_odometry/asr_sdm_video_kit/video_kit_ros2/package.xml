@@ -8,15 +8,13 @@
   <license>Apache-2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-  <buildtool_depend>catkin</buildtool_depend>
-  <buildtool_depend>catkin_simple</buildtool_depend>
 
   <depend>rclcpp</depend>
   <depend>std_msgs</depend>
-  <depend>svo_cmake</depend>
+  <depend>asr_sdm_vio_cmake</depend>
   <depend>video_kit_common</depend>
-  <depend>glog_catkin</depend>
-  <depend>eigen_catkin</depend>
+  <depend>libgoogle-glog-dev</depend>
+  <depend>eigen</depend>
   <depend>minkindr</depend>
 
   <depend>tf2_ros</depend>

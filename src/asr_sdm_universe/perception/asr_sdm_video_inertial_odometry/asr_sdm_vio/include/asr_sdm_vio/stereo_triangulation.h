@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <svo/global.h>
+#include <asr_sdm_vio/global.h>
 
 namespace svo {
 

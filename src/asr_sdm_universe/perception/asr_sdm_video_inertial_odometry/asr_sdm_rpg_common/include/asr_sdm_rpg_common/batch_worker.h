@@ -5,8 +5,8 @@
 
 #include <glog/logging.h>
 
-#include "rpg_common/threadsafe_queue.h"
-#include "rpg_common/worker_base.h"
+#include "asr_sdm_rpg_common/threadsafe_queue.h"
+#include "asr_sdm_rpg_common/worker_base.h"
 
 namespace rpg_common {
 

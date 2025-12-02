@@ -6,27 +6,27 @@
 // This file is subject to the terms and conditions defined in the file
 // 'LICENSE', which is part of this source code package.
 
-#include <svo/initialization.h>
+#include <asr_sdm_vio/initialization.h>
 
 #include <random> // std::mt19937
 #include <vector>
 
-#include <svo/common/frame.h>
-#include <svo/common/point.h>
-#include <svo/common/camera.h>
-#include <svo/common/container_helpers.h>
-#include <svo/direct/feature_detection.h>
-#include <svo/direct/feature_detection_utils.h>
-#include <svo/direct/feature_alignment.h>
-#include <svo/direct/matcher.h>
-#include <svo/stereo_triangulation.h>
-#include <svo/pose_optimizer.h>
-#include <svo/tracker/feature_tracker.h>
-#include <svo/tracker/feature_tracking_utils.h>
-#include <vikit/cameras/ncamera.h>
-#include <vikit/math_utils.h>
-#include <vikit/homography.h>
-#include <vikit/sample.h>
+#include <asr_sdm_vio/common/frame.h>
+#include <asr_sdm_vio/common/point.h>
+#include <asr_sdm_vio/common/camera.h>
+#include <asr_sdm_vio/common/container_helpers.h>
+#include <asr_sdm_vio/direct/feature_detection.h>
+#include <asr_sdm_vio/direct/feature_detection_utils.h>
+#include <asr_sdm_vio/direct/feature_alignment.h>
+#include <asr_sdm_vio/direct/matcher.h>
+#include <asr_sdm_vio/stereo_triangulation.h>
+#include <asr_sdm_vio/pose_optimizer.h>
+#include <asr_sdm_vio/tracker/feature_tracker.h>
+#include <asr_sdm_vio/tracker/feature_tracking_utils.h>
+#include <video_kit/cameras/ncamera.h>
+#include <video_kit/math_utils.h>
+#include <video_kit/homography.h>
+#include <video_kit/sample.h>
 #include <opencv2/video/tracking.hpp> // for lucas kanade tracking
 #include <opencv2/opencv.hpp> // for display
 
@@ -382,7 +382,7 @@ InitResult OneShotInit::addFrameBundle(const FrameBundlePtr &frames_cur)
   FramePtr frame_cur = frames_cur->at(0);
   FeatureMatches matches_cur_ref;
   feature_tracking_utils::getFeatureMatches(*frame_cur, *frame_ref, &matches_cur_ref);
-  for(const std::pair<size_t, size_t> it : matches_cur_ref)
+  for(const std::pair<size_t, size_t>& it : matches_cur_ref)
   {
     const BearingVector f_ref = frame_ref->f_vec_.col(it.second);
     const Vector3d xyz_in_cam = (f_ref/f_ref.z()) * depth_at_current_frame_;
@@ -447,7 +447,7 @@ InitResult StereoInit::addFrameBundle(
 }
 
 InitResult ArrayInitGeometric::addFrameBundle(
-    const FrameBundlePtr& frames_cur)
+    const FrameBundlePtr& /*frames_cur*/)
 {
 
 #ifdef SVO_USE_OPENGV
@@ -590,7 +590,7 @@ InitResult ArrayInitGeometric::addFrameBundle(
 }
 
 InitResult ArrayInitOptimization::addFrameBundle(
-    const FrameBundlePtr& frames_cur)
+    const FrameBundlePtr& /*frames_cur*/)
 {
 #ifdef SVO_USE_GTSAM
 
@@ -841,7 +841,7 @@ void rescaleAndInitializePoints(
 
 void displayFeatureTracks(
     const FramePtr& frame_cur,
-    const FramePtr& frame_ref)
+    const FramePtr& /*frame_ref*/)
 {
   cv::Mat img_rgb(frame_cur->img().size(), CV_8UC3);
   cv::cvtColor(frame_cur->img(), img_rgb, cv::COLOR_GRAY2RGB);

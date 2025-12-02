@@ -7,7 +7,7 @@
  * retrieval
  */
 
-#include "svo/online_loopclosing/geometric_verification.h"
+#include "asr_sdm_vio/online_loopclosing/geometric_verification.h"
 
 using namespace std;
 

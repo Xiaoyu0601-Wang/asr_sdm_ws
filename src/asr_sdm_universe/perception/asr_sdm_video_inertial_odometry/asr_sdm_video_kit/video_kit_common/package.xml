@@ -16,7 +16,7 @@
   <depend>cv_bridge</depend>
   <depend>libgoogle-glog-dev</depend>
   <depend>minkindr</depend>
-  <depend>svo_cmake</depend>
+  <depend>asr_sdm_vio_cmake</depend>
   <depend>yaml-cpp</depend>
 
   <test_depend>ament_lint_auto</test_depend>

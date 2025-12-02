@@ -1,14 +1,14 @@
-#include <svo/test_utils/synthetic_dataset.h>
+#include <asr_sdm_vio/test_utils/synthetic_dataset.h>
 
 #include <random>
 
 #include <glog/logging.h>
 
-#include <svo/common/camera.h>
-#include <svo/common/frame.h>
-#include <svo/common/point.h>
+#include <asr_sdm_vio/common/camera.h>
+#include <asr_sdm_vio/common/frame.h>
+#include <asr_sdm_vio/common/point.h>
 
-#include <vikit/sample.h>
+#include <video_kit/sample.h>
 
 namespace svo {
 namespace test_utils {

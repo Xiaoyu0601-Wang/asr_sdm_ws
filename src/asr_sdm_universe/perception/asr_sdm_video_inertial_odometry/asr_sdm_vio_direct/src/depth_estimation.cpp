@@ -6,11 +6,11 @@
 // This file is subject to the terms and conditions defined in the file
 // 'LICENSE', which is part of this source code package.
 
-#include <svo/direct/depth_estimation.h>
-#include <svo/direct/patch_warp.h>
-#include <svo/direct/patch_utils.h>
-#include <svo/common/frame.h>
-#include <svo/common/camera.h>
+#include <asr_sdm_vio/direct/depth_estimation.h>
+#include <asr_sdm_vio/direct/patch_warp.h>
+#include <asr_sdm_vio/direct/patch_utils.h>
+#include <asr_sdm_vio/common/frame.h>
+#include <asr_sdm_vio/common/camera.h>
 #include <opencv2/highgui/highgui.hpp>
 
 namespace svo {

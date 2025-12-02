@@ -13,7 +13,7 @@ find_package(cv_bridge REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(glog REQUIRED)
 find_package(minkindr REQUIRED)
-find_package(svo_cmake REQUIRED)
+find_package(asr_sdm_vio_cmake REQUIRED)
 find_package(video_kit_common REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
@@ -59,17 +59,16 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
   ${EIGEN3_INCLUDE_DIR}
+  ${minkindr_INCLUDE_DIRS}
 )
 
-target_link_libraries(${PROJECT_NAME} yaml-cpp glog::glog)
-
-ament_target_dependencies(${PROJECT_NAME}
-  rclcpp
-  std_msgs
-  cv_bridge
-  minkindr
-  svo_cmake
-  video_kit_common
+target_link_libraries(${PROJECT_NAME} 
+  yaml-cpp 
+  glog::glog
+  rclcpp::rclcpp
+  ${std_msgs_TARGETS}
+  ${cv_bridge_TARGETS}
+  video_kit_common::video_kit_common
 )
 
 ################################################################################
@@ -82,8 +81,11 @@ if(BUILD_TESTING)
     test/test_cameras.cpp
   )
   find_package(CURL REQUIRED)
-  target_link_libraries(${PROJECT_NAME}_tests ${PROJECT_NAME} ${CURL_LIBRARIES})
-  ament_target_dependencies(${PROJECT_NAME}_tests eigen_checks)
+  target_link_libraries(${PROJECT_NAME}_tests 
+    ${PROJECT_NAME} 
+    ${CURL_LIBRARIES}
+    eigen_checks::eigen_checks
+  )
 endif()
 
 ################################################################################
@@ -103,10 +105,10 @@ install(
 
 ################################################################################
 # Export
-ament_export_dependencies(rclcpp std_msgs cv_bridge Eigen3 glog minkindr svo_cmake video_kit_common yaml-cpp)
+ament_export_dependencies(rclcpp std_msgs cv_bridge Eigen3 glog minkindr asr_sdm_vio_cmake video_kit_common yaml-cpp)
+ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
-ament_export_targets(export_${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

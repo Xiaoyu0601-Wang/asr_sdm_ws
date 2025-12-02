@@ -1,4 +1,4 @@
-#include "vikit/solver/mini_least_squares_solver.h"
+#include "video_kit/solver/mini_least_squares_solver.h"
 
 #include <stdexcept>
 #include <glog/logging.h>

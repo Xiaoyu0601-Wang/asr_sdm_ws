@@ -9,7 +9,7 @@
 #include "svo/gtsam/gtsam_optimizer.h"
 
 // svo
-#include <svo/common/frame.h>
+#include <asr_sdm_vio/common/frame.h>
 
 // boost
 #include <boost/make_shared.hpp>
@@ -26,7 +26,7 @@
 #include <gtsam/linear/linearExceptions.h>
 #include <gtsam/slam/SmartProjectionPoseFactor.h>
 
-#include <rpg_common/timer.h>
+#include <asr_sdm_rpg_common/timer.h>
 
 #include "svo/gtsam/graph_manager.h"
 

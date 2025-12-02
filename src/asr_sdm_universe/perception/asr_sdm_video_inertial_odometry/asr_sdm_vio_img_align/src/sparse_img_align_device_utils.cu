@@ -6,13 +6,13 @@
 // This file is subject to the terms and conditions defined in the file
 // 'LICENSE', which is part of this source code package.
 
-#include <svo/img_align/sparse_img_align_device_utils.cuh>
+#include <asr_sdm_vio/img_align/sparse_img_align_device_utils.cuh>
 
 #include <imp/cu_core/cu_texture.cuh>
 #include <imp/cu_core/cu_utils.hpp>
 
-#include <svo/common/logging.h>
-#include <svo/img_align/sparse_img_align_base.h>
+#include <asr_sdm_vio/common/logging.h>
+#include <asr_sdm_vio/img_align/sparse_img_align_base.h>
 
 namespace svo {
 

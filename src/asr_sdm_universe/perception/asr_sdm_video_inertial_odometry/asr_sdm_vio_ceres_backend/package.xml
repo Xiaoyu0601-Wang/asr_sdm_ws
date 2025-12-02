@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>asr_sdm_vio_ceres_backend</name>
+  <version>0.0.1</version>
+  <description>The asr_sdm_vio_ceres_backend package</description>
+  <maintainer email="azxiyuanqian@outlook.com">lxy</maintainer>
+  <license>TODO</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>visualization_msgs</depend>
+  <depend>cv_bridge</depend>
+  <depend>tf2_ros</depend>
+  <depend>asr_sdm_vio_common</depend>
+  <depend>asr_sdm_vio_imu</depend>
+  <depend>asr_sdm_vio</depend>
+  <depend>pcl_conversions</depend>
+  <depend>video_kit_ros2</depend>
+  <depend>ceres</depend>
+  <depend>glog</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

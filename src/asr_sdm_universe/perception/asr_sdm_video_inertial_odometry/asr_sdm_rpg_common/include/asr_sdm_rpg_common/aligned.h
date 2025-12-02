@@ -9,7 +9,7 @@
 #include <Eigen/StdVector>
 #include <glog/logging.h>
 
-#include "rpg_common/eigen_hash.h"
+#include "asr_sdm_rpg_common/eigen_hash.h"
 
 // See https://eigen.tuxfamily.org/dox-devel/group__TopicStlContainers.html
 namespace rpg_common {

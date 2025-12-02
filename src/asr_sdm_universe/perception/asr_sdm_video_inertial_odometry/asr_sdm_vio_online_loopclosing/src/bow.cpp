@@ -5,7 +5,7 @@
  *      Author: kunal71091
  */
 
-#include "svo/online_loopclosing/bow.h"
+#include "asr_sdm_vio/online_loopclosing/bow.h"
 
 using namespace DBoW2;
 

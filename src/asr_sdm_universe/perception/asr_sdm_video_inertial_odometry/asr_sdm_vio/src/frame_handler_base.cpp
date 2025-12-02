@@ -6,38 +6,38 @@
 // This file is subject to the terms and conditions defined in the file
 // 'LICENSE', which is part of this source code package.
 
-#include "svo/frame_handler_base.h"
+#include "asr_sdm_vio/frame_handler_base.h"
 
 #include <functional>
 #include <future>
 #include <memory>
 #include <opencv2/imgproc/imgproc.hpp>
 
-#include <svo/common/conversions.h>
-#include <svo/common/point.h>
-#include <svo/common/imu_calibration.h>
-#include <svo/direct/depth_filter.h>
-#include <svo/direct/feature_detection.h>
-#include <svo/direct/feature_detection_utils.h>
-#include <svo/direct/matcher.h>
-#include <svo/tracker/feature_tracker.h>
+#include <asr_sdm_vio/common/conversions.h>
+#include <asr_sdm_vio/common/point.h>
+#include <asr_sdm_vio/common/imu_calibration.h>
+#include <asr_sdm_vio/direct/depth_filter.h>
+#include <asr_sdm_vio/direct/feature_detection.h>
+#include <asr_sdm_vio/direct/feature_detection_utils.h>
+#include <asr_sdm_vio/direct/matcher.h>
+#include <asr_sdm_vio/tracker/feature_tracker.h>
 
 #ifdef SVO_LOOP_CLOSING
-#include <svo/online_loopclosing/loop_closing.h>
+#include <asr_sdm_vio/online_loopclosing/loop_closing.h>
 #endif
 
 #ifdef SVO_GLOBAL_MAP
-#include <svo/global_map.h>
+#include <asr_sdm_vio/global_map.h>
 #endif
 
-# include <svo/img_align/sparse_img_align.h>
+# include <asr_sdm_vio/img_align/sparse_img_align.h>
 
-#include "svo/abstract_bundle_adjustment.h"
-#include "svo/initialization.h"
-#include "svo/map.h"
-#include "svo/reprojector.h"
-#include "svo/imu_handler.h"
-#include "svo/pose_optimizer.h"
+#include "asr_sdm_vio/abstract_bundle_adjustment.h"
+#include "asr_sdm_vio/initialization.h"
+#include "asr_sdm_vio/map.h"
+#include "asr_sdm_vio/reprojector.h"
+#include "asr_sdm_vio/imu_handler.h"
+#include "asr_sdm_vio/pose_optimizer.h"
 
 namespace
 {

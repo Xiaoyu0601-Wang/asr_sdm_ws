@@ -8,9 +8,9 @@
 
 #include <set>
 #include <algorithm>
-#include <svo/map.h>
-#include <svo/common/point.h>
-#include <svo/common/frame.h>
+#include <asr_sdm_vio/map.h>
+#include <asr_sdm_vio/common/point.h>
+#include <asr_sdm_vio/common/frame.h>
 
 namespace svo {
 

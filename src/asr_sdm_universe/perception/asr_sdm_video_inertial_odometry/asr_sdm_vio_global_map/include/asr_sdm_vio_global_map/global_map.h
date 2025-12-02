@@ -6,10 +6,10 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <rpg_common/pose.h>
-#include <svo/common/imu_calibration.h>
-#include <svo/common/frame.h>
-#include <svo/common/occupancy_grid_2d.h>
+#include <asr_sdm_rpg_common/pose.h>
+#include <asr_sdm_vio/common/imu_calibration.h>
+#include <asr_sdm_vio/common/frame.h>
+#include <asr_sdm_vio/common/occupancy_grid_2d.h>
 
 namespace gtsam
 {

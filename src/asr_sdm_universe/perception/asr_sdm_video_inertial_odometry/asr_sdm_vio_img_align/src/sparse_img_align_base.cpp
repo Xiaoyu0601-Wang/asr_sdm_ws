@@ -6,19 +6,19 @@
 // This file is subject to the terms and conditions defined in the file
 // 'LICENSE', which is part of this source code package.
 
-#include <svo/img_align/sparse_img_align_base.h>
+#include <asr_sdm_vio/img_align/sparse_img_align_base.h>
 
 #include <algorithm>
 #include <random> // std::mt19937
 
 #include <opencv2/highgui/highgui.hpp>
 
-#include <vikit/vision.h>
-#include <vikit/math_utils.h>
+#include <video_kit/vision.h>
+#include <video_kit/math_utils.h>
 
-#include <svo/common/logging.h>
-#include <svo/common/point.h>
-#include <svo/direct/depth_filter.h>
+#include <asr_sdm_vio/common/logging.h>
+#include <asr_sdm_vio/common/point.h>
+#include <asr_sdm_vio/direct/depth_filter.h>
 
 
 namespace svo {

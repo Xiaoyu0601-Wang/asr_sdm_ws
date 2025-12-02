@@ -10,11 +10,11 @@
 #include <unordered_map>
 
 // svo
-#include <svo/io.h>
-#include <svo/global.h>
-#include <svo/map.h>
-#include <svo/common/frame.h>
-#include <svo/common/point.h>
+#include <asr_sdm_vio/io.h>
+#include <asr_sdm_vio/global.h>
+#include <asr_sdm_vio/map.h>
+#include <asr_sdm_vio/common/frame.h>
+#include <asr_sdm_vio/common/point.h>
 
 namespace svo {
 namespace io {
@@ -35,8 +35,8 @@ bool saveMap(
   for(const auto& keyval : map->keyframes_)
   {
     const FramePtr& frame = keyval.second;
-    const Vector3d& t = frame->T_world_cam().getPosition();
-    const Eigen::Quaterniond& q = frame->T_world_cam().getRotation().toImplementation();
+    const Vector3d t = frame->T_world_cam().getPosition();
+    const Eigen::Quaterniond q = frame->T_world_cam().getRotation().toImplementation();
     out << YAML::BeginMap
         << YAML::Key << "frame_id" << YAML::Value << frame->id()
         << YAML::Key << "cam_name" << YAML::Value << frame->cam()->getLabel()
@@ -87,7 +87,7 @@ bool saveMap(
       << YAML::BeginSeq;
 
   // safe points
-  for(const PointPtr point : points)
+  for(const PointPtr& point : points)
   {
     out << YAML::BeginMap
         << YAML::Key << "point_id" << YAML::Value << point->id()

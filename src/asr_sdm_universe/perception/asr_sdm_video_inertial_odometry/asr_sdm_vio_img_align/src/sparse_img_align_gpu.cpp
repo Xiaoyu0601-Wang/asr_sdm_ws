@@ -6,14 +6,14 @@
 // This file is subject to the terms and conditions defined in the file
 // 'LICENSE', which is part of this source code package.
 
-#include <svo/img_align/sparse_img_align_gpu.h>
+#include <asr_sdm_vio/img_align/sparse_img_align_gpu.h>
 
 #include <algorithm>
 
 #include <opencv2/highgui/highgui.hpp>
 
-#include <vikit/vision.h>
-#include <vikit/math_utils.h>
+#include <video_kit/vision.h>
+#include <video_kit/math_utils.h>
 #include <aslam/cameras/camera-pinhole.h>
 #include <imp/cu_core/cu_image_gpu.cuh>
 #include <imp/cu_core/cu_matrix.cuh>
@@ -22,11 +22,11 @@
 //TODO: remove
 #include <imp/bridge/opencv/cu_cv_bridge.hpp>
 
-#include <svo/common/logging.h>
-#include <svo/common/point.h>
-#include <svo/direct/depth_filter.h>
-#include <svo/img_align/sparse_img_align_device_utils.cuh>
-#include <svo/img_align/frame_gpu.h>
+#include <asr_sdm_vio/common/logging.h>
+#include <asr_sdm_vio/common/point.h>
+#include <asr_sdm_vio/direct/depth_filter.h>
+#include <asr_sdm_vio/img_align/sparse_img_align_device_utils.cuh>
+#include <asr_sdm_vio/img_align/frame_gpu.h>
 
 namespace svo {
 

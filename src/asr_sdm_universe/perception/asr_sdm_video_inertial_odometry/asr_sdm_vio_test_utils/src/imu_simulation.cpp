@@ -2,14 +2,14 @@
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=59800
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 
-#include <svo/test_utils/imu_simulation.h>
+#include <asr_sdm_vio/test_utils/imu_simulation.h>
 
 #include <chrono>
 #include <random>
 #include <glog/logging.h>
 
-#include <svo/common/types.h>
-#include <svo/common/imu_calibration.h>
+#include <asr_sdm_vio/common/types.h>
+#include <asr_sdm_vio/common/imu_calibration.h>
 
 namespace svo {
 namespace simulation {

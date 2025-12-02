@@ -9,8 +9,8 @@
 #pragma once
 
 // svo
-#include <svo/global.h>
-#include <svo/vio_common/backend_types.hpp>
+#include <asr_sdm_vio/global.h>
+#include <asr_sdm_vio/vio_common/backend_types.hpp>
 
 // forward declarations
 class Transformation;

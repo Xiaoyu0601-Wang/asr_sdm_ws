@@ -7,11 +7,11 @@
 // 'LICENSE', which is part of this source code package.
 
 #include <stdexcept>
-#include <vikit/math_utils.h>
-#include <svo/common/frame.h>
-#include <svo/common/point.h>
-#include <svo/pose_optimizer.h>
-#include <svo/common/seed.h>
+#include <video_kit/math_utils.h>
+#include <asr_sdm_vio/common/frame.h>
+#include <asr_sdm_vio/common/point.h>
+#include <asr_sdm_vio/pose_optimizer.h>
+#include <asr_sdm_vio/common/seed.h>
 
 namespace svo {
 

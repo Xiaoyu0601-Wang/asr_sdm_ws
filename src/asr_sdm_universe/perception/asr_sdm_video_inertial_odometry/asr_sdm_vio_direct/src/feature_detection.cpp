@@ -6,18 +6,18 @@
 // This file is subject to the terms and conditions defined in the file
 // 'LICENSE', which is part of this source code package.
 
-#include <svo/direct/feature_detection.h>
+#include <asr_sdm_vio/direct/feature_detection.h>
 
 #include <Eigen/Dense>
 #include <fast/fast.h>
-#include <vikit/vision.h>
+#include <video_kit/vision.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <aslam/common/memory.h>
-#include <svo/common/frame.h>
-#include <svo/common/camera.h>
-#include <svo/common/logging.h>
-#include <svo/direct/feature_detection_utils.h>
+#include <asr_sdm_vio/common/frame.h>
+#include <asr_sdm_vio/common/camera.h>
+#include <asr_sdm_vio/common/logging.h>
+#include <asr_sdm_vio/direct/feature_detection_utils.h>
 
 namespace svo {
 

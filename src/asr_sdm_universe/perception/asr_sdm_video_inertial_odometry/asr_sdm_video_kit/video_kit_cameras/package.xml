@@ -14,7 +14,7 @@
   <depend>cv_bridge</depend>
   <depend>libgoogle-glog-dev</depend>
   <depend>minkindr</depend>
-  <depend>svo_cmake</depend>
+  <depend>asr_sdm_vio_cmake</depend>
   <depend>video_kit_common</depend>
   <depend>yaml-cpp</depend>
 

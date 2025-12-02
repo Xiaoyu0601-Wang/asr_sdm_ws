@@ -1,0 +1,127 @@
+vio_frontend_stereo_ros2:
+  ros__parameters:
+    automatic_reinitialization: true
+    pipeline_is_stereo: true
+
+    max_fts: 180
+    max_map_fts: 300
+    max_n_kfs: 10
+    quality_min_fts: 20
+
+    map_scale: 1.5
+
+    T_world_imuinit/qx: 0
+    T_world_imuinit/qy: 0
+    T_world_imuinit/qz: 0
+    T_world_imuinit/qw: 1
+
+    kfselect_criterion: FORWARD
+    kfselect_numkfs_upper_thresh: 140
+    kfselect_numkfs_lower_thresh: 80
+    kfselect_min_dist_metric: 0.1
+    kfselect_min_angle: 20
+    kfselect_min_disparity: 30
+    update_seeds_with_old_keyframes: true
+
+    img_align_est_illumination_gain: true
+    img_align_est_illumination_offset: true
+    depth_filter_affine_est_offset: true
+    depth_filter_affine_est_gain: false
+    reprojector_affine_est_offset: true
+    reprojector_affine_est_gain: false
+
+    init_min_features: 30
+    init_min_disparity: 15
+
+    grid_size: 25
+    n_pyr_levels: 3
+    detector_threshold_primary: 8
+    detector_threshold_secondary: 120
+    detector_threshold_shitomasi: 40
+
+    img_align_max_level: 4
+    img_align_min_level: 2
+
+    use_async_reprojectors: true
+    reprojector_max_n_kfs: 3
+    scan_epi_unit_sphere: false
+    reproject_unconverged_seeds: true
+    max_unconverged_seeds_ratio: 0.2
+
+    poseoptim_thresh: 2.0
+    poseoptim_using_unit_sphere: false
+
+    seed_convergence_sigma2_thresh: 200
+    mappoint_convergence_sigma2_thresh: 500
+
+    relocalization_max_trials: 5
+
+    # IMU
+    use_imu: true
+    poseoptim_prior_lambda: 0.0
+    img_align_prior_lambda_rot: 0.5
+    img_align_prior_lambda_trans: 0.0
+
+    # Dense input
+    publish_every_nth_dense_input: 5
+
+    # Visualization
+    publish_marker_scale: 0.5
+    publish_active_kfs: true
+
+    # Stereo specific
+    max_depth_inv: 0.05
+    min_depth_inv: 1.0
+    mean_depth_inv: 0.3
+
+    ##############################
+    # Backend parameters
+    ##############################
+    use_ceres_backend: true
+    ceres_verbose: false
+    ceres_marginalize: true
+    ceres_num_iterations: 3
+    ceres_num_imu_frames: 3
+    ceres_max_iteration_time: 0.04
+    publish_marker_scale_backend: 0.5
+    backend_only_use_corners: false
+    backend_scale_stable_thresh: 0.02
+
+    # Loop Correction
+    ransac3d_inlier_percent: 35
+
+    # outlier rejection
+    use_outlier_rejection: true
+    outlier_rejection_px_threshold: 2.0
+
+    # Zero Motion Detection
+    backend_use_zero_motion_detection: true
+    backend_zero_motion_check_n_frames: 5
+    zero_motion_px_diff_threshold: 0.2
+    zero_motion_ratio_moving_pixels_threshold: 0.1
+    zero_motion_min_number_correspondences: 5
+    zero_motion_max_features_to_check: 15
+    zero_motion_sigma: 0.1
+
+    # After loop correction
+    ceres_remove_marginalization_term_after_loop: true
+    ceres_recalculate_imu_terms_after_loop: true
+
+    ##############################
+    # Loop Closing parameters
+    ##############################
+    runlc: true
+    voc_name: "voc_GEN_8X4.yml.gz"
+    alpha: 0.8
+    beta: 0.8
+    frames_to_ignore: 20
+    scale_retrieval_approach: -1
+    bow_thresh: 0.65
+    gv_thresh: 40.0
+    min_num_3d: 10
+    orb_dist_thresh: 48
+    match_thresh: 0.15
+    use_opengv: true
+    enable_image_logging: false
+    image_log_base_path: "/tmp/loopclosure_log/"
+

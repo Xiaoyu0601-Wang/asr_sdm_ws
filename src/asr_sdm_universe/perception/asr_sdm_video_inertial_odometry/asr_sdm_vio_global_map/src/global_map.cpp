@@ -4,8 +4,8 @@
 
 #include <gtsam/inference/Symbol.h>
 #include <gtsam/slam/SmartProjectionPoseFactor.h>
-#include <svo/common/camera.h>
-#include <svo/common/imu_calibration.h>
+#include <asr_sdm_vio/common/camera.h>
+#include <asr_sdm_vio/common/imu_calibration.h>
 #include <gtsam/geometry/Pose3.h>
 
 #include "svo/gtsam/graph_manager.h"

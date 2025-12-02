@@ -3,16 +3,16 @@
 #include <aslam/common/numdiff-jacobian-tester.h>
 #include <eigen-checks/gtest.h>
 #include <ros/package.h>
-#include <svo/common/camera.h>
-#include <svo/common/frame.h>
-#include <svo/common/seed.h>
-#include <svo/common/transformation.h>
-#include <svo/common/types.h>
-#include <svo/test_utils/synthetic_dataset.h>
-#include <vikit/cameras.h>
-#include <vikit/cameras/camera_geometry.h>
-#include <vikit/cameras/no_distortion.h>
-#include <vikit/cameras/pinhole_projection.h>
+#include <asr_sdm_vio/common/camera.h>
+#include <asr_sdm_vio/common/frame.h>
+#include <asr_sdm_vio/common/seed.h>
+#include <asr_sdm_vio/common/transformation.h>
+#include <asr_sdm_vio/common/types.h>
+#include <asr_sdm_vio/test_utils/synthetic_dataset.h>
+#include <video_kit/cameras.h>
+#include <video_kit/cameras/camera_geometry.h>
+#include <video_kit/cameras/no_distortion.h>
+#include <video_kit/cameras/pinhole_projection.h>
 
 #include "svo/direct/depth_estimation.h"
 

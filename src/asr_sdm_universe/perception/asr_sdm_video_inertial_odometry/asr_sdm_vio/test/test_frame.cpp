@@ -4,14 +4,14 @@
 #include <aslam/common/numdiff-jacobian-tester.h>
 #include <Eigen/Dense>
 #include <gtest/gtest.h>
-#include <svo/common/camera_fwd.h>
-#include <svo/common/frame.h>
-#include <svo/test_utils/test_utils.h>
-#include <vikit/cameras.h>
-#include <vikit/cameras/camera_factory.h>
-#include <vikit/cameras/camera_geometry_base.h>
-#include <vikit/cameras/omni_geometry.h>
-#include <vikit/timer.h>
+#include <asr_sdm_vio/common/camera_fwd.h>
+#include <asr_sdm_vio/common/frame.h>
+#include <asr_sdm_vio/test_utils/test_utils.h>
+#include <video_kit/cameras.h>
+#include <video_kit/cameras/camera_factory.h>
+#include <video_kit/cameras/camera_geometry_base.h>
+#include <video_kit/cameras/omni_geometry.h>
+#include <video_kit/timer.h>
 
 namespace svo {
 

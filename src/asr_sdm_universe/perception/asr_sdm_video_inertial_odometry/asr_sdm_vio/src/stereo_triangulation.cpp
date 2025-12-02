@@ -4,12 +4,13 @@
 // (Robotics and Perception Group, University of Zurich, Switzerland).
 
 #include <numeric>
-#include <svo/direct/matcher.h>
-#include <svo/common/point.h>
-#include <svo/common/frame.h>
-#include <svo/stereo_triangulation.h>
-#include <svo/direct/feature_detection.h>
-#include <svo/tracker/feature_tracker.h>
+#include <random>
+#include <asr_sdm_vio/direct/matcher.h>
+#include <asr_sdm_vio/common/point.h>
+#include <asr_sdm_vio/common/frame.h>
+#include <asr_sdm_vio/stereo_triangulation.h>
+#include <asr_sdm_vio/direct/feature_detection.h>
+#include <asr_sdm_vio/tracker/feature_tracker.h>
 
 namespace svo {
 
@@ -74,8 +75,10 @@ void StereoTriangulation::compute(const FramePtr& frame0,
         [](const FeatureType& t) { return t==FeatureType::kCorner; });
 
   // shuffle twice before we prefer corners!
-  std::random_shuffle(indices.begin(), indices.begin()+n_corners);
-  std::random_shuffle(indices.begin()+n_corners, indices.end());
+  static std::random_device rd;
+  static std::mt19937 g(rd());
+  std::shuffle(indices.begin(), indices.begin()+n_corners, g);
+  std::shuffle(indices.begin()+n_corners, indices.end(), g);
 
   // now for all maximum corners, initialize a new seed
   size_t n_succeded = 0, n_failed = 0;

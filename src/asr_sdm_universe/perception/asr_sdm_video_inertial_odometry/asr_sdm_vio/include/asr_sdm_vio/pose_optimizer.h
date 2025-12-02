@@ -10,10 +10,10 @@
 
 #include <fstream>
 #include <iostream>
-#include <svo/common/frame.h>
-#include <svo/global.h>
-#include <vikit/solver/mini_least_squares_solver.h>
-#include <vikit/solver/robust_cost.h>
+#include <asr_sdm_vio/common/frame.h>
+#include <asr_sdm_vio/global.h>
+#include <video_kit/solver/mini_least_squares_solver.h>
+#include <video_kit/solver/robust_cost.h>
 
 namespace svo {
 

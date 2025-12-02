@@ -6,25 +6,25 @@
 // This file is subject to the terms and conditions defined in the file
 // 'LICENSE', which is part of this source code package.
 
-#include <svo/direct/matcher.h>
+#include <asr_sdm_vio/direct/matcher.h>
 
 #include <cstdlib>
 #include <random>
 #include <chrono>
 
-#include <vikit/vision.h>
-#include <vikit/math_utils.h>
+#include <video_kit/vision.h>
+#include <video_kit/math_utils.h>
 #include <kindr/minimal/angle-axis.h>
 
-#include <svo/direct/patch_warp.h>
-#include <svo/direct/patch_score.h>
-#include <svo/direct/patch_utils.h>
-#include <svo/common/frame.h>
-#include <svo/common/point.h>
-#include <svo/common/feature_wrapper.h>
-#include <svo/direct/feature_alignment.h>
-#include <svo/common/camera.h>
-#include <svo/common/logging.h>
+#include <asr_sdm_vio/direct/patch_warp.h>
+#include <asr_sdm_vio/direct/patch_score.h>
+#include <asr_sdm_vio/direct/patch_utils.h>
+#include <asr_sdm_vio/common/frame.h>
+#include <asr_sdm_vio/common/point.h>
+#include <asr_sdm_vio/common/feature_wrapper.h>
+#include <asr_sdm_vio/direct/feature_alignment.h>
+#include <asr_sdm_vio/common/camera.h>
+#include <asr_sdm_vio/common/logging.h>
 
 namespace svo {
 
