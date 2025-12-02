@@ -1,14 +1,14 @@
-#include "svo/ceres_backend_interface.hpp"
+#include "asr_sdm_vio/ceres_backend_interface.hpp"
 
-#include <svo/common/conversions.h>
-#include <svo/common/frame.h>
-#include <svo/map.h>
-#include <svo/imu_handler.h>
-#include <svo/global.h>
+#include <asr_sdm_vio/common/conversions.h>
+#include <asr_sdm_vio/common/frame.h>
+#include <asr_sdm_vio/map.h>
+#include <asr_sdm_vio/imu_handler.h>
+#include <asr_sdm_vio/global.h>
 #include <fstream>
 
-#include "svo/motion_detector.hpp"
-#include "svo/outlier_rejection.hpp"
+#include "asr_sdm_vio/motion_detector.hpp"
+#include "asr_sdm_vio/outlier_rejection.hpp"
 
 //! @todo Esimation of extrinsics not tested!
 DEFINE_double(extrinsics_sigma_rel_translation, 0.0,

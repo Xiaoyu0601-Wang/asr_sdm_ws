@@ -38,9 +38,9 @@
  * @author Stefan Leutenegger
  */
 
-#include "svo/ceres_backend/homogeneous_point_local_parameterization.hpp"
+#include "asr_sdm_vio/ceres_backend/homogeneous_point_local_parameterization.hpp"
 
-#include <svo/vio_common/logging.hpp>
+#include <asr_sdm_vio/vio_common/logging.hpp>
 
 namespace svo {
 namespace ceres_backend {

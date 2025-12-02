@@ -1,8 +1,8 @@
 #include "epipolar_error.hpp"
 #include "reprojection_error_simple.hpp"
 
-#include <svo/common/types.h>
-#include <svo/common/transformation.h>
+#include <asr_sdm_vio/common/types.h>
+#include <asr_sdm_vio/common/transformation.h>
 
 #include <opengv/point_cloud/methods.hpp>
 #include <opengv/point_cloud/PointCloudAdapter.hpp>

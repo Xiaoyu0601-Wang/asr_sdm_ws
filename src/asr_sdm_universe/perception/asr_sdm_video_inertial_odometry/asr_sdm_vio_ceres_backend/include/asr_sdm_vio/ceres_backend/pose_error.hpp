@@ -47,10 +47,10 @@
 #include <ceres/ceres.h>
 #pragma diagnostic pop
 
-#include <svo/common/transformation.h>
-#include <svo/vio_common/matrix_operations.hpp>
+#include <asr_sdm_vio/common/transformation.h>
+#include <asr_sdm_vio/vio_common/matrix_operations.hpp>
 
-#include "svo/ceres_backend/error_interface.hpp"
+#include "asr_sdm_vio/ceres_backend/error_interface.hpp"
 
 namespace svo {
 namespace ceres_backend {

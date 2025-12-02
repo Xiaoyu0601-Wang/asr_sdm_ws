@@ -43,10 +43,10 @@
 #include <Eigen/Core>
 #pragma diagnostic pop
 
-#include <svo/common/transformation.h>
-#include <svo/common/point.h>
-#include <svo/vio_common/logging.hpp>
-#include <svo/global.h>
+#include <asr_sdm_vio/common/transformation.h>
+#include <asr_sdm_vio/common/point.h>
+#include <asr_sdm_vio/vio_common/logging.hpp>
+#include <asr_sdm_vio/global.h>
 
 namespace svo {
 

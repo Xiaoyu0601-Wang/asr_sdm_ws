@@ -40,9 +40,9 @@
 
 #pragma once
 
-#include "svo/ceres_backend/estimator.hpp"
+#include "asr_sdm_vio/ceres_backend/estimator.hpp"
 
-#include "svo/ceres_backend/reprojection_error.hpp"
+#include "asr_sdm_vio/ceres_backend/reprojection_error.hpp"
 
 /// \brief svo Main namespace of this package.
 namespace svo {

@@ -53,13 +53,13 @@
 #include <ceres/ceres.h>
 #pragma diagnostic pop
 
-#include <svo/common/types.h>
-#include <svo/common/camera.h>
-#include <svo/common/frame.h>
-#include <svo/common/imu_calibration.h>
+#include <asr_sdm_vio/common/types.h>
+#include <asr_sdm_vio/common/camera.h>
+#include <asr_sdm_vio/common/frame.h>
+#include <asr_sdm_vio/common/imu_calibration.h>
 
-#include "svo/ceres_backend/map.hpp"
-#include "svo/ceres_backend/estimator_types.hpp"
+#include "asr_sdm_vio/ceres_backend/map.hpp"
+#include "asr_sdm_vio/ceres_backend/estimator_types.hpp"
 
 namespace svo {
 
@@ -767,4 +767,4 @@ class Estimator
 
 }  // namespace svo
 
-#include <svo/ceres_backend/estimator_impl.hpp>
+#include <asr_sdm_vio/ceres_backend/estimator_impl.hpp>

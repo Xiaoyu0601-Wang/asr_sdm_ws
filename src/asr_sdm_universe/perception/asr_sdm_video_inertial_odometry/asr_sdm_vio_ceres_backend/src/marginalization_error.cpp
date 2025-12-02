@@ -38,13 +38,13 @@
  * @author Stefan Leutenegger
  */
 
-#include "svo/ceres_backend/marginalization_error.hpp"
+#include "asr_sdm_vio/ceres_backend/marginalization_error.hpp"
 
 #include <functional>
 
-#include <svo/vio_common/logging.hpp>
+#include <asr_sdm_vio/vio_common/logging.hpp>
 
-#include "svo/ceres_backend/local_parameterization_additional_interfaces.hpp"
+#include "asr_sdm_vio/ceres_backend/local_parameterization_additional_interfaces.hpp"
 
 //#define USE_NEW_LINEARIZATION_POINT
 

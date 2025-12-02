@@ -1,4 +1,4 @@
-Panels:
+clePanels:
   - Class: rviz/Displays
     Help Height: 0
     Name: Displays
@@ -277,7 +277,7 @@ Visualization Manager:
   Global Options:
     Background Color: 179; 179; 179
     Default Light: true
-    Fixed Frame: world
+    Fixed Frame: map
     Frame Rate: 30
   Name: root
   Tools:

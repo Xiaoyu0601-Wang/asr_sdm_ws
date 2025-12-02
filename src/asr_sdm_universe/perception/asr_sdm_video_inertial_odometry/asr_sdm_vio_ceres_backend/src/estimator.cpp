@@ -40,20 +40,20 @@
  * @author Andreas Forster
  */
 
-#include "svo/ceres_backend/estimator.hpp"
+#include "asr_sdm_vio/ceres_backend/estimator.hpp"
 
-#include <svo/common/conversions.h>
-#include <svo/common/point.h>
+#include <asr_sdm_vio/common/conversions.h>
+#include <asr_sdm_vio/common/point.h>
 
-#include "svo/ceres_backend/ceres_iteration_callback.hpp"
-#include "svo/ceres_backend/imu_error.hpp"
-#include "svo/ceres_backend/marginalization_error.hpp"
-#include "svo/ceres_backend/pose_error.hpp"
-#include "svo/ceres_backend/pose_parameter_block.hpp"
-#include "svo/ceres_backend/relative_pose_error.hpp"
-#include "svo/ceres_backend/reprojection_error.hpp"
-#include "svo/ceres_backend/speed_and_bias_error.hpp"
-#include "svo/ceres_backend/homogeneous_point_error.hpp"
+#include "asr_sdm_vio/ceres_backend/ceres_iteration_callback.hpp"
+#include "asr_sdm_vio/ceres_backend/imu_error.hpp"
+#include "asr_sdm_vio/ceres_backend/marginalization_error.hpp"
+#include "asr_sdm_vio/ceres_backend/pose_error.hpp"
+#include "asr_sdm_vio/ceres_backend/pose_parameter_block.hpp"
+#include "asr_sdm_vio/ceres_backend/relative_pose_error.hpp"
+#include "asr_sdm_vio/ceres_backend/reprojection_error.hpp"
+#include "asr_sdm_vio/ceres_backend/speed_and_bias_error.hpp"
+#include "asr_sdm_vio/ceres_backend/homogeneous_point_error.hpp"
 
 namespace svo {
 std::vector<std::string> MarginalizationTiming::names_ {

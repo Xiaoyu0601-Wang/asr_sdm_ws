@@ -44,10 +44,10 @@
 
 #include <ceres/ceres.h>
 
-#include "svo/common/camera.h"
-#include "svo/ceres_backend/error_interface.hpp"
-#include "svo/ceres_backend/pose_local_parameterization.hpp"
-#include "svo/ceres_backend/reprojection_error_base.hpp"
+#include "asr_sdm_vio/common/camera.h"
+#include "asr_sdm_vio/ceres_backend/error_interface.hpp"
+#include "asr_sdm_vio/ceres_backend/pose_local_parameterization.hpp"
+#include "asr_sdm_vio/ceres_backend/reprojection_error_base.hpp"
 
 namespace svo {
 namespace ceres_backend {
@@ -206,4 +206,4 @@ class ReprojectionError : public ReprojectionErrorBase
 }  // namespace ceres_backend
 }  // namespace svo
 
-#include <svo/ceres_backend/reprojection_error_impl.hpp>
+#include <asr_sdm_vio/ceres_backend/reprojection_error_impl.hpp>

@@ -48,7 +48,7 @@
 #include <Eigen/Core>
 #pragma diagnostic pop
 
-#include "svo/ceres_backend/error_interface.hpp"
+#include "asr_sdm_vio/ceres_backend/error_interface.hpp"
 
 namespace svo {
 namespace ceres_backend {

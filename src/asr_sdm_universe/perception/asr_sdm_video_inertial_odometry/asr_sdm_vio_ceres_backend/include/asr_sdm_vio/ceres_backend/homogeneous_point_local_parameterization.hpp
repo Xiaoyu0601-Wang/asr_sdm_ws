@@ -47,7 +47,9 @@
 #include <ceres/ceres.h>
 #pragma diagnostic pop
 
-#include "svo/ceres_backend/local_parameterization_additional_interfaces.hpp"
+// Include Ceres compatibility layer for LocalParameterization
+#include "asr_sdm_vio/ceres_compat.hpp"
+#include "asr_sdm_vio/ceres_backend/local_parameterization_additional_interfaces.hpp"
 
 namespace svo {
 namespace ceres_backend {

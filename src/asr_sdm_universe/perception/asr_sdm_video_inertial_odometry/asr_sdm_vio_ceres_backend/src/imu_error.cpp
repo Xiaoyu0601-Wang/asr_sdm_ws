@@ -40,13 +40,13 @@
  * @author Andreas Forster
  */
 
-#include "svo/ceres_backend/imu_error.hpp"
+#include "asr_sdm_vio/ceres_backend/imu_error.hpp"
 
-#include <svo/vio_common/matrix.hpp>
-#include <svo/vio_common/matrix_operations.hpp>
-#include <svo/common/conversions.h>
+#include <asr_sdm_vio/vio_common/matrix.hpp>
+#include <asr_sdm_vio/vio_common/matrix_operations.hpp>
+#include <asr_sdm_vio/common/conversions.h>
 
-#include "svo/ceres_backend/pose_local_parameterization.hpp"
+#include "asr_sdm_vio/ceres_backend/pose_local_parameterization.hpp"
 
 namespace svo {
 namespace ceres_backend {

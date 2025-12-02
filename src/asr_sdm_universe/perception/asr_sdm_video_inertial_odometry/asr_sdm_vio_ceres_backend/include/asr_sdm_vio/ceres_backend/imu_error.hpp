@@ -50,12 +50,12 @@
 #include <ceres/ceres.h>
 #pragma diagnostic pop
 
-#include <svo/common/types.h>
-#include <svo/common/imu_calibration.h>
-#include <svo/vio_common/logging.hpp>
+#include <asr_sdm_vio/common/types.h>
+#include <asr_sdm_vio/common/imu_calibration.h>
+#include <asr_sdm_vio/vio_common/logging.hpp>
 
-#include "svo/ceres_backend/estimator_types.hpp"
-#include "svo/ceres_backend/error_interface.hpp"
+#include "asr_sdm_vio/ceres_backend/estimator_types.hpp"
+#include "asr_sdm_vio/ceres_backend/error_interface.hpp"
 
 
 namespace svo {

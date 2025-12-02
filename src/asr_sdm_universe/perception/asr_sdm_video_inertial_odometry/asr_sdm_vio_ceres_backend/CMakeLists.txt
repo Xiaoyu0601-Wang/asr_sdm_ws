@@ -9,23 +9,20 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(catkin_simple REQUIRED)
-catkin_simple(ALL_DEPS_REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
+find_package(cv_bridge REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(asr_sdm_vio_common REQUIRED)
+find_package(asr_sdm_vio_imu REQUIRED)
+find_package(video_kit_ros2 REQUIRED)
+find_package(Ceres REQUIRED)
+find_package(glog REQUIRED)
+find_package(asr_sdm_vio REQUIRED)
+find_package(PCL REQUIRED COMPONENTS common io)
+find_package(pcl_conversions REQUIRED)
 
-################################################################################
-# generic setup (compiler flags, etc.)
-include(SvoSetup)
-
-# OpenMP
-find_package(OpenMP QUIET)
-if (OPENMP_FOUND)
-  message(STATUS "OpenMP found")
-  add_definitions(-DUSE_OPENMP)
-endif ()
-
-#############
-# LIBRARIES #
-#############
 set(HEADERS
   include/asr_sdm_vio/ceres_backend_interface.hpp
   include/asr_sdm_vio/ceres_backend/estimator.hpp
@@ -57,7 +54,7 @@ set(HEADERS
   include/asr_sdm_vio/motion_detector.hpp
   include/asr_sdm_vio/outlier_rejection.hpp
   include/asr_sdm_vio/ceres_backend_publisher.hpp
-  )
+)
 
 set(SOURCES
   src/ceres_backend_interface.cpp
@@ -80,63 +77,65 @@ set(SOURCES
   src/outlier_rejection.cpp
   src/ceres_backend_publisher.cpp
   src/map_alignment.cpp
-  )
+)
 
-cs_add_library(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 
-##########
-# GTESTS #
-##########
-catkin_add_gtest(test_backend_id test/test_backend_id.cpp)
-target_link_libraries(test_backend_id ${PROJECT_NAME})
+target_include_directories(${PROJECT_NAME} PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/asr_sdm_vio>
+)
 
-catkin_add_gtest(test_estimator test/test_estimator.cpp)
-target_link_libraries(test_estimator ${PROJECT_NAME})
+ament_target_dependencies(${PROJECT_NAME}
+  rclcpp
+  std_msgs
+  geometry_msgs
+  sensor_msgs
+  visualization_msgs
+  cv_bridge
+  tf2_ros
+  asr_sdm_vio_common
+  asr_sdm_vio_imu
+  asr_sdm_vio
+  video_kit_ros2
+  pcl_conversions
+)
 
-catkin_add_gtest(test_homogeneous_point_error test/test_homogeneous_point_error.cpp)
-target_link_libraries(test_homogeneous_point_error ${PROJECT_NAME})
+target_link_libraries(${PROJECT_NAME}
+  Ceres::ceres
+  glog::glog
+  ${PCL_LIBRARIES}
+)
 
-catkin_add_gtest(test_map test/test_map.cpp)
-target_link_libraries(test_map ${PROJECT_NAME})
+include_directories(${PCL_INCLUDE_DIRS})
+add_definitions(${PCL_DEFINITIONS})
 
-catkin_add_gtest(test_marginalization test/test_marginalization.cpp)
-target_link_libraries(test_marginalization ${PROJECT_NAME})
+install(TARGETS ${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
 
-catkin_add_gtest(test_pose_error test/test_pose_error.cpp)
-target_link_libraries(test_pose_error ${PROJECT_NAME})
+install(DIRECTORY include/
+  DESTINATION include
+)
 
-catkin_add_gtest(test_pose_local_parameterization test/test_pose_local_parameterization.cpp)
-target_link_libraries(test_pose_local_parameterization ${PROJECT_NAME})
-
-catkin_add_gtest(test_reprojection_error test/test_reprojection_error.cpp)
-target_link_libraries(test_reprojection_error ${PROJECT_NAME})
-
-catkin_add_gtest(test_relative_pose_error test/test_relative_pose_error.cpp)
-target_link_libraries(test_relative_pose_error ${PROJECT_NAME})
-
-catkin_add_gtest(test_speed_and_bias_error test/test_speed_and_bias_error.cpp)
-target_link_libraries(test_speed_and_bias_error ${PROJECT_NAME})
-
-catkin_add_gtest(test_imu_error test/test_imu_error.cpp)
-target_link_libraries(test_imu_error ${PROJECT_NAME})
-
-##########
-# EXPORT #
-##########
-cs_install()
-cs_export()
-
-
-if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  # the following line skips the linter which checks for copyrights
-  # comment the line when a copyright and license is added to all source files
-  set(ament_cmake_copyright_FOUND TRUE)
-  # the following line skips cpplint (only works in a git repo)
-  # comment the line when this package is in a git repo and when
-  # a copyright and license is added to all source files
-  set(ament_cmake_cpplint_FOUND TRUE)
-  ament_lint_auto_find_test_dependencies()
-endif()
+ament_export_include_directories(include)
+ament_export_libraries(${PROJECT_NAME})
+ament_export_dependencies(
+  rclcpp
+  std_msgs
+  geometry_msgs
+  sensor_msgs
+  visualization_msgs
+  cv_bridge
+  tf2_ros
+  asr_sdm_vio_common
+  asr_sdm_vio_imu
+  video_kit_ros2
+  Ceres
+  glog
+)
 
 ament_package()

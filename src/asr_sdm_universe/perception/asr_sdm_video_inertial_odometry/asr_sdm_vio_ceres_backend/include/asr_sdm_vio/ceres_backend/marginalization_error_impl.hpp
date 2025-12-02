@@ -40,7 +40,7 @@
 
 #pragma once
 
-#include "svo/ceres_backend/marginalization_error.hpp"
+#include "asr_sdm_vio/ceres_backend/marginalization_error.hpp"
 
 namespace svo {
 namespace ceres_backend {

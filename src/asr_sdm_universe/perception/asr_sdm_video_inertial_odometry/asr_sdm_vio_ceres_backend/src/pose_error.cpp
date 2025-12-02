@@ -38,9 +38,9 @@
  * @author Stefan Leutenegger
  */
 
-#include "svo/ceres_backend/pose_error.hpp"
-#include "svo/ceres_backend/estimator_types.hpp"
-#include "svo/ceres_backend/pose_local_parameterization.hpp"
+#include "asr_sdm_vio/ceres_backend/pose_error.hpp"
+#include "asr_sdm_vio/ceres_backend/estimator_types.hpp"
+#include "asr_sdm_vio/ceres_backend/pose_local_parameterization.hpp"
 
 namespace svo {
 namespace ceres_backend {

@@ -40,12 +40,12 @@
  * @author Andreas Forster
  */
 
-#include "svo/ceres_backend/map.hpp"
+#include "asr_sdm_vio/ceres_backend/map.hpp"
 
 #include <ceres/ordered_groups.h>
 
-#include "svo/ceres_backend/homogeneous_point_parameter_block.hpp"
-#include "svo/ceres_backend/marginalization_error.hpp"
+#include "asr_sdm_vio/ceres_backend/homogeneous_point_parameter_block.hpp"
+#include "asr_sdm_vio/ceres_backend/marginalization_error.hpp"
 
 namespace svo {
 namespace ceres_backend {
@@ -55,7 +55,7 @@ Map::Map()
     : residual_counter_(0)
 {
   ceres::Problem::Options problemOptions;
-  problemOptions.local_parameterization_ownership =
+  problemOptions.manifold_ownership =
       ceres::Ownership::DO_NOT_TAKE_OWNERSHIP;
   problemOptions.loss_function_ownership =
       ceres::Ownership::DO_NOT_TAKE_OWNERSHIP;
@@ -63,6 +63,13 @@ Map::Map()
       ceres::Ownership::DO_NOT_TAKE_OWNERSHIP;
   //problemOptions.enable_fast_parameter_block_removal = true;
   problem_.reset(new ceres::Problem(problemOptions));
+  // Prepare manifold adapters for Ceres 2.x
+  homogeneous_point_manifold_adapter_ = std::unique_ptr<ceres::Manifold>(
+      new LocalParameterizationManifoldAdapter(&homogeneous_point_local_parameterization_,
+                                               &homogeneous_point_local_parameterization_));
+  pose_manifold_adapter_ = std::unique_ptr<ceres::Manifold>(
+      new LocalParameterizationManifoldAdapter(&pose_local_parameterization_,
+                                               &pose_local_parameterization_));
   //options.linear_solver_ordering = new ceres::ParameterBlockOrdering;
 }
 
@@ -313,7 +320,7 @@ bool Map::addParameterBlock(
     {
       problem_->AddParameterBlock(parameter_block->parameters(),
                                   parameter_block->dimension(),
-                                  &homogeneous_point_local_parameterization_);
+                                  homogeneous_point_manifold_adapter_.get());
       parameter_block->setLocalParameterizationPtr(
           &homogeneous_point_local_parameterization_);
       break;
@@ -322,7 +329,7 @@ bool Map::addParameterBlock(
     {
       problem_->AddParameterBlock(parameter_block->parameters(),
                                   parameter_block->dimension(),
-                                  &pose_local_parameterization_);
+                                  pose_manifold_adapter_.get());
       parameter_block->setLocalParameterizationPtr(&pose_local_parameterization_);
       break;
     }
@@ -694,11 +701,20 @@ bool Map::setParameterization(
   {
     return false;
   }
-  problem_->SetParameterization(
+  // Wrap LocalParameterization into a Manifold adapter for Ceres 2.x
+  const LocalParamizationAdditionalInterfaces* iface =
+      dynamic_cast<const LocalParamizationAdditionalInterfaces*>(local_parameterization);
+  std::unique_ptr<ceres::Manifold> adapter(
+      new LocalParameterizationManifoldAdapter(local_parameterization, iface));
+  problem_->SetManifold(
       id_to_parameter_block_map_.find(parameter_block_id)->second->parameters(),
-      local_parameterization);
+      adapter.get());
+  // Keep local parameterization pointer for our own bookkeeping
   id_to_parameter_block_map_.find(parameter_block_id)->second
       ->setLocalParameterizationPtr(local_parameterization);
+  // Adapter lifetime: we cannot destroy it immediately; store by type if needed.
+  // For simplicity in this migration, we leak the adapter to keep it alive.
+  (void)adapter.release();
   return true;
 }
 

@@ -117,3 +117,34 @@ git clone git@github.com:azxyqian/asr_sdm_video_inertial_odometry_dependency.git
 ```sh
 colcon build --symlink-install --parallel-workers 2
 ```
+
+---
+
+### VIO (ROS2) — EuRoC 双目启动方式
+
+1) 编译并加载环境
+```sh
+cd ~/asr_sdm_ws
+colcon build --packages-select asr_sdm_vio_ros2
+source install/setup.bash
+```
+
+2) 基本启动（播放 EuRoC bag）
+```sh
+ros2 launch asr_sdm_vio_ros2 euroc_vio_stereo.launch.py \
+  bag_path:=/home/lxy/asr_sdm_ws/datasheet/MH_01_easy_ros2 \
+  with_rviz:=true
+```
+- 关键话题：
+  - /image_with_features（图像转发/可视化）
+  - /Rig（位姿 PoseStamped）
+  - /trajectory（Path）
+
+
+3) 常用检查
+```sh
+ros2 node info /vio_frontend_stereo_ros2
+ros2 topic hz /image_with_features
+ros2 topic echo --once /Rig
+ros2 param get /vio_frontend_stereo_ros2 use_imu
+```

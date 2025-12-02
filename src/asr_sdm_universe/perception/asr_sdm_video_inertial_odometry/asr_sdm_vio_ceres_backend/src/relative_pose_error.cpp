@@ -38,12 +38,12 @@
  * @author Stefan Leutenegger
  */
 
-#include "svo/ceres_backend/relative_pose_error.hpp"
+#include "asr_sdm_vio/ceres_backend/relative_pose_error.hpp"
 
-#include <svo/vio_common/matrix_operations.hpp>
+#include <asr_sdm_vio/vio_common/matrix_operations.hpp>
 
-#include "svo/ceres_backend/estimator_types.hpp"
-#include "svo/ceres_backend/pose_local_parameterization.hpp"
+#include "asr_sdm_vio/ceres_backend/estimator_types.hpp"
+#include "asr_sdm_vio/ceres_backend/pose_local_parameterization.hpp"
 
 namespace svo {
 namespace ceres_backend {

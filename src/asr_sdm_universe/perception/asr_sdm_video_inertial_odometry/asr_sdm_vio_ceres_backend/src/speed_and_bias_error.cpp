@@ -38,7 +38,7 @@
  * @author Stefan Leutenegger
  */
 
-#include "svo/ceres_backend/speed_and_bias_error.hpp"
+#include "asr_sdm_vio/ceres_backend/speed_and_bias_error.hpp"
 
 namespace svo {
 namespace ceres_backend {

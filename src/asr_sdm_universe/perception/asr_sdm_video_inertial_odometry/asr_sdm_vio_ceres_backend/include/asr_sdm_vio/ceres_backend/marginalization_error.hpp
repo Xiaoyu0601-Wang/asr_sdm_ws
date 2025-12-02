@@ -51,14 +51,14 @@
 #include <Eigen/Core>
 #pragma diagnostic pop
 
-#include <svo/vio_common/logging.hpp>
+#include <asr_sdm_vio/vio_common/logging.hpp>
 
-#include "svo/ceres_backend/error_interface.hpp"
-#include "svo/ceres_backend/homogeneous_point_parameter_block.hpp"
-#include "svo/ceres_backend/homogeneous_point_local_parameterization.hpp"
-#include "svo/ceres_backend/map.hpp"
-#include "svo/ceres_backend/pose_parameter_block.hpp"
-#include "svo/ceres_backend/speed_and_bias_parameter_block.hpp"
+#include "asr_sdm_vio/ceres_backend/error_interface.hpp"
+#include "asr_sdm_vio/ceres_backend/homogeneous_point_parameter_block.hpp"
+#include "asr_sdm_vio/ceres_backend/homogeneous_point_local_parameterization.hpp"
+#include "asr_sdm_vio/ceres_backend/map.hpp"
+#include "asr_sdm_vio/ceres_backend/pose_parameter_block.hpp"
+#include "asr_sdm_vio/ceres_backend/speed_and_bias_parameter_block.hpp"
 
 namespace svo {
 namespace ceres_backend {
@@ -415,4 +415,4 @@ class MarginalizationError : public ceres::CostFunction, public ErrorInterface
 }  // namespace ceres_backend
 }  // namespace svo
 
-#include <svo/ceres_backend/marginalization_error_impl.hpp>
+#include <asr_sdm_vio/ceres_backend/marginalization_error_impl.hpp>

@@ -3,7 +3,7 @@
 // Copyright (C) 2014 Christian Forster <forster at ifi dot uzh dot ch>
 // (Robotics and Perception Group, University of Zurich, Switzerland).
 
-#include <svo_ros/backend_visualizer.h>
+#include <asr_sdm_vio_ros2/backend_visualizer.h>
 
 // ros
 #include <ros/package.h>

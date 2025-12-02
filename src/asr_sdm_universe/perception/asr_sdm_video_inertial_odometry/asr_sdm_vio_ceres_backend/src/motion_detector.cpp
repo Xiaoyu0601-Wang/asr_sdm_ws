@@ -1,6 +1,6 @@
-#include "svo/motion_detector.hpp"
+#include "asr_sdm_vio/motion_detector.hpp"
 
-#include <svo/common/frame.h>
+#include <asr_sdm_vio/common/frame.h>
 
 namespace svo
 {

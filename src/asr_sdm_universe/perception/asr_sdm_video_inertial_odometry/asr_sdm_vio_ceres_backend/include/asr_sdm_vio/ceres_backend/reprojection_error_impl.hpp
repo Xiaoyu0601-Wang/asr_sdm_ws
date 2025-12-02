@@ -40,10 +40,10 @@
 
 #pragma once
 
-#include "svo/ceres_backend/reprojection_error.hpp"
+#include "asr_sdm_vio/ceres_backend/reprojection_error.hpp"
 
-#include <svo/vio_common/matrix.hpp>
-#include <svo/vio_common/matrix_operations.hpp>
+#include <asr_sdm_vio/vio_common/matrix.hpp>
+#include <asr_sdm_vio/vio_common/matrix_operations.hpp>
 
 namespace svo {
 namespace ceres_backend {

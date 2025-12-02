@@ -38,7 +38,7 @@
  * @author Stefan Leutenegger
  */
 
-#include "svo/ceres_backend/pose_parameter_block.hpp"
+#include "asr_sdm_vio/ceres_backend/pose_parameter_block.hpp"
 
 namespace svo {
 namespace ceres_backend {

@@ -46,8 +46,8 @@
 #include <Eigen/Core>
 #pragma diagnostic pop
 
-#include "svo/ceres_backend/homogeneous_point_local_parameterization.hpp"
-#include "svo/ceres_backend/parameter_block.hpp"
+#include "asr_sdm_vio/ceres_backend/homogeneous_point_local_parameterization.hpp"
+#include "asr_sdm_vio/ceres_backend/parameter_block.hpp"
 
 namespace svo {
 namespace ceres_backend {

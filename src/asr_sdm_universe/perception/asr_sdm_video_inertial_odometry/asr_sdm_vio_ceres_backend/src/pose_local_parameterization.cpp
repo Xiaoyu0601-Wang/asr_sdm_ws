@@ -38,11 +38,11 @@
  * @author Stefan Leutenegger
  */
 
-#include "svo/ceres_backend/pose_local_parameterization.hpp"
+#include "asr_sdm_vio/ceres_backend/pose_local_parameterization.hpp"
 
-#include <svo/vio_common/logging.hpp>
-#include <svo/vio_common/matrix_operations.hpp>
-#include <svo/common/transformation.h>
+#include <asr_sdm_vio/vio_common/logging.hpp>
+#include <asr_sdm_vio/vio_common/matrix_operations.hpp>
+#include <asr_sdm_vio/common/transformation.h>
 
 namespace svo {
 namespace ceres_backend {

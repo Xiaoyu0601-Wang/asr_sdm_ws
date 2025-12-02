@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <svo/ceres_backend_interface.hpp>
 
 namespace svo {
@@ -9,7 +9,7 @@ namespace svo {
 namespace ceres_backend_factory {
 
 std::shared_ptr<CeresBackendInterface> makeBackend(
-    const ros::NodeHandle& pnh, const CameraBundlePtr& camera_bundle);
+    const rclcpp::Node::SharedPtr& node, const CameraBundlePtr& camera_bundle);
 
 } // namespace ceres_backend_factory
 } // namespace svo

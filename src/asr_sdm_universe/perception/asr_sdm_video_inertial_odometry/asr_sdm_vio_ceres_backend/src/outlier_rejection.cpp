@@ -1,7 +1,7 @@
-#include "svo/outlier_rejection.hpp"
+#include "asr_sdm_vio/outlier_rejection.hpp"
 
-#include <svo/common/frame.h>
-#include <svo/common/point.h>
+#include <asr_sdm_vio/common/frame.h>
+#include <asr_sdm_vio/common/point.h>
 
 namespace svo
 {

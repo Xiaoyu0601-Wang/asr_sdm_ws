@@ -4,11 +4,11 @@
 #include <condition_variable>
 #include <math.h>
 
-#include <svo/abstract_bundle_adjustment.h>
-#include <svo/vio_common/backend_types.hpp>
+#include <asr_sdm_vio/abstract_bundle_adjustment.h>
+#include <asr_sdm_vio/vio_common/backend_types.hpp>
 
-#include "svo/ceres_backend/estimator.hpp"
-#include "svo/ceres_backend_publisher.hpp"
+#include "asr_sdm_vio/ceres_backend/estimator.hpp"
+#include "asr_sdm_vio/ceres_backend_publisher.hpp"
 
 namespace svo
 {
@@ -170,15 +170,13 @@ public:
 
   /**
    * @brief Make a publisher node for the backend
-   * @param[in]   nh_private Node handle to be used to publish
+   * @param[in]   node ROS2 node to be used to publish
    * @param[out]  publisher Publisher handle, shared with frontend for
    *              benchmarking purposes.
    */
-  void makePublisher(const ros::NodeHandle& nh_private,
-                     std::shared_ptr<CeresBackendPublisher>& publisher)
+  void setNodeAndCreatePublishers(rclcpp::Node* node)
   {
-    publisher_.reset(new CeresBackendPublisher(nh_private, backend_.getMap()));
-    publisher = publisher_;
+    publisher_.reset(new CeresBackendPublisher(node, backend_.getMap()));
   }
 
   /**

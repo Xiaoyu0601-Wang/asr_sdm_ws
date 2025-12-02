@@ -50,10 +50,11 @@
 #include <ceres/ceres.h>
 #pragma diagnostic pop
 
-#include "svo/ceres_backend/error_interface.hpp"
-#include "svo/ceres_backend/homogeneous_point_local_parameterization.hpp"
-#include "svo/ceres_backend/parameter_block.hpp"
-#include "svo/ceres_backend/pose_local_parameterization.hpp"
+#include "asr_sdm_vio/ceres_backend/error_interface.hpp"
+#include "asr_sdm_vio/ceres_backend/homogeneous_point_local_parameterization.hpp"
+#include "asr_sdm_vio/ceres_backend/parameter_block.hpp"
+#include "asr_sdm_vio/ceres_backend/pose_local_parameterization.hpp"
+#include "asr_sdm_vio/ceres_manifold_adapter.hpp"
 
 namespace svo {
 namespace ceres_backend {
@@ -437,6 +438,10 @@ class Map
 
   /// \brief Store parameterisation locally.
   ceres_backend::PoseLocalParameterization pose_local_parameterization_;
+
+  // Manifold adapters for Ceres 2.x API
+  std::unique_ptr<ceres::Manifold> homogeneous_point_manifold_adapter_;
+  std::unique_ptr<ceres::Manifold> pose_manifold_adapter_;
 };
 
 }  //namespace svo

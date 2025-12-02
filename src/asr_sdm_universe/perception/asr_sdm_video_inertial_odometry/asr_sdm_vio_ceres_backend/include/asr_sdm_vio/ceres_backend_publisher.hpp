@@ -5,16 +5,19 @@
 
 #pragma once
 
-#include <boost/shared_ptr.hpp>
-#include <ros/ros.h>
-#include <pcl_ros/point_cloud.h>
-#include <pcl/point_types.h>
-#include <pcl_conversions/pcl_conversions.h>
+#include <memory>
+#include <rclcpp/rclcpp.hpp>
+#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <sensor_msgs/msg/point_cloud2.hpp>
+#include <sensor_msgs/point_cloud2_iterator.hpp>
 
-#include <svo/vio_common/backend_types.hpp>
+
+
+#include <asr_sdm_vio/vio_common/backend_types.hpp>
 #include <mutex>
 
-#include "svo/ceres_backend/map.hpp"
+#include "asr_sdm_vio/ceres_backend/map.hpp"
 
 namespace svo
 {
@@ -23,11 +26,9 @@ class CeresBackendPublisher
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   typedef std::shared_ptr<CeresBackendPublisher> Ptr;
-  using PointCloud = pcl::PointCloud<pcl::PointXYZI>;
-  using PointType = pcl::PointXYZI;
   const std::string kWorldFrame = "world";
 
-  CeresBackendPublisher(const ros::NodeHandle& nh_private,
+  CeresBackendPublisher(rclcpp::Node* node,
                         const std::shared_ptr<ceres_backend::Map>& map_ptr);
   ~CeresBackendPublisher()
   {
@@ -48,7 +49,7 @@ public:
                const int32_t seq);
 
 private:
-  ros::NodeHandle pnh_;
+  rclcpp::Node::SharedPtr node_;
 
   mutable std::mutex mutex_frame_id_;
 
@@ -60,9 +61,9 @@ private:
   BundleId last_added_frame_ = -1;
 
   // publisher helpers
-  ros::Publisher pub_imu_pose_;
-  ros::Publisher pub_imu_pose_viz_;
-  ros::Publisher pub_points_;
+  rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pub_imu_pose_;
+  rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pub_imu_pose_viz_;
+  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pub_points_;
 
   // publisher functions
   void publishImuPose(const ViNodeState& state, const int64_t timestamp,
