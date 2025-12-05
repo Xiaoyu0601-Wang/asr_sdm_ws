@@ -10,8 +10,28 @@ find_package(ament_cmake REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(glog REQUIRED)
 
+# Include headers
+# include_directories(
+#   include
+# )
+
 # Since this is a header-only library, we don't use add_library().
 # We just need to install the headers and export the dependencies.
+# Declare a header-only "library"
+add_library(${PROJECT_NAME} INTERFACE)
+target_include_directories(${PROJECT_NAME} INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
+# export the interface target so other packages can link against `data_structure`
+install(TARGETS ${PROJECT_NAME}
+  EXPORT "export_${PROJECT_NAME}"
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION lib
+  INCLUDES DESTINATION include
+)
 
 # Install the header files.
 install(
@@ -20,7 +40,7 @@ install(
 )
 
 # Export dependencies so downstream packages can find them.
-ament_export_dependencies(Eigen3 glog)
+# ament_export_dependencies(Eigen3 glog)
 
 # Export the include directory.
 ament_export_include_directories(include)
@@ -57,4 +77,5 @@ if(BUILD_TESTING)
   )
 endif()
 
+ament_export_targets("export_${PROJECT_NAME}")
 ament_package()
