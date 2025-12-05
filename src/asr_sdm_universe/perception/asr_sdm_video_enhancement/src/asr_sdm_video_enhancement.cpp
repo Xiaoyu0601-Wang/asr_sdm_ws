@@ -12,15 +12,22 @@ VideoEnhancementNode::VideoEnhancementNode(const rclcpp::NodeOptions & node_opti
 
   // Subscriber
   sub_image_ = this->create_subscription<Image>(
-  "~/input/image", 1, std::bind(&VideoEnhancementNode::onImageCallback, this, _1));
+  "/camera/camera/color/image_rect_raw",
+  rclcpp::SensorDataQoS(),//QoS 明确设成 SensorDataQoS，和 RealSense 完全一致
+  std::bind(&VideoEnhancementNode::onImageCallback, this, _1));
 
   // Publisher
-  pub_image_ = this->create_publisher<Image>("~/output/image", 10);
+  pub_image_ = this->create_publisher<Image>(
+  "/asr_sdm_video_enhancement/output/image",
+  rclcpp::SensorDataQoS());//QoS 明确设成 SensorDataQoS，和 RealSense 完全一致
 }
 
 // Callback
 void VideoEnhancementNode::onImageCallback(const Image::SharedPtr msg)
-{
+{ 
+  RCLCPP_INFO_THROTTLE(
+    this->get_logger(), *this->get_clock(), 2000,
+    "Got image %ux%u", msg->width, msg->height);//节流
   try {
     auto cv_ptr = cv_bridge::toCvCopy(msg, "bgr8");
 
