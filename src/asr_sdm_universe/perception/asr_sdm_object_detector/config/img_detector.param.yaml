@@ -1,0 +1,14 @@
+/**:
+  ros__parameters:
+    #模型参数
+    model_path: "/home/wang/model/yolov8/yolov8n.onnx"  # model
+    label_path: "/home/wang/model/yolov8/labels.txt"  # label
+    input_width: 640 
+    input_height: 640
+    score_thresh: 0.3  # 置信度阈值
+    nms_thresh: 0.45   # NMS阈值
+
+    # 测试模式参数
+    test_mode: false
+    test_image_dir: "/home/wang/testdata"  # 测试图像文件夹
+    output_image_dir: "/home/wang/testout" # 结果输出文件夹
