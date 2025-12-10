@@ -64,7 +64,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   yaml-cpp
   glog::glog
   Eigen3::Eigen
-  # minkindr
+  minkindr::minkindr
   # svo_cmake
 )
 ament_target_dependencies(${PROJECT_NAME}
@@ -72,7 +72,7 @@ ament_target_dependencies(${PROJECT_NAME}
 #   std_msgs
 #   cv_bridge
 #   Eigen3
-  minkindr
+  # minkindr
   svo_cmake
 )
 
