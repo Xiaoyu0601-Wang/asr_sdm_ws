@@ -1,3 +1,5 @@
 # Installation
 ## Dependency
-sudo apt-get install ros-$ROS_DISTRO-sophus
+```
+sudo apt-get -y install ros-$ROS_DISTRO-sophus libgoogle-glog-dev
+```sh
