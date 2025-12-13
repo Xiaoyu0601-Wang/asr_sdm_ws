@@ -9,8 +9,14 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <depend>eigen</depend>
-  <depend>libgoogle-glog-dev</depend>
+  <build_depend>eigen</build_depend>
+  <build_depend>libgoogle-glog-dev</build_depend>
+
+  <build_export_depend>eigen</build_export_depend>
+  <build_export_depend>libgoogle-glog-dev</build_export_depend>
+
+  <exec_depend>eigen</exec_depend>
+  <exec_depend>libgoogle-glog-dev</exec_depend>
 
   <test_depend>ament_cmake_gtest</test_depend>
   <test_depend>ament_lint_auto</test_depend>

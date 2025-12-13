@@ -25,11 +25,17 @@
 cmake_minimum_required(VERSION 3.8)
 project(eigen_checks)
 
+# Default to C++17
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+endif()
+
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-# find dependencies
+# Find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(glog REQUIRED)
@@ -38,10 +44,10 @@ find_package(glog REQUIRED)
 add_library(${PROJECT_NAME} SHARED src/eigen-checks.cc)
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
+  $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
   ${EIGEN3_INCLUDE_DIR}
 )
-target_link_libraries(${PROJECT_NAME} glog::glog)
+target_link_libraries(${PROJECT_NAME} PUBLIC glog::glog Eigen3::Eigen)
 
 # Install library
 install(
@@ -55,16 +61,16 @@ install(
 # Install headers
 install(
   DIRECTORY include/
-  DESTINATION include
+  DESTINATION include/${PROJECT_NAME}
 )
 
 # Export dependencies
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(Eigen3 glog)
-ament_export_include_directories(include)
+ament_export_include_directories(include/${PROJECT_NAME})
 
 # Tests
-if(OFF)
+if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
   find_package(Threads REQUIRED)
 
