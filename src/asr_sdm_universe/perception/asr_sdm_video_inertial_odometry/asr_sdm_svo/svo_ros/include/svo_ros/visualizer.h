@@ -17,25 +17,30 @@
 #ifndef SVO_VISUALIZER_H_
 #define SVO_VISUALIZER_H_
 
-#include <queue>
+#include <image_transport/image_transport.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <svo/global.h>
-#include <svo_msgs/msg/info.hpp>
-#include <svo_msgs/msg/dense_input.hpp>
+
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
+#include <nav_msgs/msg/odometry.hpp>
+#include <sensor_msgs/msg/camera_info.hpp>
+#include <sensor_msgs/msg/image.hpp>
+#include <std_msgs/msg/color_rgba.hpp>
+#include <svo_msgs/msg/dense_input.hpp>
+#include <svo_msgs/msg/info.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
-#include <nav_msgs/msg/odometry.hpp>
-#include <std_msgs/msg/color_rgba.hpp>
-#include <sensor_msgs/msg/image.hpp>
-#include <sensor_msgs/msg/camera_info.hpp>
-#include <tf2_ros/transform_broadcaster.h>
-#include <image_transport/image_transport.hpp>
-#include <boost/thread.hpp>
-#include <boost/shared_ptr.hpp>
-#include <iostream>
 
-namespace svo {
+#include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
+
+#include <svo/global.h>
+#include <tf2_ros/transform_broadcaster.h>
+
+#include <iostream>
+#include <queue>
+
+namespace svo
+{
 
 class Frame;
 class Point;
@@ -70,25 +75,20 @@ public:
   ~Visualizer() {};
 
   void publishMinimal(
-      const cv::Mat& img,
-      const FramePtr& frame,
-      const FrameHandlerMono& slam,
-      const double timestamp);
+    const cv::Mat & img, const FramePtr & frame, const FrameHandlerMono & slam,
+    const double timestamp);
 
-  void visualizeMarkers(
-      const FramePtr& frame,
-      const set<FramePtr>& core_kfs,
-      const Map& map);
+  void visualizeMarkers(const FramePtr & frame, const set<FramePtr> & core_kfs, const Map & map);
 
   void publishMapRegion(set<FramePtr> frames);
 
-  void removeDeletedPts(const Map& map);
+  void removeDeletedPts(const Map & map);
 
-  void displayKeyframeWithMps(const FramePtr& frame, int ts);
+  void displayKeyframeWithMps(const FramePtr & frame, int ts);
 
-  void exportToDense(const FramePtr& frame);
+  void exportToDense(const FramePtr & frame);
 };
 
-} // end namespace svo
+}  // end namespace svo
 
 #endif /* SVO_VISUALIZER_H_ */
