@@ -1,39 +1,44 @@
 #!/usr/bin/env python3
 
-import os
 import subprocess
+import sys
 from pathlib import Path
+
+def get_python_version():
+    """Get the system Python version as 'major.minor' string (e.g., '3.12')."""
+    return f"{sys.version_info.major}.{sys.version_info.minor}"
+
+def get_python_version_short():
+    """Get Python version without dot for package names (e.g., '312')."""
+    return f"{sys.version_info.major}{sys.version_info.minor}"
 
 ROBOTPKG_KEY_URL = "http://robotpkg.openrobots.org/packages/debian/robotpkg.asc"
 ROBOTPKG_KEY_PATH = Path("/etc/apt/keyrings/robotpkg.asc")
 ROBOTPKG_LIST_PATH = Path("/etc/apt/sources.list.d/robotpkg.list")
+PYTHON_VERSION = get_python_version()
+PYTHON_VERSION_SHORT = get_python_version_short()
 PINOCCHIO_PACKAGES = [
     "robotpkg-pinocchio",
-    "robotpkg-py312-pinocchio",
+    f"robotpkg-py{PYTHON_VERSION_SHORT}-pinocchio",
     "robotpkg-coal",
-    "robotpkg-py312-coal",
-    "robotpkg-py312-eigenpy",
+    f"robotpkg-py{PYTHON_VERSION_SHORT}-coal",
+    f"robotpkg-py{PYTHON_VERSION_SHORT}-eigenpy",
 ]
-PYTHON_VERSION = "3.12"
 BASHRC_PATH = Path.home() / ".bashrc"
-
 
 def run_cmd(cmd, check=True, **kwargs):
     """Run shell command with logging."""
     print(f"执行命令: {' '.join(cmd)}")
     subprocess.run(cmd, check=check, **kwargs)
 
-
 def ensure_dependencies():
     """Install prerequisites for robotpkg repo registration."""
     run_cmd(["sudo", "apt", "update"])
     run_cmd(["sudo", "apt", "install", "-qqy", "lsb-release", "curl"])
 
-
 def get_ubuntu_codename():
     """Return Ubuntu codename string (e.g., noble)."""
     return subprocess.check_output(["lsb_release", "-cs"], text=True).strip()
-
 
 def add_robotpkg_repo():
     """Configure robotpkg apt repository and key."""
@@ -73,11 +78,9 @@ def add_robotpkg_repo():
 
     run_cmd(["sudo", "apt", "update"])
 
-
 def install_pinocchio():
     """Install Pinocchio and python bindings via robotpkg."""
     run_cmd(["sudo", "apt", "install", "--reinstall", "-qqy", *PINOCCHIO_PACKAGES])
-
 
 def update_bashrc():
     """Append environment variables needed for Pinocchio."""
@@ -100,7 +103,6 @@ export CMAKE_PREFIX_PATH=/opt/openrobots:$CMAKE_PREFIX_PATH
         f.write(env_block)
     print("已将 Pinocchio 环境变量写入 ~/.bashrc，请重新加载或重新登录终端。")
 
-
 def main():
     ensure_dependencies()
     add_robotpkg_repo()
@@ -108,7 +110,5 @@ def main():
     update_bashrc()
     print("Pinocchio 安装和环境配置完成。")
 
-
 if __name__ == "__main__":
     main()
-

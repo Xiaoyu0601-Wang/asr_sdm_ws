@@ -16,7 +16,7 @@ Pinocchio 项目地址：[stack-of-tasks/pinocchio](https://github.com/stack-of-
 执行脚本前建议更新仓库并确认 `python3` 可用：
 
 ```bash
-cd /home/wwlwwl/asr_sdm_ws
+cd $HOME/<path_to_folder>/asr_sdm_ws
 python3 --version
 ```
 
@@ -33,7 +33,7 @@ python3 --version
 ### 2.2 使用步骤
 
 ```bash
-cd /home/wwlwwl/asr_sdm_ws
+cd $HOME/<path_to_folder>/asr_sdm_ws
 python3 pinocchio_set_up_repos.py
 ```
 
@@ -109,11 +109,11 @@ python3 install_pinocchio_from_source.py
 ### 3.4 使用步骤
 
 ```bash
-cd /home/wwlwwl/asr_sdm_ws
+cd $HOME/<path_to_folder>/asr_sdm_ws
 python3 install_pinocchio_from_source.py
 ```
 ```bash
-cd /home/wwlwwl/asr_sdm_ws
+cd $HOME/<path_to_folder>/asr_sdm_ws
 python3 install_pinocchio_from_source.py
 ```
 
