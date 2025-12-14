@@ -35,3 +35,6 @@
 install
 build
 log
+
+#Files
+build_output.log
