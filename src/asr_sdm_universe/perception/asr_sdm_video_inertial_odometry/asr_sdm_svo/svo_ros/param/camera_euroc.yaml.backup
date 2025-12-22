@@ -1,0 +1,10 @@
+# EuRoC Dataset Camera Parameters (Pinhole Model)
+# Intrinsics for MH_01_easy cam0
+cam_model: PINHOLE
+cam_width: 752
+cam_height: 480
+cam_fx: 458.654
+cam_fy: 457.296
+cam_cx: 367.215
+cam_cy: 248.375
+

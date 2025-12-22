@@ -1,19 +1,3 @@
-// This file is part of SVO - Semi-direct Visual Odometry.
-//
-// Copyright (C) 2014 Christian Forster <forster at ifi dot uzh dot ch>
-// (Robotics and Perception Group, University of Zurich, Switzerland).
-//
-// SVO is free software: you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the Free Software
-// Foundation, either version 3 of the License, or any later version.
-//
-// SVO is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 #include <Eigen/Core>
 #include <cv_bridge/cv_bridge.hpp>
 #include <image_transport/image_transport.hpp>
@@ -28,9 +12,11 @@
 #include <svo/map.h>
 #include <svo_ros/visualizer.h>
 #include <vikit/abstract_camera.h>
+#include <vikit/atan_camera.h>
 #include <vikit/camera_loader.h>
 #include <vikit/math_utils.h>
 #include <vikit/params_helper.h>
+#include <vikit/pinhole_camera.h>
 #include <vikit/user_input_thread.h>
 
 #include <string>
@@ -65,9 +51,110 @@ public:
     if (vk::getParam<bool>(this, "accept_console_user_input", true))
       user_input_thread_ = std::make_shared<vk::UserInputThread>();
 
-    // Create Camera
-    if (!vk::camera_loader::loadFromRosNode(this, "", cam_))
-      throw std::runtime_error("Camera model not correctly specified.");
+    // Check if we should use hardcoded dataset parameters
+    std::string dataset_name = vk::getParam<std::string>(this, "dataset_name", "");
+
+    // Manually load camera parameters and create camera object
+    std::string cam_model;
+    int width, height;
+    double fx, fy, cx, cy;
+
+    if (dataset_name == "euroc") {
+      // Hardcoded EuRoC dataset parameters
+      RCLCPP_INFO(this->get_logger(), "Using hardcoded EuRoC dataset parameters");
+      cam_model = "PINHOLE";
+      width = 752;
+      height = 480;
+      fx = 458.654;
+      fy = 457.296;
+      cx = 367.215;
+      cy = 248.375;
+    } else {
+      // Load parameters from ROS2 parameter server (default behavior)
+      cam_model = vk::getParam<std::string>(this, "cam_model", "PINHOLE");
+      width = vk::getParam<int>(this, "cam_width", 752);
+      height = vk::getParam<int>(this, "cam_height", 480);
+      fx = vk::getParam<double>(this, "cam_fx", 458.654);
+      fy = vk::getParam<double>(this, "cam_fy", 457.296);
+      cx = vk::getParam<double>(this, "cam_cx", 367.215);
+      cy = vk::getParam<double>(this, "cam_cy", 248.375);
+    }
+
+    if (cam_model == "PINHOLE") {
+      cam_ = new vk::PinholeCamera(width, height, fx, fy, cx, cy);
+    } else if (cam_model == "ATAN") {
+      double d0 = vk::getParam<double>(this, "cam_d0", 0.0);
+      cam_ = new vk::ATANCamera(width, height, fx, fy, cx, cy, d0);
+    } else {
+      throw std::runtime_error("Unsupported camera model: " + cam_model);
+    }
+    RCLCPP_INFO(this->get_logger(), "Successfully created '%s' camera model.", cam_model.c_str());
+
+    // Override SVO core parameters from ROS2 params before creating VO
+    try {
+      int grid, maxfts, nlevels;
+      double tri;
+
+      if (dataset_name == "euroc") {
+        // Hardcoded EuRoC algorithm parameters for optimal performance
+        RCLCPP_INFO(this->get_logger(), "Using hardcoded EuRoC algorithm parameters");
+        grid = 18;
+        maxfts = 400;
+        tri = 3.0;
+        nlevels = 4;
+
+        // Additional EuRoC-specific tracking parameters
+        svo::Config::kltMaxLevel() = 4;
+        svo::Config::kltMinLevel() = 0;
+        svo::Config::reprojThresh() = 4.0;     // More tolerant reprojection threshold
+        svo::Config::poseOptimThresh() = 4.0;  // More tolerant pose optim threshold
+        svo::Config::poseOptimNumIter() = 10;
+        svo::Config::qualityMinFts() = 40;      // More tolerant quality threshold
+        svo::Config::qualityMaxFtsDrop() = 80;  // Tolerate larger drops
+        svo::Config::initMinDisparity() = 50.0;
+        svo::Config::initMinTracked() = 50;
+        svo::Config::initMinInliers() = 40;
+        // Keyframe and map scale tuning
+        svo::Config::kfSelectMinDist() = 0.001;
+        svo::Config::maxNKfs() = 180;
+        svo::Config::mapScale() = 5.0;
+        // Misc flags
+        svo::Config::useImu() = true;  // currently not used in this codebase
+        svo::Config::useThreadedDepthfilter() =
+          false;  // run depth filter synchronously for bag playback
+        svo::Config::patchMatchThresholdFactor() = 1.5;  // relax ZMSSD acceptance
+        svo::Config::subpixNIter() = 20;                 // more iterations for subpixel alignment
+        // Lower feature quality requirement to avoid frequent relocalization
+        svo::Config::qualityMinFts() = 30;
+
+        RCLCPP_INFO(
+          this->get_logger(), "EuRoC config: grid=%d, max_fts=%d, triang_score=%.1f, pyr_levels=%d",
+          grid, maxfts, tri, nlevels);
+        RCLCPP_INFO(
+          this->get_logger(),
+          "EuRoC tracking: reproj_thresh=%.1f, quality_min_fts=%zu, quality_max_drop=%d, "
+          "kf_min_dist=%.4f, max_kfs=%zu, map_scale=%.1f, zmssd_factor=%.2f, subpix_iter=%zu",
+          svo::Config::reprojThresh(), svo::Config::qualityMinFts(),
+          svo::Config::qualityMaxFtsDrop(), svo::Config::kfSelectMinDist(), svo::Config::maxNKfs(),
+          svo::Config::mapScale(), svo::Config::patchMatchThresholdFactor(),
+          svo::Config::subpixNIter());
+      } else {
+        // Load parameters from ROS2 parameter server (default behavior)
+        grid = vk::getParam<int>(this, "grid_size", static_cast<int>(svo::Config::gridSize()));
+        maxfts = vk::getParam<int>(this, "max_fts", static_cast<int>(svo::Config::maxFts()));
+        tri = vk::getParam<double>(
+          this, "triang_min_corner_score", svo::Config::triangMinCornerScore());
+        nlevels =
+          vk::getParam<int>(this, "n_pyr_levels", static_cast<int>(svo::Config::nPyrLevels()));
+      }
+
+      svo::Config::gridSize() = static_cast<size_t>(grid);
+      svo::Config::maxFts() = static_cast<size_t>(maxfts);
+      svo::Config::triangMinCornerScore() = tri;
+      svo::Config::nPyrLevels() = static_cast<size_t>(nlevels);
+    } catch (const std::exception & e) {
+      RCLCPP_WARN(this->get_logger(), "Parameter override failed: %s", e.what());
+    }
 
     // Init VO and start
     vo_ = new svo::FrameHandlerMono(cam_);

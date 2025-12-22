@@ -333,7 +333,8 @@ bool Matcher::findEpipolarMatchDirect(
     double& depth)
 {
   SE3 T_cur_ref = cur_frame.T_f_w_ * ref_frame.T_f_w_.inverse();
-  int zmssd_best = PatchScore::threshold();  // Best ZMSSD score
+  const int zmssd_threshold = static_cast<int>(PatchScore::threshold() * Config::patchMatchThresholdFactor());
+  int zmssd_best = zmssd_threshold;  // Best ZMSSD score found along epipolar line
   Vector2d uv_best;
 
   // Compute epipolar line endpoints on unit plane

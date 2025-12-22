@@ -100,6 +100,9 @@ Config::Config() :
     // === Subpixel Refinement ===
     subpix_n_iter(10),              // Number of subpixel refinement iterations
     
+    // === Threading Options ===
+    use_threaded_depthfilter(true), // Run depth filter in a background thread by default
+    
     // === Map Size Limits ===
     max_n_kfs(0),                   // Maximum keyframes in map (0 = unlimited)
     
@@ -111,7 +114,8 @@ Config::Config() :
     
     // === Tracking Quality Monitoring ===
     quality_min_fts(50),            // Minimum features for good tracking quality
-    quality_max_drop_fts(40)        // Maximum feature drop indicating tracking failure
+    quality_max_drop_fts(40),       // Maximum feature drop indicating tracking failure
+    patch_match_thresh_factor(1.0)  // Scale factor for ZMSSD acceptance threshold (>=1.0 more permissive)
 {}
 
 /**
