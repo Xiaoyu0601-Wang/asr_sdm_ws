@@ -22,7 +22,7 @@ def generate_launch_description():
         camera_params = yaml.safe_load(f)
     
     # Load VO parameters from YAML
-    vo_yaml_path = os.path.join(svo_ros_dir, 'param', 'vo_accurate.yaml')
+    vo_yaml_path = os.path.join(svo_ros_dir, 'param', 'vo_accurate2.yaml')
     with open(vo_yaml_path, 'r') as f:
         vo_params = yaml.safe_load(f)
     

@@ -1,0 +1,55 @@
+#!/usr/bin/env python3
+"""
+ROS2 Launch file for SVO Visual Odometry - EuRoC Dataset configuration.
+"""
+
+import os
+from ament_index_python.packages import get_package_share_directory
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import Node
+import yaml
+
+
+def generate_launch_description():
+    # Get the package share directory
+    svo_ros_dir = get_package_share_directory('svo_ros')
+    
+    # Load camera calibration parameters from YAML
+    camera_yaml_path = os.path.join(svo_ros_dir, 'param', 'camera_euroc.yaml')
+    with open(camera_yaml_path, 'r') as f:
+        camera_params = yaml.safe_load(f)
+    
+    # Load VO parameters from YAML
+    vo_yaml_path = os.path.join(svo_ros_dir, 'param', 'vo_accurate2.yaml')
+    with open(vo_yaml_path, 'r') as f:
+        vo_params = yaml.safe_load(f)
+    
+    # Combine all parameters
+    node_parameters = {
+        # Camera topic to subscribe to
+        'cam_topic': '/cam0/image_raw',
+        'use_sim_time': True, # Use simulation time from rosbag
+        'dataset_name': 'euroc', # Trigger hardcoded EuRoC params in node
+    }
+    
+    # Add camera calibration parameters (kept for completeness, but ignored when dataset_name='euroc')
+    node_parameters.update(camera_params)
+    
+    # Add VO parameters (kept for completeness, but ignored when dataset_name='euroc')
+    node_parameters.update(vo_params)
+    
+    # SVO Visual Odometry node
+    svo_node = Node(
+        package='svo_ros',
+        executable='vo',
+        name='svo',
+        output='screen',
+        parameters=[node_parameters],
+    )
+    
+    return LaunchDescription([
+        svo_node,
+    ])
+

@@ -1,28 +1,15 @@
-// This file is part of SVO - Semi-direct Visual Odometry.
-//
-// Copyright (C) 2014 Christian Forster <forster at ifi dot uzh dot ch>
-// (Robotics and Perception Group, University of Zurich, Switzerland).
-//
-// SVO is free software: you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the Free Software
-// Foundation, either version 3 of the License, or any later version.
-//
-// SVO is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 #ifndef SVO_MAP_H_
 #define SVO_MAP_H_
 
-#include <queue>
 #include <boost/noncopyable.hpp>
 #include <boost/thread.hpp>
+
 #include <svo/global.h>
 
-namespace svo {
+#include <queue>
+
+namespace svo
+{
 
 class Point;
 class Feature;
@@ -32,7 +19,7 @@ class Seed;
 class MapPointCandidates
 {
 public:
-  typedef std::pair<Point*, Feature*> PointCandidate;
+  typedef std::pair<Point *, Feature *> PointCandidate;
   typedef std::list<PointCandidate> PointCandidateList;
 
   /// The depth-filter is running in a parallel thread and fills the canidate list.
@@ -42,19 +29,19 @@ public:
   /// Candidate points are created from converged seeds.
   /// Until the next keyframe, these points can be used for reprojection and pose optimization.
   PointCandidateList candidates_;
-  std::list< Point* > trash_points_;
+  std::list<Point *> trash_points_;
 
   MapPointCandidates();
   ~MapPointCandidates();
 
   /// Add a candidate point.
-  void newCandidatePoint(Point* point, double depth_sigma2);
+  void newCandidatePoint(Point * point, double depth_sigma2);
 
   /// Adds the feature to the frame and deletes candidate from list.
   void addCandidatePointToFrame(FramePtr frame);
 
   /// Remove a candidate point from the list of candidates.
-  bool deleteCandidatePoint(Point* point);
+  bool deleteCandidatePoint(Point * point);
 
   /// Remove all candidates that belong to a frame.
   void removeFrameCandidates(FramePtr frame);
@@ -62,7 +49,7 @@ public:
   /// Reset the candidate list, remove and delete all points.
   void reset();
 
-  void deleteCandidate(PointCandidate& c);
+  void deleteCandidate(PointCandidate & c);
 
   void emptyTrash();
 };
@@ -71,8 +58,10 @@ public:
 class Map : boost::noncopyable
 {
 public:
-  std::list< FramePtr > keyframes_;          //!< List of keyframes in the map.
-  std::list< Point* > trash_points_;         //!< A deleted point is moved to the trash bin. Now and then this is cleaned. One reason is that the visualizer must remove the points also.
+  std::list<FramePtr> keyframes_;  //!< List of keyframes in the map.
+  std::list<Point *>
+    trash_points_;  //!< A deleted point is moved to the trash bin. Now and then this is cleaned.
+                    //!< One reason is that the visualizer must remove the points also.
   MapPointCandidates point_candidates_;
 
   Map();
@@ -82,33 +71,34 @@ public:
   void reset();
 
   /// Delete a point in the map and remove all references in keyframes to it.
-  void safeDeletePoint(Point* pt);
+  void safeDeletePoint(Point * pt);
 
   /// Moves the point to the trash queue which is cleaned now and then.
-  void deletePoint(Point* pt);
+  void deletePoint(Point * pt);
 
   /// Moves the frame to the trash queue which is cleaned now and then.
   bool safeDeleteFrame(FramePtr frame);
 
   /// Remove the references between a point and a frame.
-  void removePtFrameRef(Frame* frame, Feature* ftr);
+  void removePtFrameRef(Frame * frame, Feature * ftr);
 
   /// Add a new keyframe to the map.
   void addKeyframe(FramePtr new_keyframe);
 
   /// Given a frame, return all keyframes which have an overlapping field of view.
-  void getCloseKeyframes(const FramePtr& frame, std::list< std::pair<FramePtr,double> >& close_kfs) const;
+  void getCloseKeyframes(
+    const FramePtr & frame, std::list<std::pair<FramePtr, double> > & close_kfs) const;
 
   /// Return the keyframe which is spatially closest and has overlapping field of view.
-  FramePtr getClosestKeyframe(const FramePtr& frame) const;
+  FramePtr getClosestKeyframe(const FramePtr & frame) const;
 
   /// Return the keyframe which is furthest apart from pos.
-  FramePtr getFurthestKeyframe(const Vector3d& pos) const;
+  FramePtr getFurthestKeyframe(const Vector3d & pos) const;
 
-  bool getKeyframeById(const int id, FramePtr& frame) const;
+  bool getKeyframeById(const int id, FramePtr & frame) const;
 
   /// Transform the whole map with rotation R, translation t and scale s.
-  void transform(const Matrix3d& R, const Vector3d& t, const double& s);
+  void transform(const Matrix3d & R, const Vector3d & t, const double & s);
 
   /// Empty trash bin of deleted keyframes and map points. We don't delete the
   /// points immediately to ensure proper cleanup and to provide the visualizer
@@ -123,14 +113,15 @@ public:
 };
 
 /// A collection of debug functions to check the data consistency.
-namespace map_debug {
+namespace map_debug
+{
 
-void mapStatistics(Map* map);
-void mapValidation(Map* map, int id);
-void frameValidation(Frame* frame, int id);
-void pointValidation(Point* point, int id);
+void mapStatistics(Map * map);
+void mapValidation(Map * map, int id);
+void frameValidation(Frame * frame, int id);
+void pointValidation(Point * point, int id);
 
-} // namespace map_debug
-} // namespace svo
+}  // namespace map_debug
+}  // namespace svo
 
-#endif // SVO_MAP_H_
+#endif  // SVO_MAP_H_

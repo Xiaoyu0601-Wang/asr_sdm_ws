@@ -1,27 +1,13 @@
-// This file is part of SVO - Semi-direct Visual Odometry.
-//
-// Copyright (C) 2014 Christian Forster <forster at ifi dot uzh dot ch>
-// (Robotics and Perception Group, University of Zurich, Switzerland).
-//
-// SVO is free software: you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the Free Software
-// Foundation, either version 3 of the License, or any later version.
-//
-// SVO is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 #ifndef SVO_CONFIG_H_
 #define SVO_CONFIG_H_
 
-#include <string>
 #include <stdint.h>
 #include <stdio.h>
 
-namespace svo {
+#include <string>
+
+namespace svo
+{
 
 using std::string;
 
@@ -31,98 +17,105 @@ using std::string;
 class Config
 {
 public:
-  static Config& getInstance();
+  static Config & getInstance();
 
   /// Base-name of the tracefiles.
-  static string& traceName() { return getInstance().trace_name; }
+  static string & traceName() { return getInstance().trace_name; }
 
   /// Directory where the tracefiles are saved.
-  static string& traceDir() { return getInstance().trace_dir; }
+  static string & traceDir() { return getInstance().trace_dir; }
 
   /// Number of pyramid levels used for features.
-  static size_t& nPyrLevels() { return getInstance().n_pyr_levels; }
+  static size_t & nPyrLevels() { return getInstance().n_pyr_levels; }
 
   /// Use the IMU to get relative rotations.
-  static bool& useImu() { return getInstance().use_imu; }
+  static bool & useImu() { return getInstance().use_imu; }
 
   /// Number of keyframes in the core. The core-kfs are optimized through bundle adjustment.
-  static size_t& coreNKfs() { return getInstance().core_n_kfs; }
+  static size_t & coreNKfs() { return getInstance().core_n_kfs; }
 
   /// Initial scale of the map. Depends on the distance the camera is moved for the initialization.
-  static double& mapScale() { return getInstance().map_scale; }
+  static double & mapScale() { return getInstance().map_scale; }
 
   /// Feature grid size of a cell in [px].
-  static size_t& gridSize() { return getInstance().grid_size; }
+  static size_t & gridSize() { return getInstance().grid_size; }
 
   /// Initialization: Minimum required disparity between the first two frames.
-  static double& initMinDisparity() { return getInstance().init_min_disparity; }
+  static double & initMinDisparity() { return getInstance().init_min_disparity; }
 
   /// Initialization: Minimum number of tracked features.
-  static size_t& initMinTracked() { return getInstance().init_min_tracked; }
+  static size_t & initMinTracked() { return getInstance().init_min_tracked; }
 
   /// Initialization: Minimum number of inliers after RANSAC.
-  static size_t& initMinInliers() { return getInstance().init_min_inliers; }
+  static size_t & initMinInliers() { return getInstance().init_min_inliers; }
 
   /// Maximum level of the Lucas Kanade tracker.
-  static size_t& kltMaxLevel() { return getInstance().klt_max_level; }
+  static size_t & kltMaxLevel() { return getInstance().klt_max_level; }
 
   /// Minimum level of the Lucas Kanade tracker.
-  static size_t& kltMinLevel() { return getInstance().klt_min_level; }
+  static size_t & kltMinLevel() { return getInstance().klt_min_level; }
 
   /// Reprojection threshold [px].
-  static double& reprojThresh() { return getInstance().reproj_thresh; }
+  static double & reprojThresh() { return getInstance().reproj_thresh; }
 
   /// Reprojection threshold after pose optimization.
-  static double& poseOptimThresh() { return getInstance().poseoptim_thresh; }
+  static double & poseOptimThresh() { return getInstance().poseoptim_thresh; }
 
   /// Number of iterations in local bundle adjustment.
-  static size_t& poseOptimNumIter() { return getInstance().poseoptim_num_iter; }
+  static size_t & poseOptimNumIter() { return getInstance().poseoptim_num_iter; }
 
   /// Maximum number of points to optimize at every iteration.
-  static size_t& structureOptimMaxPts() { return getInstance().structureoptim_max_pts; }
+  static size_t & structureOptimMaxPts() { return getInstance().structureoptim_max_pts; }
 
   /// Number of iterations in structure optimization.
-  static size_t& structureOptimNumIter() { return getInstance().structureoptim_num_iter; }
+  static size_t & structureOptimNumIter() { return getInstance().structureoptim_num_iter; }
 
   /// Reprojection threshold after bundle adjustment.
-  static double& lobaThresh() { return getInstance().loba_thresh; }
+  static double & lobaThresh() { return getInstance().loba_thresh; }
 
   /// Threshold for the robust Huber kernel of the local bundle adjustment.
-  static double& lobaRobustHuberWidth() { return getInstance().loba_robust_huber_width; }
+  static double & lobaRobustHuberWidth() { return getInstance().loba_robust_huber_width; }
 
   /// Number of iterations in the local bundle adjustment.
-  static size_t& lobaNumIter() { return getInstance().loba_num_iter; }
+  static size_t & lobaNumIter() { return getInstance().loba_num_iter; }
 
   /// Minimum distance between two keyframes. Relative to the average height in the map.
-  static double& kfSelectMinDist() { return getInstance().kfselect_mindist; }
+  static double & kfSelectMinDist() { return getInstance().kfselect_mindist; }
 
   /// Select only features with a minimum Harris corner score for triangulation.
-  static double& triangMinCornerScore() { return getInstance().triang_min_corner_score; }
+  static double & triangMinCornerScore() { return getInstance().triang_min_corner_score; }
 
-  /// Subpixel refinement of reprojection and triangulation. Set to 0 if no subpix refinement required!
-  static size_t& subpixNIter() { return getInstance().subpix_n_iter; }
+  /// Subpixel refinement of reprojection and triangulation. Set to 0 if no subpix refinement
+  /// required!
+  static size_t & subpixNIter() { return getInstance().subpix_n_iter; }
+
+  /// Whether to run the depth filter in a background thread (true) or synchronously (false).
+  static bool & useThreadedDepthfilter() { return getInstance().use_threaded_depthfilter; }
 
   /// Limit the number of keyframes in the map. This makes nslam essentially.
   /// a Visual Odometry. Set to 0 if unlimited number of keyframes are allowed.
   /// Minimum number of keyframes is 3.
-  static size_t& maxNKfs() { return getInstance().max_n_kfs; }
+  static size_t & maxNKfs() { return getInstance().max_n_kfs; }
 
   /// How much (in milliseconds) is the camera delayed with respect to the imu.
-  static double& imgImuDelay() { return getInstance().img_imu_delay; }
+  static double & imgImuDelay() { return getInstance().img_imu_delay; }
 
   /// Maximum number of features that should be tracked.
-  static size_t& maxFts() { return getInstance().max_fts; }
+  static size_t & maxFts() { return getInstance().max_fts; }
 
   /// If the number of tracked features drops below this threshold. Tracking quality is bad.
-  static size_t& qualityMinFts() { return getInstance().quality_min_fts; }
+  static size_t & qualityMinFts() { return getInstance().quality_min_fts; }
 
   /// If within one frame, this amount of features are dropped. Tracking quality is bad.
-  static int& qualityMaxFtsDrop() { return getInstance().quality_max_drop_fts; }
+  static int & qualityMaxFtsDrop() { return getInstance().quality_max_drop_fts; }
+
+  /// Factor to scale ZMSSD patch matching acceptance threshold (>=1.0 more permissive)
+  static double & patchMatchThresholdFactor() { return getInstance().patch_match_thresh_factor; }
 
 private:
   Config();
-  Config(Config const&);
-  void operator=(Config const&);
+  Config(Config const &);
+  void operator=(Config const &);
   string trace_name;
   string trace_dir;
   size_t n_pyr_levels;
@@ -147,13 +140,15 @@ private:
   double triang_min_corner_score;
   size_t triang_half_patch_size;
   size_t subpix_n_iter;
+  bool use_threaded_depthfilter;
   size_t max_n_kfs;
   double img_imu_delay;
   size_t max_fts;
   size_t quality_min_fts;
   int quality_max_drop_fts;
+  double patch_match_thresh_factor;
 };
 
-} // namespace svo
+}  // namespace svo
 
-#endif // SVO_CONFIG_H_
+#endif  // SVO_CONFIG_H_
