@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <!-- 动态查找 YAML 配置文件路径 -->
+  <let name="config_file" value="$(find-pkg-share asr_sdm_object_detector)/config/img_detector.param.yaml" />
+
+  <!-- 启动 YOLOv8 检测节点 -->
+  <node
+    pkg="asr_sdm_object_detector"
+    exec="img_detector_node"
+    name="img_detector_node"
+    namespace="perception"
+    output="screen"
+    emulate_tty="true"
+  >
+    <!-- 加载 YAML 配置参数 -->
+    <param from="$(var config_file)" />
+
+    <!-- 话题重映射（可选，根据需求调整） -->
+    <remap from="~/input/image" to="/sensing/camera/front/image_raw" />
+    <remap from="~/output/detections" to="/perception/object_detection/detections" />
+    <remap from="~/debug/exe_time_ms" to="/perception/object_detection/exe_time_ms" />
+  </node>
+</launch>
