@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>asr_sdm_perception_msgs</name>
+  <version>0.1.0</version>
+  <description>ASR SDM perception messages</description>
+  <maintainer email="your-email@example.com">Your Name</maintainer>
+  <license>Apache License 2.0</license>
+
+  <!-- 消息生成依赖 -->
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
+  
+  <!-- 运行时依赖 -->
+  <exec_depend>rosidl_default_runtime</exec_depend>
+  
+  <!-- 消息依赖 -->
+  <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
+  
+  <member_of_group>rosidl_interface_packages</member_of_group>
+</package>
