@@ -12,6 +12,8 @@ endif()
 
 # Find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
@@ -82,6 +84,29 @@ ament_target_dependencies(vo
   vikit_ros
 )
 
+add_executable(vio
+  src/vio_node.cpp
+  src/msckf_frontend/image_processor.cpp
+  src/msckf_frontend/utils.cpp
+)
+target_include_directories(vio PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+target_link_libraries(vio ${OpenCV_LIBS} svo::svo)
+ament_target_dependencies(vio
+  rclcpp
+  sensor_msgs
+  std_msgs
+  geometry_msgs
+  image_transport
+  cv_bridge
+  tf2
+  tf2_ros
+  tf2_geometry_msgs
+  svo_msgs
+)
+
 add_executable(benchmark src/benchmark_node.cpp)
 target_link_libraries(benchmark svo_visualizer)
 ament_target_dependencies(benchmark
@@ -99,7 +124,7 @@ install(TARGETS svo_visualizer
   RUNTIME DESTINATION bin
 )
 
-install(TARGETS vo benchmark
+install(TARGETS vo vio benchmark
   DESTINATION lib/${PROJECT_NAME}
 )
 

@@ -770,38 +770,6 @@ void MsckfVio::addFeatureObservations(
       map_server[feature.id].observations[state_id] =
         Vector4d(feature.u0, feature.v0,
             feature.u1, feature.v1);
-
-      // Seed 3D with stereo triangulation at first observation (cam0-cam1)
-      try {
-        const CAMState& cam_state = state_server.cam_states[state_id];
-        // bearing rays in cam frames (normalized)
-        Eigen::Vector3d d0(feature.u0, feature.v0, 1.0);
-        Eigen::Vector3d d1(feature.u1, feature.v1, 1.0);
-        d0.normalize();
-        d1.normalize();
-        // T_cam0_cam1 maps cam0 -> cam1, so its inverse maps cam1 -> cam0
-        const Eigen::Matrix3d R_c1_c0 = CAMState::T_cam0_cam1.linear().transpose();
-        const Eigen::Vector3d t_c1_c0 = -CAMState::T_cam0_cam1.linear().transpose() * CAMState::T_cam0_cam1.translation();
-        // Solve for depths lambdas: [R_c1_c0*d0, -d1] * [lambda0; lambda1] = -t_c1_c0
-        Eigen::Matrix<double,3,2> A;
-        A.col(0) = R_c1_c0 * d0;
-        A.col(1) = -d1;
-        Eigen::Vector2d lambdas = (A.transpose()*A).ldlt().solve(A.transpose() * (-t_c1_c0));
-        double lambda0 = lambdas(0);
-        double lambda1 = lambdas(1);
-        if (std::isfinite(lambda0) && std::isfinite(lambda1) && lambda0 > 0.0 && lambda1 > 0.0) {
-          Eigen::Vector3d p_c0 = lambda0 * d0;
-          // convert to world frame
-          Eigen::Matrix3d R_w_c0 = quaternionToRotation(cam_state.orientation);
-          const Eigen::Vector3d& t_c0_w = cam_state.position;
-          Eigen::Vector3d p_w = R_w_c0.transpose() * p_c0 + t_c0_w;
-          map_server[feature.id].position = p_w;
-          map_server[feature.id].is_initialized = true;
-          map_server[feature.id].has_depth_prior = true;
-          map_server[feature.id].depth_prior = p_c0.norm();
-          map_server[feature.id].depth_sigma = 0.5 * std::max(1e-6, p_c0.norm());
-        }
-      } catch (...) { /* no-op */ }
     } else {
       // This is an old feature.
       map_server[feature.id].observations[state_id] =

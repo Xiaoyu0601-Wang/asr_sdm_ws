@@ -1,0 +1,136 @@
+<mxfile host="65bd71144e">
+    <diagram id="msckf-image-processor" name="MSCKF ImageProcessor Pipeline">
+        <mxGraphModel dx="2126" dy="952" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="legend" value="Legend&#xa;灰色：输入&#xa;蓝色：主流程&#xa;紫色：SVO patch 对齐(替换KLT)&#xa;绿色：发布输出&#xa;橙色：IMU缓存/旋转预测" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#CCCCCC;" parent="1" vertex="1">
+                    <mxGeometry x="30" y="560" width="320" height="140" as="geometry"/>
+                </mxCell>
+                <mxCell id="title" value="&amp;nbsp;(msckf_frontend)程序流程图" style="text;html=1;strokeColor=none;fillColor=none;fontSize=18;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="20" width="900" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="in_cam0" value="cam0 Image&#xa;(/cam0/image_raw)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6D7E95;strokeColor=#2C3E50;fontColor=#FFFFFF;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="90" width="200" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="in_imu" value="IMU&#xa;(/imu0)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F6B26B;strokeColor=#B45F06;fontColor=#000000;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="190" width="200" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="imu_cb" value="imuCallback()&#xa;缓存 imu_msg_buffer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F6B26B;strokeColor=#B45F06;fontColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="290" y="190" width="220" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="cb" value="stereoCallback()&#xa;(mono时 cam1=null)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3C78D8;strokeColor=#1B4F72;fontColor=#FFFFFF;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="290" y="90" width="220" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="convert" value="cv_bridge 转换&#xa;MONO8 cv::Mat" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3C78D8;strokeColor=#1B4F72;fontColor=#FFFFFF;" parent="1" vertex="1">
+                    <mxGeometry x="540" y="90" width="210" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="pyr" value="createImagePyramids()&#xa;buildOpticalFlowPyramid" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3C78D8;strokeColor=#1B4F72;fontColor=#FFFFFF;" parent="1" vertex="1">
+                    <mxGeometry x="780" y="90" width="240" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="first" value="首帧? is_first_img" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666666;" parent="1" vertex="1">
+                    <mxGeometry x="1050" y="95" width="110" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="init" value="initializeFirstFrame()&#xa;FAST 检测 + 网格挑选&#xa;分配 id/lifetime" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3C78D8;strokeColor=#1B4F72;fontColor=#FFFFFF;" parent="1" vertex="1">
+                    <mxGeometry x="1170" y="10" width="240" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="track" value="trackFeatures()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3C78D8;strokeColor=#1B4F72;fontColor=#FFFFFF;" parent="1" vertex="1">
+                    <mxGeometry x="1170" y="155" width="240" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="imu_int" value="integrateImuData()&#xa;均值角速度×dt&#xa;Rodrigues 得 R_p_c" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F6B26B;strokeColor=#B45F06;fontColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="540" y="180" width="410" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="predict" value="predictFeatureTracking()&#xa;H = K·R·K^{-1}&#xa;预测像素初值" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F6B26B;strokeColor=#B45F06;fontColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="625" y="300" width="240" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="svo_align" value="SVO patch 对齐&#xa;svo::feature_alignment::align2D&#xa;(替换 OpenCV KLT)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#8E7CC3;strokeColor=#4A235A;fontColor=#FFFFFF;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="320" y="300" width="260" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="ransac" value="twoPointRansac()&#xa;旋转已知模型&#xa;鲁棒去外点" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3C78D8;strokeColor=#1B4F72;fontColor=#FFFFFF;" parent="1" vertex="1">
+                    <mxGeometry x="330" y="440" width="240" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="pack" value="按网格写入 curr_features&#xa;并 lifetime+1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3C78D8;strokeColor=#1B4F72;fontColor=#FFFFFF;" parent="1" vertex="1">
+                    <mxGeometry x="625" y="440" width="240" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="add" value="addNewFeatures()&#xa;mask 避免重复&#xa;FAST 补点(按网格)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3C78D8;strokeColor=#1B4F72;fontColor=#FFFFFF;" parent="1" vertex="1">
+                    <mxGeometry x="1170" y="260" width="240" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="prune" value="pruneGridFeatures()&#xa;每格最多 grid_max" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3C78D8;strokeColor=#1B4F72;fontColor=#FFFFFF;" parent="1" vertex="1">
+                    <mxGeometry x="1170" y="390" width="240" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="publish" value="publish()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#00A65A;strokeColor=#274E13;fontColor=#FFFFFF;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="1170" y="500" width="240" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="out_features" value="发布: features&#xa;svo_msgs/CameraMeasurement&#xa;(id,u0,v0[,u1,v1])" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#00A65A;strokeColor=#274E13;fontColor=#FFFFFF;" parent="1" vertex="1">
+                    <mxGeometry x="430" y="620" width="300" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="out_info" value="发布: tracking_info&#xa;svo_msgs/TrackingInfo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#00A65A;strokeColor=#274E13;fontColor=#FFFFFF;" parent="1" vertex="1">
+                    <mxGeometry x="750" y="620" width="260" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="out_pc" value="发布(可视化): feature_points*&#xa;sensor_msgs/PointCloud2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#00A65A;strokeColor=#274E13;fontColor=#FFFFFF;" parent="1" vertex="1">
+                    <mxGeometry x="1040" y="620" width="280" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="out_dbg" value="发布(调试图): debug/*&#xa;image_transport" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#00A65A;strokeColor=#274E13;fontColor=#FFFFFF;" parent="1" vertex="1">
+                    <mxGeometry x="1340" y="620" width="240" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_cam0" style="endArrow=block;html=1;strokeColor=#2C3E50;" parent="1" source="in_cam0" target="cb" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_imu" style="endArrow=block;html=1;strokeColor=#B45F06;" parent="1" source="in_imu" target="imu_cb" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_cb1" style="endArrow=block;html=1;strokeColor=#1B4F72;" parent="1" source="cb" target="convert" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_cb2" style="endArrow=block;html=1;strokeColor=#1B4F72;" parent="1" source="convert" target="pyr" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_cb3" style="endArrow=block;html=1;strokeColor=#1B4F72;" parent="1" source="pyr" target="first" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_first_yes" value="yes" style="endArrow=block;html=1;strokeColor=#1B4F72;fontColor=#1B4F72;" parent="1" source="first" target="init" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_first_no" value="no" style="endArrow=block;html=1;strokeColor=#1B4F72;fontColor=#1B4F72;" parent="1" source="first" target="track" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_track_imu" style="endArrow=block;html=1;strokeColor=#B45F06;" parent="1" source="imu_cb" target="imu_int" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_track1" style="endArrow=block;html=1;strokeColor=#B45F06;" parent="1" source="imu_int" target="predict" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_track2" style="endArrow=block;html=1;strokeColor=#4A235A;" parent="1" source="predict" target="svo_align" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_track3" style="endArrow=block;html=1;strokeColor=#1B4F72;" parent="1" source="svo_align" target="ransac" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_track4" style="endArrow=block;html=1;strokeColor=#1B4F72;" parent="1" source="ransac" target="pack" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_after_track" style="endArrow=block;html=1;strokeColor=#1B4F72;" parent="1" source="track" target="add" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_after_add" style="endArrow=block;html=1;strokeColor=#1B4F72;" parent="1" source="add" target="prune" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_after_prune" style="endArrow=block;html=1;strokeColor=#1B4F72;" parent="1" source="prune" target="publish" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_pub1" style="endArrow=block;html=1;strokeColor=#274E13;" parent="1" source="publish" target="out_features" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_pub2" style="endArrow=block;html=1;strokeColor=#274E13;" parent="1" source="publish" target="out_info" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_pub3" style="endArrow=block;html=1;strokeColor=#274E13;" parent="1" source="publish" target="out_pc" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_pub4" style="endArrow=block;html=1;strokeColor=#274E13;" parent="1" source="publish" target="out_dbg" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

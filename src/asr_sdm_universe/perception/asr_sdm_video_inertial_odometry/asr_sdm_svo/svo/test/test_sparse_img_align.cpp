@@ -55,7 +55,7 @@ void SparseImgAlignTest::testSequence(
   std::vector<vk::blender_utils::file_format::ImageNameAndPose>::iterator iter = sequence.begin();
   std::list<double> translation_error;
 
-  Sophus::SE3 T_prev_w, T_prevgt_w;
+  Sophus::SE3d T_prev_w, T_prevgt_w;
   std::string trace_dir(svo::test_utils::getTraceDir());
   std::string trace_name(
     trace_dir + "/sparse_img_align_" + experiment_name + "_trans_estimate.txt");
@@ -69,8 +69,8 @@ void SparseImgAlignTest::testSequence(
     assert(!img.empty());
 
     // load pose
-    Sophus::SE3 T_w_gt(iter->q_, iter->t_);
-    Sophus::SE3 T_gt_w = T_w_gt.inverse();  // ground-truth
+    Sophus::SE3d T_w_gt(iter->q_, iter->t_);
+    Sophus::SE3d T_gt_w = T_w_gt.inverse();  // ground-truth
 
     if (i == 0) {
       // set reference frame
@@ -111,7 +111,7 @@ void SparseImgAlignTest::testSequence(
     img_align.run(frame_ref_, frame_cur_);
 
     // compute error
-    Sophus::SE3 T_f_gt = frame_cur_->T_f_w_ * T_gt_w.inverse();
+    Sophus::SE3d T_f_gt = frame_cur_->T_f_w_ * T_gt_w.inverse();
     translation_error.push_back(T_f_gt.translation().norm());
     printf(
       "[%3.i] time = %f ms \t |t| = %f \t translation error = %f\n", i, t.stop() * 1000,

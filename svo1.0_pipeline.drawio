@@ -1,0 +1,145 @@
+<mxfile host="65bd71144e">
+    <diagram id="svo-core-vo" name="SVO Core VO Pipeline">
+        <mxGraphModel dx="2658" dy="1190" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="legend" value="Legend&#xa;灰色：输入&#xa;蓝色：主流程模块&#xa;绿色：地图更新&#xa;橙色：深度滤波&#xa;蓝色虚线：可选(Local BA)&#xa;紫色：关键帧决策" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#CCCCCC;" parent="1" vertex="1">
+                    <mxGeometry x="1220" y="650" width="230" height="140" as="geometry"/>
+                </mxCell>
+                <mxCell id="n_input" value="Image&#xa;Input" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6D7E95;strokeColor=#2C3E50;fontColor=#FFFFFF;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="110" width="200" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="n_pyramid" value="Pyramid&#xa;Creation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3C78D8;strokeColor=#1B4F72;fontColor=#FFFFFF;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="310" y="110" width="200" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="n_stage" value="阶段状态机&#xa;FIRST/SECOND/DEFAULT/RELOCALIZING&#xa;FrameHandlerBase" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6FA8DC;strokeColor=#1B4F72;fontColor=#FFFFFF;" parent="1" vertex="1">
+                    <mxGeometry x="525" y="110" width="250" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="n_first" value="FIRST_FRAME 初始化&#xa;选第一关键帧&#xa;KLT/Homography Init&#xa;initialization.cpp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B4A7D6;strokeColor=#4A235A;fontColor=#FFFFFF;" parent="1" vertex="1">
+                    <mxGeometry x="835" y="105" width="180" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="n_second" value="SECOND_FRAME 初始化&#xa;KLT跟踪+单应分解&#xa;三角化初始地图&#xa;initialization.cpp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B4A7D6;strokeColor=#4A235A;fontColor=#FFFFFF;" parent="1" vertex="1">
+                    <mxGeometry x="835" y="230" width="180" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="n_reloc" value="RELOCALIZING&#xa;重定位/恢复&#xa;SparseImgAlign(ref_kf)&#xa;frame_handler_mono.cpp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E06666;strokeColor=#990000;fontColor=#FFFFFF;" parent="1" vertex="1">
+                    <mxGeometry x="560" y="10" width="180" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="n_default" value="DEFAULT_FRAME 正常跟踪&#xa;processFrame()&#xa;frame_handler_mono.cpp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6FA8DC;strokeColor=#1B4F72;fontColor=#FFFFFF;" parent="1" vertex="1">
+                    <mxGeometry x="525" y="280" width="250" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="n_sparse_align" value="Sparse&#xa;Img Align" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3C78D8;strokeColor=#1B4F72;fontColor=#FFFFFF;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="535" y="395" width="230" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="n_reproject" value="Reproject&#xa;+ Align" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3C78D8;strokeColor=#1B4F72;fontColor=#FFFFFF;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="520" y="510" width="260" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="n_pose_opt" value="Pose&#xa;Optimizer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3C78D8;strokeColor=#1B4F72;fontColor=#FFFFFF;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="845" y="520" width="160" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="n_structure_opt" value="结构优化(3D点)&#xa;optimizeStructure()&#xa;point_optimizer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6FA8DC;strokeColor=#1B4F72;fontColor=#FFFFFF;" parent="1" vertex="1">
+                    <mxGeometry x="840" y="395" width="170" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="n_kf" value="关键帧决策&#xa;needNewKf(depth_mean)&#xa;tracking_quality 检查&#xa;frame_handler_mono.cpp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B4A7D6;strokeColor=#4A235A;fontColor=#FFFFFF;" parent="1" vertex="1">
+                    <mxGeometry x="1105" y="385" width="200" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="n_df_addframe" value="非关键帧：更新深度滤波&#xa;DepthFilter::addFrame()&#xa;depth_filter.cpp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F6B26B;strokeColor=#B45F06;fontColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="1100" y="530" width="210" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="n_kf_prep" value="关键帧准备&#xa;1) addFrameRef()&#xa;2) candidate-&gt;map point&#xa;point_candidates_" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6FA8DC;strokeColor=#1B4F72;fontColor=#FFFFFF;" parent="1" vertex="1">
+                    <mxGeometry x="1095" y="270" width="220" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="n_ba" value="(可选) 局部BA&#xa;setCoreKfs()+localBA()&#xa;bundle_adjustment.cpp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6FA8DC;strokeColor=#1B4F72;fontColor=#FFFFFF;dashed=1;" parent="1" vertex="1">
+                    <mxGeometry x="1105" y="150" width="200" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="n_df_addkf" value="关键帧：初始化Seeds&#xa;DepthFilter::addKeyframe()&#xa;depth_filter.cpp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F6B26B;strokeColor=#B45F06;fontColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="1360" y="280" width="200" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="n_map_update" value="关键帧管理/地图更新&#xa;Map::addKeyframe()&#xa;safeDeleteFrame()+removeKeyframe()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#93C47D;strokeColor=#274E13;fontColor=#FFFFFF;" parent="1" vertex="1">
+                    <mxGeometry x="1330" y="155" width="260" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="ds_frame" value="Frame&#xa;frame.h/.cpp&#xa;图像+金字塔+位姿" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#93C47D;strokeColor=#274E13;fontColor=#FFFFFF;" parent="1" vertex="1">
+                    <mxGeometry x="50" y="650" width="150" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="ds_feature" value="Feature&#xa;feature.h&#xa;2D观测/层级" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#93C47D;strokeColor=#274E13;fontColor=#FFFFFF;" parent="1" vertex="1">
+                    <mxGeometry x="230" y="650" width="160" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="ds_point" value="Point&#xa;point.h/.cpp&#xa;3D点/质量" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#93C47D;strokeColor=#274E13;fontColor=#FFFFFF;" parent="1" vertex="1">
+                    <mxGeometry x="410" y="650" width="160" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="ds_map" value="Map&#xa;map.h/.cpp&#xa;关键帧+地图点" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#93C47D;strokeColor=#274E13;fontColor=#FFFFFF;" parent="1" vertex="1">
+                    <mxGeometry x="590" y="650" width="160" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="bg_depth" value="DepthFilter 线程(可选)&#xa;depth_filter.cpp&#xa;Bayesian 深度估计" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F6B26B;strokeColor=#B45F06;" parent="1" vertex="1">
+                    <mxGeometry x="1340" y="390" width="240" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="bg_seed" value="Seed(逆深度)&#xa;均值/方差/β分布&#xa;收敛-&gt;候选地图点" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F6B26B;strokeColor=#B45F06;" parent="1" vertex="1">
+                    <mxGeometry x="1340" y="510" width="240" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="e1" style="endArrow=block;html=1;strokeColor=#1B4F72;" parent="1" source="n_input" target="n_pyramid" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e2" style="endArrow=block;html=1;strokeColor=#1B4F72;" parent="1" source="n_pyramid" target="n_stage" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e3" style="endArrow=block;html=1;strokeColor=#4A235A;dashed=1;" parent="1" source="n_stage" target="n_first" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e4" style="endArrow=block;html=1;strokeColor=#4A235A;dashed=1;" parent="1" source="n_stage" target="n_second" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e5" style="endArrow=none;html=1;strokeColor=#FFFFFF;" parent="1" source="n_stage" target="n_default" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e6" style="endArrow=block;html=1;strokeColor=#990000;dashed=1;" parent="1" source="n_stage" target="n_reloc" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e7" style="endArrow=block;html=1;strokeColor=#1B4F72;" parent="1" source="n_default" target="n_sparse_align" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e8" style="endArrow=block;html=1;strokeColor=#1B4F72;" parent="1" source="n_sparse_align" target="n_reproject" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e9" style="endArrow=block;html=1;strokeColor=#1B4F72;" parent="1" source="n_reproject" target="n_pose_opt" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e10" style="endArrow=block;html=1;strokeColor=#1B4F72;" parent="1" source="n_pose_opt" target="n_structure_opt" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e11" style="endArrow=block;html=1;strokeColor=#4A235A;" parent="1" source="n_structure_opt" target="n_kf" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e12" style="endArrow=block;html=1;strokeColor=#B45F06;dashed=1;" parent="1" source="n_kf" target="n_df_addframe" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e13" style="endArrow=block;html=1;strokeColor=#1B4F72;" parent="1" source="n_kf" target="n_kf_prep" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e14" style="endArrow=block;html=1;strokeColor=#1B4F72;dashed=1;" parent="1" source="n_kf_prep" target="n_ba" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e15" style="endArrow=block;html=1;strokeColor=#B45F06;" parent="1" source="n_kf_prep" target="n_df_addkf" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e16" style="endArrow=block;html=1;strokeColor=#274E13;" parent="1" source="n_df_addkf" target="n_map_update" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e17" style="endArrow=block;html=1;strokeColor=#274E13;" parent="1" source="ds_frame" target="ds_feature" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e18" style="endArrow=block;html=1;strokeColor=#274E13;" parent="1" source="ds_feature" target="ds_point" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e19" style="endArrow=block;html=1;strokeColor=#274E13;" parent="1" source="ds_point" target="ds_map" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e20" style="endArrow=block;html=1;strokeColor=#B45F06;dashed=1;" parent="1" source="n_df_addkf" target="bg_depth" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e21" style="endArrow=block;html=1;strokeColor=#B45F06;" parent="1" source="bg_depth" target="bg_seed" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

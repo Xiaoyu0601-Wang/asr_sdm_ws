@@ -29,10 +29,6 @@ namespace msckf_vio {
  *    the 3d position of a feature is initialized.
  */
 struct Feature {
-  // Optional stereo depth prior (in cam0 frame)
-  bool has_depth_prior = false;
-  double depth_prior = -1.0;
-  double depth_sigma = -1.0;
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   typedef long long int FeatureIDType;
 
@@ -296,28 +292,6 @@ bool Feature::checkMotion(
 
 bool Feature::initializePosition(
     const CamStateServer& cam_states) {
-  // Fast path: if we have a stereo depth prior (e.g. seeded at first obs),
-  // directly back-project from the first observation and return.
-  if (has_depth_prior && depth_prior > 0.0) {
-    auto first_it = observations.begin();
-    if (first_it != observations.end()) {
-      const StateIDType& cam_id = first_it->first;
-      auto cam_state_iter = cam_states.find(cam_id);
-      if (cam_state_iter != cam_states.end()) {
-        Eigen::Isometry3d cam0_pose;
-        cam0_pose.linear() = quaternionToRotation(
-            cam_state_iter->second.orientation).transpose();
-        cam0_pose.translation() = cam_state_iter->second.position;
-        Eigen::Vector2d z = first_it->second.head<2>();
-        Eigen::Vector3d dir(z(0), z(1), 1.0);
-        dir.normalize();
-        Eigen::Vector3d p_c0 = depth_prior * dir;
-        position = cam0_pose.linear()*p_c0 + cam0_pose.translation();
-        is_initialized = true;
-        return true;
-      }
-    }
-  }
   // Organize camera poses and feature observations properly.
   std::vector<Eigen::Isometry3d,
     Eigen::aligned_allocator<Eigen::Isometry3d> > cam_poses(0);

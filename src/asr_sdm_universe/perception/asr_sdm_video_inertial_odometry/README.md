@@ -20,6 +20,7 @@ colcon build --symlink-install --parallel-workers 8
 This section shows how to run the SVO visual odometry node with the included rosbag and visualize results in RViz2.
 
 Prerequisites
+`rm -rf build install log`
 - Workspace has been built: `colcon build --packages-up-to svo_ros`
 - Source the workspace: `source install/setup.bash`
 - The demo bag exists at: `datasheet/airground_rig_s3_ros2/airground_rig_s3_ros2.db3`
@@ -33,17 +34,19 @@ source install/setup.bash
 Terminal 1 — start SVO
 ```sh
 ros2 launch svo_ros test_rig3.launch.py
+ros2 launch svo_ros test_euroc.launch.py
+ros2 launch svo_ros vio_euroc.launch.py
 ```
 
 Terminal 2 — play rosbag with simulated clock, loop
 ```sh
 ros2 bag play datasheet/airground_rig_s3_ros2
+ros2 bag play ~/svo/asr_sdm_ws/datasheet/MH_01_easy_ros2 --clock --rate 1.0
 ```
 
 Terminal 3 — start RViz2 with the provided config and use simulated time
 ```sh
-rviz2 -d src/asr_sdm_universe/perception/asr_sdm_video_inertial_odometry/asr_sdm_svo/svo_ros/rviz_config.rviz \
-  --ros-args -p use_sim_time:=true
+rviz2 -d src/asr_sdm_universe/perception/asr_sdm_video_inertial_odometry/asr_sdm_svo/svo_ros/rviz_config.rviz 
 ```
 
 What you should see
@@ -69,7 +72,7 @@ ros2 topic hz /svo/pose
 Stop processes
 ```sh
 # stop rosbag player
-pkill -f "ros2 bag play.*airground_rig_s3_ros2"
+pkill -f "ros2 bag play"
 
 # stop SVO launch
 pkill -f "ros2 launch svo_ros test_rig3.launch.py"

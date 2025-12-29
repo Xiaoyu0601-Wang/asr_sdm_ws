@@ -14,6 +14,9 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Feature.msg"
   "msg/Info.msg"
   "msg/NbvTrajectory.msg"
+  "msg/FeatureMeasurement.msg"
+  "msg/CameraMeasurement.msg"
+  "msg/TrackingInfo.msg"
   DEPENDENCIES geometry_msgs sensor_msgs std_msgs
 )
 
