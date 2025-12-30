@@ -1,0 +1,14 @@
+/**:
+  ros__parameters:
+    # YOLOv8 模型参数（替换为你的实际路径）
+    model_path: "/home/wang/model/yolov8/yolov8n.onnx"
+    label_path: "/home/wang/model/yolov8/labels.txt"  # 若为自定义数据集，替换为你的标签文件路径
+    input_width: 640  # 必须和 YOLOv8 导出时的 imgsz 一致
+    input_height: 640
+    score_thresh: 0.6  # 置信度阈值（可按需调整）
+    nms_thresh: 0.45   # NMS 阈值（YOLOv8 官方推荐）
+
+    # 测试模式参数（沿用你的路径）
+    test_mode: true
+    test_image_dir: "/home/wang/testdata2"  # 测试图像文件夹
+    output_image_dir: "/home/wang/testout2" # 结果输出文件夹

@@ -1,0 +1,16 @@
+/**:
+  ros__parameters:
+    model_path: "/home/wang/model/resnet18/resnet18.onnx"
+    label_path: "/home/wang/model/resnet18/labels.txt"
+
+    input_width: 224
+    input_height: 224
+    score_thresh: 0.5
+
+    # 测试模式：批量读取文件夹中的图片
+    test_mode: true
+    test_image_dir: "/home/wang/testdata_cls"
+    output_image_dir: "/home/wang/testout_cls"
+
+    # 是否在在线模式下发布带标签的调试图像
+    publish_debug_image: true
