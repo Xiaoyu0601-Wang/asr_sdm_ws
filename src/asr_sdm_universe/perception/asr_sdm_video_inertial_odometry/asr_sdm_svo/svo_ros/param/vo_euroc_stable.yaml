@@ -1,0 +1,30 @@
+# EuRoC / MH_01_easy - VO params for svo_ros/vo
+# NOTE: This node reads FLAT parameters (not ROS2 nested 'svo: ros__parameters').
+
+# Feature detection / tracking
+grid_size: 30
+max_fts: 300
+n_pyr_levels: 4
+triang_min_corner_score: 10.0
+
+# Map / keyframes
+max_n_kfs: 30
+map_scale: 3.0
+
+# Optimization
+loba_num_iter: 3
+
+# Robustness / thresholds
+reproj_thresh: 5.0
+poseoptim_thresh: 5.0
+quality_min_fts: 20
+quality_max_drop_fts: 120
+kfselect_mindist: 0.02
+patch_match_thresh_factor: 1.4
+
+# KLT tracker tuning (handle larger inter-frame motion)
+klt_min_level: 1
+klt_max_level: 4
+
+# Subpixel refinement
+subpix_n_iter: 30

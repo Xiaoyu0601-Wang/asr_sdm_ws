@@ -109,26 +109,37 @@ if(HAVE_G2O)
 endif()
 
 # Tests disabled for now - need ROS2 porting
-# add_executable(test_feature_align test/test_feature_alignment.cpp)
-# target_link_libraries(test_feature_align svo)
+add_executable(test_feature_align test/test_feature_alignment.cpp)
+target_link_libraries(test_feature_align svo)
+ament_target_dependencies(test_feature_align ament_index_cpp)
 # 
-# add_executable(test_pipeline test/test_pipeline.cpp)
-# target_link_libraries(test_pipeline svo)
+add_executable(test_pipeline test/test_pipeline.cpp)
+target_link_libraries(test_pipeline svo)
+ament_target_dependencies(test_pipeline ament_index_cpp)
+
+add_executable(test_pipeline_euroc test/test_pipeline_euroc.cpp)
+target_link_libraries(test_pipeline_euroc svo)
+ament_target_dependencies(test_pipeline_euroc ament_index_cpp)
 # 
-# add_executable(test_matcher test/test_matcher.cpp)
-# target_link_libraries(test_matcher svo)
+add_executable(test_matcher test/test_matcher.cpp)
+target_link_libraries(test_matcher svo)
+ament_target_dependencies(test_matcher ament_index_cpp)
 # 
-# add_executable(test_feature_detection test/test_feature_detection.cpp)
-# target_link_libraries(test_feature_detection svo)
+add_executable(test_feature_detection test/test_feature_detection.cpp)
+target_link_libraries(test_feature_detection svo)
+ament_target_dependencies(test_feature_detection ament_index_cpp)
 # 
-# add_executable(test_depth_filter test/test_depth_filter.cpp)
-# target_link_libraries(test_depth_filter svo)
+add_executable(test_depth_filter test/test_depth_filter.cpp)
+target_link_libraries(test_depth_filter svo)
+ament_target_dependencies(test_depth_filter ament_index_cpp)
 # 
-# add_executable(test_sparse_img_align test/test_sparse_img_align.cpp)
-# target_link_libraries(test_sparse_img_align svo)
+add_executable(test_sparse_img_align test/test_sparse_img_align.cpp)
+target_link_libraries(test_sparse_img_align svo)
+ament_target_dependencies(test_sparse_img_align ament_index_cpp)
 # 
-# add_executable(test_pose_optimizer test/test_pose_optimizer.cpp)
-# target_link_libraries(test_pose_optimizer svo)
+add_executable(test_pose_optimizer test/test_pose_optimizer.cpp)
+target_link_libraries(test_pose_optimizer svo)
+ament_target_dependencies(test_pose_optimizer ament_index_cpp)
 
 # Install
 install(TARGETS svo
@@ -142,16 +153,17 @@ install(DIRECTORY include/
   DESTINATION include
 )
 
-# install(TARGETS
-#   test_feature_align
-#   test_pipeline
-#   test_matcher
-#   test_feature_detection
-#   test_depth_filter
-#   test_sparse_img_align
-#   test_pose_optimizer
-#   DESTINATION lib/${PROJECT_NAME}
-# )
+install(TARGETS
+  test_depth_filter
+  test_feature_align
+  test_feature_detection
+  test_matcher
+  test_pipeline
+  test_pipeline_euroc
+  test_pose_optimizer
+  test_sparse_img_align
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 # Export
 ament_export_targets(svoTargets HAS_LIBRARY_TARGET)

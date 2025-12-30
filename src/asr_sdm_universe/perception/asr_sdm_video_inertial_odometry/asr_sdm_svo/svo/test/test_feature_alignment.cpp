@@ -42,6 +42,10 @@ int main(int argc, char ** argv)
     svo::test_utils::getDatasetDir() + "/sin2_tex2_h1_v8_d/img/frame_000002_0.png");
   printf("Loading image '%s'\n", img_name.c_str());
   cv::Mat img(cv::imread(img_name, 0));
+  if (img.empty()) {
+    printf("ERROR: Failed to load image '%s'\n", img_name.c_str());
+    return -1;
+  }
   assert(img.type() == CV_8UC1);
 
   // TODO: test on corner/gradient features!
@@ -52,7 +56,9 @@ int main(int argc, char ** argv)
   generateRefPatchNoWarpInterpolate(img, px_true, ref_patch_with_border);
 
   // create reference patch, aligned
-  uint8_t * ref_patch = vk::aligned_mem::aligned_alloc<uint8_t>(64, 16);
+  // Use simple allocation instead of aligned_alloc to avoid issues
+  uint8_t ref_patch_buffer[64] __attribute__((aligned(16)));
+  uint8_t * ref_patch = ref_patch_buffer;
   uint8_t * ref_patch_ptr = ref_patch;
   for (int y = 1; y < 9; ++y) {
     uint8_t * ref_patch_border_ptr = ref_patch_with_border.data + y * 10 + 1;

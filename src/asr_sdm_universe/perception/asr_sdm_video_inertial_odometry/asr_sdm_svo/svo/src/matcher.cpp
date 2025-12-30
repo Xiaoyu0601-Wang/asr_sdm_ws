@@ -333,13 +333,27 @@ bool Matcher::findEpipolarMatchDirect(
     double& depth)
 {
   SE3 T_cur_ref = cur_frame.T_f_w_ * ref_frame.T_f_w_.inverse();
+
+  // 【深度范围护栏】对深度搜索区间做 clamp（单位：米）。
+  // 背景：depth filter 会把 seed 的深度区间 (d_min/d_max) 传进来做极线搜索；
+  // 若该区间发散（例如 d_max ~ 1e8），会导致 epipolar line 极长、n_steps 爆炸，
+  // 触发 max_epi_search_steps 后整段更新被跳过 => depth filter 无法获得观测更新 => 地图崩溃/频繁重定位。
+  // 这里对 EuRoC MH_01 采用 0.2~30m 的室内合理范围作为工程护栏，让更新至少“可执行”。
+  constexpr double kDepthMinClamp = 0.2;
+  constexpr double kDepthMaxClamp = 30.0;
+  const double d_min_c = std::max(d_min, kDepthMinClamp);
+  const double d_max_c = std::min(d_max, kDepthMaxClamp);
+  if (!(d_max_c > d_min_c)) {
+    return false;
+  }
+
   const int zmssd_threshold = static_cast<int>(PatchScore::threshold() * Config::patchMatchThresholdFactor());
   int zmssd_best = zmssd_threshold;  // Best ZMSSD score found along epipolar line
   Vector2d uv_best;
 
   // Compute epipolar line endpoints on unit plane
-  Vector2d A = vk::project2d(T_cur_ref * (ref_ftr.f*d_min));
-  Vector2d B = vk::project2d(T_cur_ref * (ref_ftr.f*d_max));
+  Vector2d A = vk::project2d(T_cur_ref * (ref_ftr.f*d_min_c));
+  Vector2d B = vk::project2d(T_cur_ref * (ref_ftr.f*d_max_c));
   epi_dir_ = A - B;
 
   // Compute affine warp at estimated depth
@@ -398,10 +412,14 @@ bool Matcher::findEpipolarMatchDirect(
   size_t n_steps = epi_length_/0.7;  // One step per pixel
   Vector2d step = epi_dir_/n_steps;
 
+  // 【保护】限制极线搜索的最大步数，避免出现超大计算量。
+  // 当频繁触发时，通常说明 seed 的深度区间 (d_min/d_max) 已经不合理（常见原因：尺度/深度先验发散）。
+  // 此时选择跳过本次更新，避免卡死。配合上面的深度 clamp，可显著降低触发频率。
   if(n_steps > options_.max_epi_search_steps)
   {
-    printf("WARNING: skip epipolar search: %zu evaluations, px_lenght=%f, d_min=%f, d_max=%f.\n",
-           n_steps, epi_length_, d_min, d_max);
+    printf(
+      "WARNING: skip epipolar search: %zu evaluations (limit=%zu), px_lenght=%f, d_min=%f, d_max=%f.\n",
+      n_steps, options_.max_epi_search_steps, epi_length_, d_min, d_max);
     return false;
   }
 

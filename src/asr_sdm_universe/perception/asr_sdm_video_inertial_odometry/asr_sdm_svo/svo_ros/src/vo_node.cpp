@@ -54,41 +54,26 @@ public:
     // Check if we should use hardcoded dataset parameters
     std::string dataset_name = vk::getParam<std::string>(this, "dataset_name", "");
 
-    // Manually load camera parameters and create camera object
-    std::string cam_model;
-    int width, height;
-    double fx, fy, cx, cy;
+    // 加载相机参数并创建相机模型
+    // 说明：这里使用 vikit::camera_loader（而不是手动 new PinholeCamera），
+    // 因为 camera_loader 支持 Pinhole + 径向-切向畸变参数（cam_d0..cam_d3，对应 OpenCV 的 k1,k2,p1,p2）。
 
     if (dataset_name == "euroc") {
-      // Hardcoded EuRoC dataset parameters
       RCLCPP_INFO(this->get_logger(), "Using hardcoded EuRoC dataset parameters");
-      cam_model = "PINHOLE";
-      width = 752;
-      height = 480;
-      fx = 458.654;
-      fy = 457.296;
-      cx = 367.215;
-      cy = 248.375;
+      // Keep the old behavior for dataset_name==euroc (no distortion)
+      cam_ = new vk::PinholeCamera(752, 480, 458.654, 457.296, 367.215, 248.375);
+      RCLCPP_INFO(this->get_logger(), "Successfully created 'PINHOLE' camera model (hardcoded)." );
     } else {
-      // Load parameters from ROS2 parameter server (default behavior)
-      cam_model = vk::getParam<std::string>(this, "cam_model", "PINHOLE");
-      width = vk::getParam<int>(this, "cam_width", 752);
-      height = vk::getParam<int>(this, "cam_height", 480);
-      fx = vk::getParam<double>(this, "cam_fx", 458.654);
-      fy = vk::getParam<double>(this, "cam_fy", 457.296);
-      cx = vk::getParam<double>(this, "cam_cx", 367.215);
-      cy = vk::getParam<double>(this, "cam_cy", 248.375);
-    }
+      std::string cam_model = vk::getParam<std::string>(this, "cam_model", "Pinhole");
+      // Normalize common variants
+      if (cam_model == "PINHOLE") cam_model = "Pinhole";
 
-    if (cam_model == "PINHOLE") {
-      cam_ = new vk::PinholeCamera(width, height, fx, fy, cx, cy);
-    } else if (cam_model == "ATAN") {
-      double d0 = vk::getParam<double>(this, "cam_d0", 0.0);
-      cam_ = new vk::ATANCamera(width, height, fx, fy, cx, cy, d0);
-    } else {
-      throw std::runtime_error("Unsupported camera model: " + cam_model);
+      bool ok = vk::camera_loader::loadFromRosNode(this, "", cam_);
+      if (!ok || cam_ == nullptr) {
+        throw std::runtime_error("Failed to load camera from ROS parameters. cam_model=" + cam_model);
+      }
+      RCLCPP_INFO(this->get_logger(), "Successfully created '%s' camera model.", cam_model.c_str());
     }
-    RCLCPP_INFO(this->get_logger(), "Successfully created '%s' camera model.", cam_model.c_str());
 
     // Override SVO core parameters from ROS2 params before creating VO
     try {
@@ -146,12 +131,59 @@ public:
           this, "triang_min_corner_score", svo::Config::triangMinCornerScore());
         nlevels =
           vk::getParam<int>(this, "n_pyr_levels", static_cast<int>(svo::Config::nPyrLevels()));
+
+        // 将关键的鲁棒性参数从 ROS2 参数写回到 SVO 核心单例 Config。
+        // 原因：SVO 核心算法使用 svo::Config::* 的静态单例；
+        // 仅仅把参数作为 ROS param 传入并不足够，必须显式写回 Config 才会真正生效。
+        // 这些参数以前只在 dataset_name=="euroc" 的硬编码分支里设置，导致非 euroc 分支跟踪很不稳定。
+        svo::Config::reprojThresh() = vk::getParam<double>(
+          this, "reproj_thresh", svo::Config::reprojThresh());
+        svo::Config::poseOptimThresh() = vk::getParam<double>(
+          this, "poseoptim_thresh", svo::Config::poseOptimThresh());
+        svo::Config::qualityMinFts() = static_cast<size_t>(vk::getParam<int>(
+          this, "quality_min_fts", static_cast<int>(svo::Config::qualityMinFts())));
+        svo::Config::qualityMaxFtsDrop() = vk::getParam<int>(
+          this, "quality_max_drop_fts", svo::Config::qualityMaxFtsDrop());
+        svo::Config::kfSelectMinDist() = vk::getParam<double>(
+          this, "kfselect_mindist", svo::Config::kfSelectMinDist());
+        // max_n_kfs is a node param already; keep SVO core in sync too.
+        svo::Config::maxNKfs() = static_cast<size_t>(vk::getParam<int>(
+          this, "max_n_kfs", static_cast<int>(svo::Config::maxNKfs())));
+        svo::Config::mapScale() = vk::getParam<double>(
+          this, "map_scale", svo::Config::mapScale());
+        svo::Config::patchMatchThresholdFactor() = vk::getParam<double>(
+          this, "patch_match_thresh_factor", svo::Config::patchMatchThresholdFactor());
+
+        // KLT tracker tuning (for fast motion / larger inter-frame displacement)
+        svo::Config::kltMinLevel() = static_cast<size_t>(vk::getParam<int>(
+          this, "klt_min_level", static_cast<int>(svo::Config::kltMinLevel())));
+        svo::Config::kltMaxLevel() = static_cast<size_t>(vk::getParam<int>(
+          this, "klt_max_level", static_cast<int>(svo::Config::kltMaxLevel())));
+
+        // Subpixel refinement iterations
+        svo::Config::subpixNIter() = static_cast<size_t>(vk::getParam<int>(
+          this, "subpix_n_iter", static_cast<int>(svo::Config::subpixNIter())));
       }
 
       svo::Config::gridSize() = static_cast<size_t>(grid);
       svo::Config::maxFts() = static_cast<size_t>(maxfts);
       svo::Config::triangMinCornerScore() = tri;
       svo::Config::nPyrLevels() = static_cast<size_t>(nlevels);
+
+      // 打印最终生效的 SVO 核心配置（权威值）。
+      // 用途：排查“yaml 改了但没生效 / 参数被覆盖 / 类型不匹配”等问题时非常关键。
+      RCLCPP_INFO(
+        this->get_logger(),
+        "SVO Config(final): grid=%zu max_fts=%zu pyr_levels=%zu tri_score=%.2f | reproj=%.2f poseopt=%.2f | "
+        "quality_min=%zu quality_max_drop=%d | kf_min_dist=%.4f max_kfs=%zu map_scale=%.2f | "
+        "klt_levels=[%zu..%zu] zmssd_factor=%.2f subpix_iter=%zu",
+        svo::Config::gridSize(), svo::Config::maxFts(), svo::Config::nPyrLevels(),
+        svo::Config::triangMinCornerScore(), svo::Config::reprojThresh(),
+        svo::Config::poseOptimThresh(), svo::Config::qualityMinFts(),
+        svo::Config::qualityMaxFtsDrop(), svo::Config::kfSelectMinDist(),
+        svo::Config::maxNKfs(), svo::Config::mapScale(), svo::Config::kltMinLevel(),
+        svo::Config::kltMaxLevel(), svo::Config::patchMatchThresholdFactor(),
+        svo::Config::subpixNIter());
     } catch (const std::exception & e) {
       RCLCPP_WARN(this->get_logger(), "Parameter override failed: %s", e.what());
     }
