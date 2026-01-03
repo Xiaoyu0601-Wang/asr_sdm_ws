@@ -36,7 +36,7 @@ ImgDetectorNode::ImgDetectorNode(const rclcpp::NodeOptions & options)
   }
 
   roi_pub_ =
-    this->create_publisher<asr_sdm_detect_msgs::msg::DetectedRoiArray>("~/output/rois", 10);
+    this->create_publisher<asr_sdm_perception_msgs::msg::TrafficLightRoiArray>("~/output/rois", 10);
 
   if (!test_mode_) {
     img_sub_ = this->create_subscription<sensor_msgs::msg::Image>(
@@ -254,18 +254,23 @@ void ImgDetectorNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPt
   RCLCPP_INFO(this->get_logger(), "After NMS: %zu boxes kept", keep.size());
 
   // build
-  asr_sdm_detect_msgs::msg::DetectedRoiArray out_msg;
+  asr_sdm_perception_msgs::msg::TrafficLightRoiArray out_msg;
   out_msg.header = msg->header;
-  out_msg.image = *msg;
+  // out_msg.image = *msg;
 
   for (int idx : keep) {
     const cv::Rect & box = boxes[idx];
+    // const int cls_id = class_ids[idx];  // 获取类别ID
+    // const float score = scores[idx];    // 获取置信度
 
-    asr_sdm_detect_msgs::msg::DetectedRoi roi;
-    roi.x = static_cast<float>(box.x);
-    roi.y = static_cast<float>(box.y);
-    roi.width = static_cast<float>(box.width);
-    roi.height = static_cast<float>(box.height);
+    asr_sdm_perception_msgs::msg::TrafficLightRoi roi;
+    roi.roi.x_offset = static_cast<uint32_t>(box.x);  // 注意类型转换
+    roi.roi.y_offset = static_cast<uint32_t>(box.y);
+    roi.roi.width = static_cast<uint32_t>(box.width);
+    roi.roi.height = static_cast<uint32_t>(box.height);
+
+    // roi.traffic_light_id = idx; // 可以用索引或其他方式生成唯一ID
+    // roi.traffic_light_type = cls_id; // 将检测的类别ID直接赋给类型字段
 
     out_msg.rois.push_back(roi);
   }
