@@ -14,8 +14,8 @@
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <sensor_msgs/image_encodings.hpp>
-#include <svo_msgs/msg/dense_input.hpp>
-#include <svo_msgs/msg/info.hpp>
+#include <asr_sdm_perception_msgs/msg/dense_input.hpp>
+#include <asr_sdm_perception_msgs/msg/info.hpp>
 
 #include <svo/feature.h>
 #include <svo/frame.h>
@@ -78,10 +78,10 @@ Visualizer::Visualizer(rclcpp::Node::SharedPtr node)
     node_->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>("svo/pose", 10);
 
   // SLAM status information (stage, tracking quality, num matches, etc.)
-  pub_info_ = node_->create_publisher<svo_msgs::msg::Info>("svo/info", 10);
+  pub_info_ = node_->create_publisher<asr_sdm_perception_msgs::msg::Info>("svo/info", 10);
 
   // Dense reconstruction input (image + pose + depth range)
-  pub_dense_ = node_->create_publisher<svo_msgs::msg::DenseInput>("svo/dense_input", 10);
+  pub_dense_ = node_->create_publisher<asr_sdm_perception_msgs::msg::DenseInput>("svo/dense_input", 10);
 
   // ---------------------------------------------------------------------------
   // Initialize TF2 Broadcaster
@@ -126,7 +126,7 @@ void Visualizer::publishMinimal(
   // ---------------------------------------------------------------------------
   // Contains diagnostics: processing time, keyframe IDs, stage, quality
   if (pub_info_->get_subscription_count() > 0) {
-    svo_msgs::msg::Info msg_info;
+    asr_sdm_perception_msgs::msg::Info msg_info;
     msg_info.header = header_msg;
     msg_info.processing_time = slam.lastProcessingTime();
 
@@ -404,7 +404,7 @@ void Visualizer::exportToDense(const FramePtr & frame)
   if (
     frame != NULL && dense_pub_nth_ > 0 && trace_id_ % dense_pub_nth_ == 0 &&
     pub_dense_->get_subscription_count() > 0) {
-    svo_msgs::msg::DenseInput msg;
+    asr_sdm_perception_msgs::msg::DenseInput msg;
     msg.header.stamp = rclcpp::Time(static_cast<int64_t>(frame->timestamp_ * 1e9));
     msg.header.frame_id = "world";
     msg.frame_id = frame->id_;

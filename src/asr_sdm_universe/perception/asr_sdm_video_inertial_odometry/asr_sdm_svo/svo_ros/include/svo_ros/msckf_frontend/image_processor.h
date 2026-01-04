@@ -26,9 +26,9 @@
 #include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
 
-#include "svo_msgs/msg/camera_measurement.hpp"
-#include "svo_msgs/msg/feature_measurement.hpp"
-#include "svo_msgs/msg/tracking_info.hpp"
+#include "asr_sdm_perception_msgs/msg/camera_measurement.hpp"
+#include "asr_sdm_perception_msgs/msg/feature_measurement.hpp"
+#include "asr_sdm_perception_msgs/msg/tracking_info.hpp"
 
 namespace msckf_vio {
 
@@ -213,8 +213,8 @@ private:
   typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::Image, sensor_msgs::msg::Image> StereoSyncPolicy;
   std::unique_ptr<message_filters::Synchronizer<StereoSyncPolicy>> stereo_sub_;
   rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub_;
-  rclcpp::Publisher<svo_msgs::msg::CameraMeasurement>::SharedPtr feature_pub_;
-  rclcpp::Publisher<svo_msgs::msg::TrackingInfo>::SharedPtr tracking_info_pub_;
+  rclcpp::Publisher<asr_sdm_perception_msgs::msg::CameraMeasurement>::SharedPtr feature_pub_;
+  rclcpp::Publisher<asr_sdm_perception_msgs::msg::TrackingInfo>::SharedPtr tracking_info_pub_;
   image_transport::Publisher debug_stereo_pub_;
   image_transport::Publisher debug_mono_pub_;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr feature_cloud_pub_;
