@@ -9,8 +9,8 @@
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <std_msgs/msg/color_rgba.hpp>
-#include <svo_msgs/msg/dense_input.hpp>
-#include <svo_msgs/msg/info.hpp>
+#include <asr_sdm_perception_msgs/msg/dense_input.hpp>
+#include <asr_sdm_perception_msgs/msg/info.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
@@ -45,8 +45,8 @@ public:
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr pub_frames_;
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr pub_points_;
   rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pub_pose_;
-  rclcpp::Publisher<svo_msgs::msg::Info>::SharedPtr pub_info_;
-  rclcpp::Publisher<svo_msgs::msg::DenseInput>::SharedPtr pub_dense_;
+  rclcpp::Publisher<asr_sdm_perception_msgs::msg::Info>::SharedPtr pub_info_;
+  rclcpp::Publisher<asr_sdm_perception_msgs::msg::DenseInput>::SharedPtr pub_dense_;
   image_transport::Publisher pub_images_;
   std::shared_ptr<tf2_ros::TransformBroadcaster> br_;
   bool publish_world_in_cam_frame_;
