@@ -10,7 +10,14 @@
 #include "asr_sdm_perception_msgs/msg/traffic_light_roi_array.hpp"
 #include <sensor_msgs/msg/image.hpp>
 
+// cv_bridge header differs between Ubuntu versions:
+// Ubuntu 22.04 (ROS2 Humble): cv_bridge.h
+// Ubuntu 24.04 (ROS2 Jazzy): cv_bridge.hpp
+#if __has_include(<cv_bridge/cv_bridge.hpp>)
+#include <cv_bridge/cv_bridge.hpp>
+#else
 #include <cv_bridge/cv_bridge.h>
+#endif
 
 #include <chrono>
 #include <cmath>

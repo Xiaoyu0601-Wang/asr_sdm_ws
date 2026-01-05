@@ -22,9 +22,18 @@
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <sensor_msgs/msg/point_field.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
+// message_filters headers differ between Ubuntu versions:
+// Ubuntu 22.04 (ROS2 Humble): .h
+// Ubuntu 24.04 (ROS2 Jazzy): .hpp
+#if __has_include(<message_filters/subscriber.hpp>)
+#include <message_filters/subscriber.hpp>
+#include <message_filters/synchronizer.hpp>
+#include <message_filters/sync_policies/approximate_time.hpp>
+#else
 #include <message_filters/subscriber.h>
 #include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
+#endif
 
 #include "svo_msgs/msg/camera_measurement.hpp"
 #include "svo_msgs/msg/feature_measurement.hpp"

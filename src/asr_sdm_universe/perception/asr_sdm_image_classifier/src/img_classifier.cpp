@@ -10,10 +10,13 @@ namespace img_classifier
 {
 
 ImgClassifierNode::ImgClassifierNode(const rclcpp::NodeOptions & options)
-: Node("img_classifier_node", options),
-  img_sub_(this, "/ image_raw"),      // 订阅原始图像话题
-  roi_sub_(this, "~/ output / rois")  // 订阅上游发布的ROI话题
+: Node("img_classifier_node", options)
 {
+  // 订阅原始图像话题和上游发布的ROI话题
+  // Use subscribe() method with QoS for compatibility with both ROS2 Humble and Jazzy
+  const auto qos = rclcpp::QoS(rclcpp::KeepLast(10));
+  img_sub_.subscribe(this, "/image_raw", qos);
+  roi_sub_.subscribe(this, "~/output/rois", qos);
   // 参数
   const std::string model_path = this->declare_parameter<std::string>("model_path");
   const std::string label_path = this->declare_parameter<std::string>("label_path");

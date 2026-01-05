@@ -12,10 +12,26 @@
 #include <sensor_msgs/msg/image.hpp>
 #include <std_msgs/msg/string.hpp>
 
+// cv_bridge header differs between Ubuntu versions:
+// Ubuntu 22.04 (ROS2 Humble): cv_bridge.h
+// Ubuntu 24.04 (ROS2 Jazzy): cv_bridge.hpp
+#if __has_include(<cv_bridge/cv_bridge.hpp>)
+#include <cv_bridge/cv_bridge.hpp>
+#else
 #include <cv_bridge/cv_bridge.h>
+#endif
+// message_filters headers differ between Ubuntu versions:
+// Ubuntu 22.04 (ROS2 Humble): .h
+// Ubuntu 24.04 (ROS2 Jazzy): .hpp
+#if __has_include(<message_filters/subscriber.hpp>)
+#include <message_filters/subscriber.hpp>
+#include <message_filters/sync_policies/approximate_time.hpp>
+#include <message_filters/synchronizer.hpp>
+#else
 #include <message_filters/subscriber.h>
 #include <message_filters/sync_policies/approximate_time.h>
 #include <message_filters/synchronizer.h>
+#endif
 
 #include <filesystem>
 #include <string>

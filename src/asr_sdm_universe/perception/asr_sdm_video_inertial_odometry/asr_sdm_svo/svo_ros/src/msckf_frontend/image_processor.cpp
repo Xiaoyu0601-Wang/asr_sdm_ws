@@ -238,11 +238,12 @@ bool ImageProcessor::createRosIO() {
   nh_->get_parameter("cam1_topic", cam1_topic);
   nh_->get_parameter("imu_topic", imu_topic);
 
+  const auto qos = rclcpp::SensorDataQoS();
   if (use_stereo_) {
     cam0_img_sub_ = std::make_unique<message_filters::Subscriber<sensor_msgs::msg::Image>>(
-      nh_, cam0_topic, rclcpp::SensorDataQoS().get_rmw_qos_profile());
+      nh_, cam0_topic, qos);
     cam1_img_sub_ = std::make_unique<message_filters::Subscriber<sensor_msgs::msg::Image>>(
-      nh_, cam1_topic, rclcpp::SensorDataQoS().get_rmw_qos_profile());
+      nh_, cam1_topic, qos);
 
     // Time synchronizer
     stereo_sub_ = std::make_unique<message_filters::Synchronizer<StereoSyncPolicy>>(
@@ -251,7 +252,7 @@ bool ImageProcessor::createRosIO() {
   } else {
     // Mono mode: subscribe only cam0 and reuse stereoCallback with nullptr cam1.
     cam0_img_sub_ = std::make_unique<message_filters::Subscriber<sensor_msgs::msg::Image>>(
-      nh_, cam0_topic, rclcpp::SensorDataQoS().get_rmw_qos_profile());
+      nh_, cam0_topic, qos);
     cam0_img_sub_->registerCallback(
       [this](const sensor_msgs::msg::Image::ConstSharedPtr& cam0_img) {
         this->stereoCallback(cam0_img, sensor_msgs::msg::Image::ConstSharedPtr());
