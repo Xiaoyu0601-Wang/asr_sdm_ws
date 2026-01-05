@@ -6,8 +6,8 @@
 #include <opencv2/opencv.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include "asr_sdm_detect_msgs/msg/detected_roi.hpp"
-#include "asr_sdm_detect_msgs/msg/detected_roi_array.hpp"
+#include "asr_sdm_perception_msgs/msg/traffic_light_roi.hpp"
+#include "asr_sdm_perception_msgs/msg/traffic_light_roi_array.hpp"
 #include <sensor_msgs/msg/image.hpp>
 
 #include <cv_bridge/cv_bridge.h>
@@ -43,7 +43,7 @@ private:
   std::vector<std::string> class_names_;
 
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr img_sub_;
-  rclcpp::Publisher<asr_sdm_detect_msgs::msg::DetectedRoiArray>::SharedPtr roi_pub_;
+  rclcpp::Publisher<asr_sdm_perception_msgs::msg::TrafficLightRoiArray>::SharedPtr roi_pub_;
 
   bool test_mode_;
   std::string test_image_dir_;

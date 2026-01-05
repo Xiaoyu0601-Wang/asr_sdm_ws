@@ -12,38 +12,39 @@ find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)      
 find_package(cv_bridge REQUIRED)     
 find_package(OpenCV REQUIRED COMPONENTS core imgproc dnn highgui)
-# find_package(asr_sdm_detect_msgs REQUIRED)
+find_package(asr_sdm_perception_msgs REQUIRED)
+find_package(message_filters REQUIRED)
 
 
-
-# add_executable(img_classifier_node
-#   src/img_classifier.cpp
-# )
-
-
-# target_include_directories(img_classifier_node PUBLIC
-#   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-#   $<INSTALL_INTERFACE:include>
-#   ${OpenCV_INCLUDE_DIRS}
-# )
+add_executable(img_classifier_node
+  src/img_classifier.cpp
+)
 
 
-# ament_target_dependencies(img_classifier_node
-#   rclcpp
-#   sensor_msgs
-#   std_msgs
-#   cv_bridge
-#   asr_sdm_detect_msgs
-# )
-
-# target_link_libraries(img_classifier_node
-#   ${OpenCV_LIBS}
-# )
+target_include_directories(img_classifier_node PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+  ${OpenCV_INCLUDE_DIRS}
+)
 
 
-# install(TARGETS img_classifier_node
-#   DESTINATION lib/${PROJECT_NAME}
-# )
+ament_target_dependencies(img_classifier_node
+  rclcpp
+  sensor_msgs
+  std_msgs
+  cv_bridge
+  asr_sdm_perception_msgs
+  message_filters
+)
+
+target_link_libraries(img_classifier_node
+  ${OpenCV_LIBS}
+)
+
+
+install(TARGETS img_classifier_node
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 install(DIRECTORY
   launch

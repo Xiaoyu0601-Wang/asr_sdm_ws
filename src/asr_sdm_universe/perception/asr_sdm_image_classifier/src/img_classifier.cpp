@@ -10,7 +10,9 @@ namespace img_classifier
 {
 
 ImgClassifierNode::ImgClassifierNode(const rclcpp::NodeOptions & options)
-: Node("img_classifier_node", options)
+: Node("img_classifier_node", options),
+  img_sub_(this, "/ image_raw"),      // 订阅原始图像话题
+  roi_sub_(this, "~/ output / rois")  // 订阅上游发布的ROI话题
 {
   // 参数
   const std::string model_path = this->declare_parameter<std::string>("model_path");
@@ -45,17 +47,22 @@ ImgClassifierNode::ImgClassifierNode(const rclcpp::NodeOptions & options)
   }
 
   // 发布
-  label_pub_ = this->create_publisher<std_msgs::msg::String>("~/output/label", 10);
-  if (publish_debug_image_) {
-    debug_image_pub_ = this->create_publisher<sensor_msgs::msg::Image>("~/output/image", 10);
-  }
+  sync_.reset(new Sync(MySyncPolicy(10), img_sub_, roi_sub_));
+  sync_->registerCallback(
+    std::bind(
+      &ImgClassifierNode::imageCallback, this, std::placeholders::_1, std::placeholders::_2));
+
+  // label_pub_ = this->create_publisher<std_msgs::msg::String>("~/output/label", 10);
+  // if (publish_debug_image_) {
+  //   debug_image_pub_ = this->create_publisher<sensor_msgs::msg::Image>("~/output/image", 10);
+  // }
 
   if (!test_mode_) {
-    RCLCPP_INFO(this->get_logger(), "Running classifier in ONLINE ROI mode");
+    RCLCPP_INFO(this->get_logger(), "已启动图像与ROI同步订阅");
 
-    img_sub_ = this->create_subscription<asr_sdm_detect_msgs::msg::DetectedRoiArray>(
-      "~/input/rois", rclcpp::QoS(10),
-      std::bind(&ImgClassifierNode::imageCallback, this, std::placeholders::_1));
+    // img_sub_ = this->create_subscription<asr_sdm_perception_msgs::msg::TrafficLightRoiArray>(
+    //   "~/input/rois", rclcpp::QoS(10),
+    //   std::bind(&ImgClassifierNode::imageCallback, this, std::placeholders::_1));
 
     debug_image_pub_ = this->create_publisher<sensor_msgs::msg::Image>("~/output/image", 10);
     label_pub_ = this->create_publisher<std_msgs::msg::String>("~/output/label", 10);
@@ -152,11 +159,12 @@ cv::Mat ImgClassifierNode::drawLabelOnImage(const cv::Mat & img, const std::stri
 }
 
 void ImgClassifierNode::imageCallback(
-  const asr_sdm_detect_msgs::msg::DetectedRoiArray::ConstSharedPtr msg)
+  const sensor_msgs::msg::Image::ConstSharedPtr & img_sub_,
+  const asr_sdm_perception_msgs::msg::TrafficLightRoiArray::ConstSharedPtr & roi_sub_)
 {
   cv_bridge::CvImagePtr cv_ptr;
   try {
-    cv_ptr = cv_bridge::toCvCopy(msg->image, sensor_msgs::image_encodings::BGR8);
+    cv_ptr = cv_bridge::toCvCopy(img_sub_, sensor_msgs::image_encodings::BGR8);
   } catch (const cv_bridge::Exception & e) {
     RCLCPP_ERROR(this->get_logger(), "cv_bridge exception: %s", e.what());
     return;
@@ -164,12 +172,12 @@ void ImgClassifierNode::imageCallback(
   const cv::Mat & full_img = cv_ptr->image;
 
   if (full_img.empty()) {
-    RCLCPP_WARN(this->get_logger(), "Received empty image in DetectedRoiArray");
+    RCLCPP_WARN(this->get_logger(), "Received empty image in TrafficLightRoiArray");
     return;
   }
 
-  if (msg->rois.empty()) {
-    RCLCPP_INFO(this->get_logger(), "No ROIs in DetectedRoiArray, nothing to classify");
+  if (roi_sub_->rois.empty()) {
+    RCLCPP_INFO(this->get_logger(), "No ROIs in TrafficLightRoiArray, nothing to classify");
     return;
   }
 
@@ -177,15 +185,19 @@ void ImgClassifierNode::imageCallback(
   cv::Rect img_rect(0, 0, full_img.cols, full_img.rows);
 
   std::vector<std::string> roi_labels;
-  roi_labels.reserve(msg->rois.size());
+  roi_labels.reserve(roi_sub_->rois.size());
 
   // 遍历ROI
-  for (size_t i = 0; i < msg->rois.size(); ++i) {
-    const auto & r = msg->rois[i];
+  size_t i = 0;
+  for (const auto & traffic_light_roi : roi_sub_->rois) {
+    // 【关键】新的数据结构：坐标在 r.roi 中，且字段名是 x_offset, y_offset...
+    const auto & r = traffic_light_roi.roi;
+    int x = static_cast<int>(r.x_offset);
+    int y = static_cast<int>(r.y_offset);
+    int width = static_cast<int>(r.width);
+    int height = static_cast<int>(r.height);
 
-    cv::Rect roi_rect(
-      static_cast<int>(r.x), static_cast<int>(r.y), static_cast<int>(r.width),
-      static_cast<int>(r.height));
+    cv::Rect roi_rect(x, y, width, height);
 
     roi_rect &= img_rect;  // 防止越界
     if (roi_rect.width <= 0 || roi_rect.height <= 0) {
@@ -247,6 +259,8 @@ void ImgClassifierNode::imageCallback(
     cv::putText(
       vis, label_text, cv::Point(text_bg.x + 2, text_bg.y + text_size.height), font_face,
       font_scale, cv::Scalar(255, 255, 255), thickness);
+
+    i++;
   }
 
   // 文本标签
@@ -266,7 +280,7 @@ void ImgClassifierNode::imageCallback(
   // 发布整图
   if (publish_debug_image_) {
     cv_bridge::CvImage out_msg;
-    out_msg.header = msg->image.header;
+    out_msg.header = img_sub_->header;
     out_msg.encoding = sensor_msgs::image_encodings::BGR8;
     out_msg.image = vis;
     debug_image_pub_->publish(*out_msg.toImageMsg());
