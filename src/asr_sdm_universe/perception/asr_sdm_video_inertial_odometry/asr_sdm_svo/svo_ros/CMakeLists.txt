@@ -25,6 +25,8 @@ find_package(cv_bridge REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
+find_package(tf2_eigen REQUIRED)
+find_package(std_srvs REQUIRED)
 find_package(svo REQUIRED)
 find_package(svo_msgs REQUIRED)
 find_package(vikit_common REQUIRED)
@@ -116,6 +118,36 @@ ament_target_dependencies(benchmark
   cv_bridge
 )
 
+# MSCKF backend node (skeleton)
+add_executable(msckf_backend_node
+  src/msckf_backend_node.cpp
+  src/msckf_backend/msckf_vio.cpp
+  src/msckf_frontend/utils.cpp
+)
+target_include_directories(msckf_backend_node PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+ament_target_dependencies(msckf_backend_node
+  rclcpp
+  sensor_msgs
+  nav_msgs
+  geometry_msgs
+  tf2_ros
+  tf2_eigen
+  std_srvs
+  svo_msgs
+)
+
+target_link_libraries(msckf_backend_node
+  Eigen3::Eigen
+  ${OpenCV_LIBS}
+)
+
+target_include_directories(msckf_backend_node PUBLIC
+  ${OpenCV_INCLUDE_DIRS}
+)
+
 # Install
 install(TARGETS svo_visualizer
   EXPORT svo_rosTargets
@@ -124,7 +156,7 @@ install(TARGETS svo_visualizer
   RUNTIME DESTINATION bin
 )
 
-install(TARGETS vo vio benchmark
+install(TARGETS vo vio benchmark msckf_backend_node
   DESTINATION lib/${PROJECT_NAME}
 )
 
