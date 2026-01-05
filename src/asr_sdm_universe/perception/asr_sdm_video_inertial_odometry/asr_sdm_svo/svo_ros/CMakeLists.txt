@@ -25,6 +25,7 @@ find_package(cv_bridge REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
+find_package(message_filters REQUIRED)
 find_package(svo REQUIRED)
 find_package(asr_sdm_perception_msgs REQUIRED)
 find_package(vikit_common REQUIRED)
@@ -104,6 +105,7 @@ ament_target_dependencies(vio
   tf2
   tf2_ros
   tf2_geometry_msgs
+  message_filters
   asr_sdm_perception_msgs
 )
 
@@ -152,6 +154,7 @@ ament_export_dependencies(
   tf2
   tf2_ros
   tf2_geometry_msgs
+  message_filters
   svo
   asr_sdm_perception_msgs
   vikit_common
