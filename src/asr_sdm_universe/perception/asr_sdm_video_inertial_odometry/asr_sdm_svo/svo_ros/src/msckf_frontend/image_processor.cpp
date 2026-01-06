@@ -15,6 +15,7 @@
 // NOTE: random_numbers/random_numbers.h is a ROS1 package.
 // Use C++ <random> instead (see twoPointRansac()).
 #include <random>
+#include <rmw/qos_profiles.h>
 
 #include "asr_sdm_perception_msgs/msg/camera_measurement.hpp"
 #include "asr_sdm_perception_msgs/msg/feature_measurement.hpp"
@@ -238,12 +239,12 @@ bool ImageProcessor::createRosIO() {
   nh_->get_parameter("cam1_topic", cam1_topic);
   nh_->get_parameter("imu_topic", imu_topic);
 
-  const auto qos = rclcpp::SensorDataQoS();
+  const rmw_qos_profile_t qos = rmw_qos_profile_sensor_data;
   if (use_stereo_) {
     cam0_img_sub_ = std::make_unique<message_filters::Subscriber<sensor_msgs::msg::Image>>(
-      nh_, cam0_topic, qos);
+      node_shared, cam0_topic, qos);
     cam1_img_sub_ = std::make_unique<message_filters::Subscriber<sensor_msgs::msg::Image>>(
-      nh_, cam1_topic, qos);
+      node_shared, cam1_topic, qos);
 
     // Time synchronizer
     stereo_sub_ = std::make_unique<message_filters::Synchronizer<StereoSyncPolicy>>(
@@ -252,7 +253,7 @@ bool ImageProcessor::createRosIO() {
   } else {
     // Mono mode: subscribe only cam0 and reuse stereoCallback with nullptr cam1.
     cam0_img_sub_ = std::make_unique<message_filters::Subscriber<sensor_msgs::msg::Image>>(
-      nh_, cam0_topic, qos);
+      node_shared, cam0_topic, qos);
     cam0_img_sub_->registerCallback(
       [this](const sensor_msgs::msg::Image::ConstSharedPtr& cam0_img) {
         this->stereoCallback(cam0_img, sensor_msgs::msg::Image::ConstSharedPtr());
