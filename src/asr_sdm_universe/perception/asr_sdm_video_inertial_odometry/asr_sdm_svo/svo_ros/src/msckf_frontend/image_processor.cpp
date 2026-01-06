@@ -214,9 +214,11 @@ bool ImageProcessor::createRosIO() {
   tracking_info_pub_ = nh_->create_publisher<svo_msgs::msg::TrackingInfo>("tracking_info", 1);
   
   // Point cloud publisher for feature visualization in RViz2
-  feature_cloud_pub_ = nh_->create_publisher<sensor_msgs::msg::PointCloud2>("feature_points", 1);
-  feature_cloud_tracked_pub_ = nh_->create_publisher<sensor_msgs::msg::PointCloud2>("feature_points_tracked", 1);
-  feature_cloud_new_pub_     = nh_->create_publisher<sensor_msgs::msg::PointCloud2>("feature_points_new", 1);
+  // NOTE: Keep point clouds on dedicated topics to avoid type collision with
+  // svo_msgs::msg::CameraMeasurement (which uses the "features" topic).
+  feature_cloud_pub_ = nh_->create_publisher<sensor_msgs::msg::PointCloud2>("debug/feature_points", 1);
+  feature_cloud_tracked_pub_ = nh_->create_publisher<sensor_msgs::msg::PointCloud2>("debug/feature_points_tracked", 1);
+  feature_cloud_new_pub_     = nh_->create_publisher<sensor_msgs::msg::PointCloud2>("debug/feature_points_new", 1);
   
   // Debug images (for RViz2 Image display)
   // ImageTransport 需要 Node::SharedPtr，这里用一个不负责销毁的别名 shared_ptr 包装 nh_

@@ -1,0 +1,44 @@
+msckf_backend:
+  ros__parameters:
+    # IMU initialization (static detection) thresholds
+    # Wait for a static window before initializing gravity and biases.
+    gravity_init:
+      imu_buffer_size: 200
+      acc_std_threshold: 0.25      # m/s^2, stddev over window. Looser for real-world conditions.
+      gyro_std_threshold: 0.05     # rad/s, stddev over window. Looser for real-world conditions.
+      gyro_mean_threshold: 0.09    # rad/s, mean over window. Key for rejecting slow rotations.
+      gravity_norm_min: 9.6        # m/s^2, lower bound for gravity magnitude.
+      gravity_norm_max: 10.0       # m/s^2, upper bound for gravity magnitude.
+
+    # Noise parameters (variances)
+    noise:
+      gyro: 0.001
+      acc: 0.01
+      gyro_bias: 0.001
+      acc_bias: 0.01
+      feature: 0.01
+
+    # Initial state covariance
+    initial_covariance:
+      velocity: 0.25
+      gyro_bias: 0.0001
+      acc_bias: 0.01
+      extrinsic_rotation: 0.000001
+      extrinsic_translation: 0.000001
+
+    # Keyframe thresholds
+    rotation_threshold: 0.2618     # rad
+    translation_threshold: 0.4     # m
+    tracking_rate_threshold: 0.5
+
+    # Feature optimization config
+    feature:
+      config:
+        translation_threshold: 0.2
+
+    # Max number of camera states in sliding window
+    max_cam_state_size: 30
+
+    # Position uncertainty threshold for reset (currently unused)
+    position_std_threshold: 8.0
+
