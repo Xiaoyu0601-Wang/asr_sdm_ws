@@ -25,8 +25,9 @@ find_package(cv_bridge REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
+find_package(message_filters REQUIRED)
 find_package(svo REQUIRED)
-find_package(svo_msgs REQUIRED)
+find_package(asr_sdm_perception_msgs REQUIRED)
 find_package(vikit_common REQUIRED)
 find_package(vikit_ros REQUIRED)
 
@@ -66,7 +67,7 @@ ament_target_dependencies(svo_visualizer PUBLIC
   tf2
   tf2_ros
   tf2_geometry_msgs
-  svo_msgs
+  asr_sdm_perception_msgs
   vikit_common
   vikit_ros
 )
@@ -104,7 +105,8 @@ ament_target_dependencies(vio
   tf2
   tf2_ros
   tf2_geometry_msgs
-  svo_msgs
+  message_filters
+  asr_sdm_perception_msgs
 )
 
 add_executable(benchmark src/benchmark_node.cpp)
@@ -152,8 +154,9 @@ ament_export_dependencies(
   tf2
   tf2_ros
   tf2_geometry_msgs
+  message_filters
   svo
-  svo_msgs
+  asr_sdm_perception_msgs
   vikit_common
   vikit_ros
 )

@@ -22,8 +22,9 @@
   <depend>tf2</depend>
   <depend>tf2_ros</depend>
   <depend>tf2_geometry_msgs</depend>
+  <depend>message_filters</depend>
   <depend>svo</depend>
-  <depend>svo_msgs</depend>
+  <depend>asr_sdm_perception_msgs</depend>
   <depend>vikit_common</depend>
   <depend>vikit_ros</depend>
 

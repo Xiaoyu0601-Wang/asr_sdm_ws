@@ -16,9 +16,9 @@
 // Use C++ <random> instead (see twoPointRansac()).
 #include <random>
 
-#include "svo_msgs/msg/camera_measurement.hpp"
-#include "svo_msgs/msg/feature_measurement.hpp"
-#include "svo_msgs/msg/tracking_info.hpp"
+#include "asr_sdm_perception_msgs/msg/camera_measurement.hpp"
+#include "asr_sdm_perception_msgs/msg/feature_measurement.hpp"
+#include "asr_sdm_perception_msgs/msg/tracking_info.hpp"
 
 #include <svo_ros/msckf_frontend/image_processor.h>
 
@@ -210,8 +210,8 @@ bool ImageProcessor::loadParameters() {
 
 bool ImageProcessor::createRosIO() {
   // Create publishers
-  feature_pub_ = nh_->create_publisher<svo_msgs::msg::CameraMeasurement>("features", 3);
-  tracking_info_pub_ = nh_->create_publisher<svo_msgs::msg::TrackingInfo>("tracking_info", 1);
+  feature_pub_ = nh_->create_publisher<asr_sdm_perception_msgs::msg::CameraMeasurement>("features", 3);
+  tracking_info_pub_ = nh_->create_publisher<asr_sdm_perception_msgs::msg::TrackingInfo>("tracking_info", 1);
   
   // Point cloud publisher for feature visualization in RViz2
   feature_cloud_pub_ = nh_->create_publisher<sensor_msgs::msg::PointCloud2>("feature_points", 1);
@@ -297,7 +297,7 @@ void ImageProcessor::stereoCallback(
   //   - cam0 图像（必需）
   //   - IMU 缓存在 imu_msg_buffer（用于估计两帧间相对旋转，给跟踪提供初值）
   // 输出：
-  //   - 发布 "features"：svo_msgs::msg::CameraMeasurement（特征 id + 去畸变后的像素坐标 u0,v0；单目时 u1,v1 为 0）
+  //   - 发布 "features"：asr_sdm_perception_msgs::msg::CameraMeasurement（特征 id + 去畸变后的像素坐标 u0,v0；单目时 u1,v1 为 0）
   //   - 发布 "tracking_info"：跟踪统计信息（before_tracking/after_tracking/after_ransac 等）
   //
   // 核心处理环节：
@@ -1496,13 +1496,13 @@ void ImageProcessor::publish() {
   // =========================== 发布环节（publish） ===========================
   // 本函数会发布以下 ROS2 消息（topics 在 createRosIO() 中创建）：
   //
-  // 1) features  (svo_msgs::msg::CameraMeasurement)
+  // 1) features  (asr_sdm_perception_msgs::msg::CameraMeasurement)
   //    - header.stamp：使用 cam0 当前帧时间戳
   //    - features[i].id：特征唯一 id
   //    - features[i].u0,v0：cam0 去畸变后的像素坐标（undistortPoints 后）
   //    - features[i].u1,v1：双目时为 cam1 去畸变坐标；单目时填 0
   //
-  // 2) tracking_info (svo_msgs::msg::TrackingInfo)
+  // 2) tracking_info (asr_sdm_perception_msgs::msg::TrackingInfo)
   //    - before_tracking / after_tracking / after_matching / after_ransac：用于监控跟踪质量
   //
   // 3)（可选，仅用于 RViz2 可视化）feature_points / feature_points_tracked / feature_points_new
@@ -1516,7 +1516,7 @@ void ImageProcessor::publish() {
 
 
   // Publish features.
-  auto feature_msg_ptr = std::make_unique<svo_msgs::msg::CameraMeasurement>();
+  auto feature_msg_ptr = std::make_unique<asr_sdm_perception_msgs::msg::CameraMeasurement>();
   feature_msg_ptr->header.stamp = cam0_curr_img_ptr->header.stamp;
 
   vector<FeatureIDType> curr_ids(0);
@@ -1546,7 +1546,7 @@ void ImageProcessor::publish() {
   }
 
   for (int i = 0; i < curr_ids.size(); ++i) {
-    feature_msg_ptr->features.push_back(svo_msgs::msg::FeatureMeasurement());
+    feature_msg_ptr->features.push_back(asr_sdm_perception_msgs::msg::FeatureMeasurement());
     feature_msg_ptr->features[i].id = curr_ids[i];
     feature_msg_ptr->features[i].u0 = curr_cam0_points_undistorted[i].x;
     feature_msg_ptr->features[i].v0 = curr_cam0_points_undistorted[i].y;
@@ -1562,7 +1562,7 @@ void ImageProcessor::publish() {
   feature_pub_->publish(std::move(feature_msg_ptr));
 
   // Publish tracking info.
-  auto tracking_info_msg_ptr = std::make_unique<svo_msgs::msg::TrackingInfo>();
+  auto tracking_info_msg_ptr = std::make_unique<asr_sdm_perception_msgs::msg::TrackingInfo>();
   tracking_info_msg_ptr->header.stamp = cam0_curr_img_ptr->header.stamp;
   tracking_info_msg_ptr->before_tracking = before_tracking;
   tracking_info_msg_ptr->after_tracking = after_tracking;
