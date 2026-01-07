@@ -36,11 +36,11 @@ ImgDetectorNode::ImgDetectorNode(const rclcpp::NodeOptions & options)
   }
 
   roi_pub_ =
-    this->create_publisher<asr_sdm_perception_msgs::msg::TrafficLightRoiArray>("~/output/rois", 10);
+    this->create_publisher<asr_sdm_perception_msgs::msg::TrafficLightRoiArray>("/output/rois", 10);
 
   if (!test_mode_) {
     img_sub_ = this->create_subscription<sensor_msgs::msg::Image>(
-      "~/input/image", rclcpp::SensorDataQoS(),
+      "/camera/image_raw", rclcpp::SensorDataQoS(),
       std::bind(&ImgDetectorNode::imageCallback, this, std::placeholders::_1));
   } else {
     runTestMode();
