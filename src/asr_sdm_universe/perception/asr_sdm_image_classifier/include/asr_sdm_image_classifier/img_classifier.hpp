@@ -12,11 +12,6 @@
 #include <sensor_msgs/msg/image.hpp>
 #include <std_msgs/msg/string.hpp>
 
-// ROS 2 在编译时会定义 ROS_VERSION_MAJOR 和 ROS_VERSION_MINOR 宏
-// 我们可以直接使用这些宏来检测版本
-// Humble: ROS_VERSION_MAJOR=2, ROS_VERSION_MINOR=5
-// Jazzy: ROS_VERSION_MAJOR=2, ROS_VERSION_MINOR=7
-// 使用宏定义版本字符串（用于运行时显示）
 #ifdef ROS2_VERSION_HUMBLE
 #define ROS2_VERSION "HUMBLE"
 #elif defined(ROS2_VERSION_JAZZY)
@@ -25,7 +20,6 @@
 #define ROS2_VERSION "UNKNOWN"
 #endif
 
-// 如果是Humble版本就用Humble接口，否则都用Jazzy接口
 #ifdef ROS2_VERSION_HUMBLE
 #define ASR_SDM_USE_HUMBLE_INTERFACE 1
 #else
