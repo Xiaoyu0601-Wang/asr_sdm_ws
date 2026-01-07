@@ -14,9 +14,25 @@ ImgClassifierNode::ImgClassifierNode(const rclcpp::NodeOptions & options)
 {
   // 订阅原始图像话题和上游发布的ROI话题
   // Use subscribe() method with QoS for compatibility with both ROS2 Humble and Jazzy
+#if ASR_SDM_USE_HUMBLE_INTERFACE
+  // Humble 版本：需要shared_ptr和rmw_qos_profile_t
+  RCLCPP_INFO(this->get_logger(), "ROS 2 Version: %s - Using Humble interface", ROS2_VERSION);
+
+  auto node_ptr = this->shared_from_this();
+  const auto qos = rclcpp::QoS(rclcpp::KeepLast(10));
+  rmw_qos_profile_t qos_profile = qos.get_rmw_qos_profile();
+
+  img_sub_.subscribe(node_ptr, "/image_raw", qos_profile);
+  roi_sub_.subscribe(node_ptr, "~/output/rois", qos_profile);
+#else
+  // Jazzy 版本：使用this指针和rclcpp::QoS
+  RCLCPP_INFO(this->get_logger(), "ROS 2 Version: %s - Using Jazzy interface", ROS2_VERSION);
+
   const auto qos = rclcpp::QoS(rclcpp::KeepLast(10));
   img_sub_.subscribe(this, "/image_raw", qos);
   roi_sub_.subscribe(this, "~/output/rois", qos);
+#endif
+
   // 参数
   const std::string model_path = this->declare_parameter<std::string>("model_path");
   const std::string label_path = this->declare_parameter<std::string>("label_path");

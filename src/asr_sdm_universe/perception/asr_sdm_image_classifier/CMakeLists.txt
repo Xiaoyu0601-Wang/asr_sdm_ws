@@ -16,6 +16,17 @@ find_package(asr_sdm_perception_msgs REQUIRED)
 find_package(message_filters REQUIRED)
 
 
+if("$ENV{ROS_DISTRO}" STREQUAL "humble")
+  add_definitions(-DROS2_VERSION_HUMBLE)
+  message(STATUS "Building for ROS 2 Humble")
+elseif("$ENV{ROS_DISTRO}" STREQUAL "jazzy")
+  add_definitions(-DROS2_VERSION_JAZZY)
+  message(STATUS "Building for ROS 2 Jazzy")
+else()
+  message(STATUS "Building for unknown ROS version, defaulting to Humble interface")
+  add_definitions(-DROS2_VERSION_HUMBLE)
+endif()
+
 add_executable(img_classifier_node
   src/img_classifier.cpp
 )
