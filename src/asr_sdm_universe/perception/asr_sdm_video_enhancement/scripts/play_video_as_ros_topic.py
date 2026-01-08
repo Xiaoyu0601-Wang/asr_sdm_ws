@@ -9,7 +9,7 @@ import glob
 class VideoPublisher(Node):
     def __init__(self, video_dir):
         super().__init__('video_publisher')
-        self.publisher_ = self.create_publisher(Image, '/image_raw', 10)
+        self.publisher_ = self.create_publisher(Image, '/asr_sdm_video_enhancement/input/image', 10)
         self.bridge = CvBridge()
         self.video_files = sorted(glob.glob(os.path.join(video_dir, "*.mp4")))  # Can be changed to .avi etc.
         if not self.video_files:
@@ -20,8 +20,7 @@ class VideoPublisher(Node):
         self.cap = cv2.VideoCapture(self.video_files[self.current_video_idx])
         self.get_logger().info(f"Playing {self.video_files[self.current_video_idx]}")
 
-        # timer_period = 1.0 / 30.0  # 30 FPS
-        timer_period = 1.0
+        timer_period = 1.0 / 30.0  # 30 FPS
         self.timer = self.create_timer(timer_period, self.timer_callback)
 
     def timer_callback(self):
@@ -44,7 +43,7 @@ class VideoPublisher(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    video_dir = "/home/wang/video"  # files path
+    video_dir = "<change_your_video_path>"  # files path
     node = VideoPublisher(video_dir)
     rclpy.spin(node)
     node.destroy_node()
