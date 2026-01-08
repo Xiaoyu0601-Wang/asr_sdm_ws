@@ -36,11 +36,11 @@ ImgDetectorNode::ImgDetectorNode(const rclcpp::NodeOptions & options)
   }
 
   roi_pub_ =
-    this->create_publisher<asr_sdm_perception_msgs::msg::TrafficLightRoiArray>("~/output/rois", 10);
+    this->create_publisher<asr_sdm_perception_msgs::msg::TrafficLightRoiArray>("/output/rois", 10);
 
   if (!test_mode_) {
     img_sub_ = this->create_subscription<sensor_msgs::msg::Image>(
-      "~/input/image", rclcpp::SensorDataQoS(),
+      "/image_raw", rclcpp::SensorDataQoS(),
       std::bind(&ImgDetectorNode::imageCallback, this, std::placeholders::_1));
   } else {
     runTestMode();
@@ -84,16 +84,6 @@ cv::Mat ImgDetectorNode::makeBlob(const cv::Mat & img, float & scale, int & dw, 
     cv::Mat channel_mat(input_h_, input_w_, CV_32F, blob.ptr<float>(0, c));
     channels[c].copyTo(channel_mat);
   }
-
-  // RCLCPP_INFO(this->get_logger(),
-  // RCLCPP_INFO(
-  //   this->get_logger(),
-  //   blob.size[0],   // N=批量数（默认1）
-  //   blob.size[1],   // C=通道数（RGB=3）
-  //   blob.size[2],   // H=高度（input_h_）
-  //   blob.size[3]);  // W=宽度（input_w_）
-  // RCLCPP_INFO(
-  //   this->get_logger(), "Blob 数据类型: %s", blob.type() == CV_32F ? "CV_32F" : "其他类型");
 
   return blob;
 }
@@ -260,17 +250,12 @@ void ImgDetectorNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPt
 
   for (int idx : keep) {
     const cv::Rect & box = boxes[idx];
-    // const int cls_id = class_ids[idx];  // 获取类别ID
-    // const float score = scores[idx];    // 获取置信度
 
     asr_sdm_perception_msgs::msg::TrafficLightRoi roi;
-    roi.roi.x_offset = static_cast<uint32_t>(box.x);  // 注意类型转换
+    roi.roi.x_offset = static_cast<uint32_t>(box.x);  // 类型转换
     roi.roi.y_offset = static_cast<uint32_t>(box.y);
     roi.roi.width = static_cast<uint32_t>(box.width);
     roi.roi.height = static_cast<uint32_t>(box.height);
-
-    // roi.traffic_light_id = idx; // 可以用索引或其他方式生成唯一ID
-    // roi.traffic_light_type = cls_id; // 将检测的类别ID直接赋给类型字段
 
     out_msg.rois.push_back(roi);
   }
