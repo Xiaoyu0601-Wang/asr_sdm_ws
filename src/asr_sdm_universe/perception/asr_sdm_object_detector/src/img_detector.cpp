@@ -4,7 +4,7 @@ namespace img_detector
 {
 
 ImgDetectorNode::ImgDetectorNode(const rclcpp::NodeOptions & options)
-: Node("img_detector_node", options)
+: Node("img_detector_node", options)， is_processing_(false)  // 初始化处理状态为false
 {
   const std::string model_path = this->declare_parameter<std::string>("model_path");
   const std::string label_path = this->declare_parameter<std::string>("label_path");
@@ -41,7 +41,15 @@ ImgDetectorNode::ImgDetectorNode(const rclcpp::NodeOptions & options)
   if (!test_mode_) {
     img_sub_ = this->create_subscription<sensor_msgs::msg::Image>(
       "/image_raw", rclcpp::SensorDataQoS(),
-      std::bind(&ImgDetectorNode::imageCallback, this, std::placeholders::_1));
+      [this](const sensor_msgs::msg::Image::ConstSharedPtr msg) {
+        if (is_processing_) {
+          return;  // 如果在处理中，忽略此帧图像
+        }
+
+        is_processing_ = true;
+        imageCallback(msg);
+        is_processing_ = false;
+      });
   } else {
     runTestMode();
   }
