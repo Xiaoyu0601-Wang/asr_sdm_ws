@@ -186,8 +186,26 @@ void ImgClassifierNode::imageCallback(
 
   if (roi_sub_->rois.empty()) {
     RCLCPP_INFO(this->get_logger(), "No ROIs in TrafficLightRoiArray, nothing to classify");
+    // 发布原始图像
+    if (publish_debug_image_) {
+      cv_bridge::CvImage out_msg;
+      out_msg.header = img_sub_->header;
+      out_msg.encoding = sensor_msgs::image_encodings::BGR8;
+      out_msg.image = full_img.clone();
+      debug_image_pub_->publish(*out_msg.toImageMsg());
+    }
+
+    // 发布空标签或提示信息
+    if (label_pub_->get_subscription_count() > 0) {
+      std_msgs::msg::String label_msg;
+      label_msg.data = "No ROIs detected";
+      label_pub_->publish(label_msg);
+    }
+
     return;
   }
+
+  RCLCPP_INFO(this->get_logger(), "Processing %zu ROIs", roi_sub_->rois.size());
 
   cv::Mat vis = full_img.clone();
   cv::Rect img_rect(0, 0, full_img.cols, full_img.rows);
