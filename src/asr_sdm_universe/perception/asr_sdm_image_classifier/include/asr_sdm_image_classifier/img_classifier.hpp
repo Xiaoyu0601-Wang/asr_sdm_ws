@@ -12,6 +12,20 @@
 #include <sensor_msgs/msg/image.hpp>
 #include <std_msgs/msg/string.hpp>
 
+#ifdef ROS2_VERSION_HUMBLE
+#define ROS2_VERSION "HUMBLE"
+#elif defined(ROS2_VERSION_JAZZY)
+#define ROS2_VERSION "JAZZY"
+#else
+#define ROS2_VERSION "UNKNOWN"
+#endif
+
+#ifdef ROS2_VERSION_HUMBLE
+#define ASR_SDM_USE_HUMBLE_INTERFACE 1
+#else
+#define ASR_SDM_USE_HUMBLE_INTERFACE 0
+#endif
+
 // cv_bridge header differs between Ubuntu versions:
 // Ubuntu 22.04 (ROS2 Humble): cv_bridge.h
 // Ubuntu 24.04 (ROS2 Jazzy): cv_bridge.hpp
