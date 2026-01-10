@@ -4,7 +4,7 @@ namespace img_detector
 {
 
 ImgDetectorNode::ImgDetectorNode(const rclcpp::NodeOptions & options)
-: Node("img_detector_node", options)， is_processing_(false)  // 初始化处理状态为false
+: Node("img_detector_node", options), is_processing_(false)  // 初始化处理状态为false
 {
   const std::string model_path = this->declare_parameter<std::string>("model_path");
   const std::string label_path = this->declare_parameter<std::string>("label_path");
