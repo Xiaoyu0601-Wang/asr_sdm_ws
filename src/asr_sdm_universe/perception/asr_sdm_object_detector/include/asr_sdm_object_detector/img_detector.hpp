@@ -52,6 +52,7 @@ private:
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr img_sub_;
   rclcpp::Publisher<asr_sdm_perception_msgs::msg::TrafficLightRoiArray>::SharedPtr roi_pub_;
 
+  bool is_processing_;
   bool test_mode_;
   std::string test_image_dir_;
   std::string output_image_dir_;
