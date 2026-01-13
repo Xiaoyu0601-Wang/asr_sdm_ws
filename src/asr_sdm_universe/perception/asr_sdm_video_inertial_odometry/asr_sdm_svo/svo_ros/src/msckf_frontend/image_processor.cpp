@@ -944,7 +944,7 @@ void ImageProcessor::addNewFeatures()
   // Find the stereo matched points for the newly
   // detected features.
   vector<cv::Point2f> cam0_points(new_features.size());
-  for (int i = 0; i < new_features.size(); ++i) cam0_points[i] = new_features[i].pt;
+  for (size_t i = 0; i < new_features.size(); ++i) cam0_points[i] = new_features[i].pt;
 
   vector<cv::Point2f> cam1_points(0);
   vector<unsigned char> inlier_markers(0);
@@ -953,7 +953,7 @@ void ImageProcessor::addNewFeatures()
   vector<cv::Point2f> cam0_inliers(0);
   vector<cv::Point2f> cam1_inliers(0);
   vector<float> response_inliers(0);
-  for (int i = 0; i < inlier_markers.size(); ++i) {
+  for (size_t i = 0; i < inlier_markers.size(); ++i) {
     if (inlier_markers[i] == 0) continue;
     cam0_inliers.push_back(cam0_points[i]);
     cam1_inliers.push_back(cam1_points[i]);
@@ -974,7 +974,7 @@ void ImageProcessor::addNewFeatures()
   for (int code = 0; code < processor_config.grid_row * processor_config.grid_col; ++code)
     grid_new_features[code] = vector<FeatureMetaData>(0);
 
-  for (int i = 0; i < cam0_inliers.size(); ++i) {
+  for (size_t i = 0; i < cam0_inliers.size(); ++i) {
     const cv::Point2f & cam0_point = cam0_inliers[i];
     const cv::Point2f & cam1_point = cam1_inliers[i];
     const float & response = response_inliers[i];
@@ -1000,10 +1000,13 @@ void ImageProcessor::addNewFeatures()
     vector<FeatureMetaData> & features_this_grid = (*curr_features_ptr)[code];
     vector<FeatureMetaData> & new_features_this_grid = grid_new_features[code];
 
-    if (features_this_grid.size() >= processor_config.grid_min_feature_num) continue;
+    if (features_this_grid.size() >= static_cast<size_t>(processor_config.grid_min_feature_num))
+      continue;
 
-    int vacancy_num = processor_config.grid_min_feature_num - features_this_grid.size();
-    for (int k = 0; k < vacancy_num && k < new_features_this_grid.size(); ++k) {
+    int vacancy_num =
+      processor_config.grid_min_feature_num - static_cast<int>(features_this_grid.size());
+    for (size_t k = 0; k < static_cast<size_t>(vacancy_num) && k < new_features_this_grid.size();
+         ++k) {
       features_this_grid.push_back(new_features_this_grid[k]);
       features_this_grid.back().id = next_feature_id++;
       features_this_grid.back().lifetime = 1;
@@ -1243,7 +1246,7 @@ void ImageProcessor::twoPointRansac(
   // are computed.
   double mean_pt_distance = 0.0;
   int raw_inlier_cntr = 0;
-  for (int i = 0; i < pts_diff.size(); ++i) {
+  for (size_t i = 0; i < pts_diff.size(); ++i) {
     double distance = sqrt(pts_diff[i].dot(pts_diff[i]));
     // 25 pixel distance is a pretty large tolerance for normal motion.
     // However, to be used with aggressive motion, this tolerance should
@@ -1273,7 +1276,7 @@ void ImageProcessor::twoPointRansac(
   // if (mean_pt_distance < inlier_error*norm_pixel_unit) {
   if (mean_pt_distance < norm_pixel_unit) {
     // ROS_WARN_THROTTLE(1.0, "Degenerated motion...");
-    for (int i = 0; i < pts_diff.size(); ++i) {
+    for (size_t i = 0; i < pts_diff.size(); ++i) {
       if (inlier_markers[i] == 0) continue;
       if (sqrt(pts_diff[i].dot(pts_diff[i])) > inlier_error * norm_pixel_unit)
         inlier_markers[i] = 0;
@@ -1284,7 +1287,7 @@ void ImageProcessor::twoPointRansac(
   // In the case of general motion, the RANSAC model can be applied.
   // The three column corresponds to tx, ty, and tz respectively.
   MatrixXd coeff_t(pts_diff.size(), 3);
-  for (int i = 0; i < pts_diff.size(); ++i) {
+  for (size_t i = 0; i < pts_diff.size(); ++i) {
     coeff_t(i, 0) = pts_diff[i].y;
     coeff_t(i, 1) = -pts_diff[i].x;
     coeff_t(i, 2) =
@@ -1292,8 +1295,8 @@ void ImageProcessor::twoPointRansac(
   }
 
   vector<int> raw_inlier_idx;
-  for (int i = 0; i < inlier_markers.size(); ++i) {
-    if (inlier_markers[i] != 0) raw_inlier_idx.push_back(i);
+  for (size_t i = 0; i < inlier_markers.size(); ++i) {
+    if (inlier_markers[i] != 0) raw_inlier_idx.push_back(static_cast<int>(i));
   }
 
   vector<int> best_inlier_set;
@@ -1367,7 +1370,7 @@ void ImageProcessor::twoPointRansac(
     VectorXd coeff_tx_better(inlier_set.size());
     VectorXd coeff_ty_better(inlier_set.size());
     VectorXd coeff_tz_better(inlier_set.size());
-    for (int i = 0; i < inlier_set.size(); ++i) {
+    for (size_t i = 0; i < inlier_set.size(); ++i) {
       coeff_tx_better(i) = coeff_t(inlier_set[i], 0);
       coeff_ty_better(i) = coeff_t(inlier_set[i], 1);
       coeff_tz_better(i) = coeff_t(inlier_set[i], 2);
@@ -1474,12 +1477,12 @@ void ImageProcessor::publish()
     curr_cam1_points_undistorted.clear();
   }
 
-  for (int i = 0; i < curr_ids.size(); ++i) {
+  for (size_t i = 0; i < curr_ids.size(); ++i) {
     feature_msg_ptr->features.push_back(asr_sdm_perception_msgs::msg::FeatureMeasurement());
     feature_msg_ptr->features[i].id = curr_ids[i];
     feature_msg_ptr->features[i].u0 = curr_cam0_points_undistorted[i].x;
     feature_msg_ptr->features[i].v0 = curr_cam0_points_undistorted[i].y;
-    if (use_stereo_ && i < static_cast<int>(curr_cam1_points_undistorted.size())) {
+    if (use_stereo_ && i < curr_cam1_points_undistorted.size()) {
       feature_msg_ptr->features[i].u1 = curr_cam1_points_undistorted[i].x;
       feature_msg_ptr->features[i].v1 = curr_cam1_points_undistorted[i].y;
     } else {
