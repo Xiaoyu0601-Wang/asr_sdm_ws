@@ -299,9 +299,12 @@ int main(int argc, char ** argv)
 
   RCLCPP_INFO(node->get_logger(), "SVO node created");
 
+  rclcpp::executors::SingleThreadedExecutor executor;
+  executor.add_node(node);
+
   rclcpp::Rate rate(100);
   while (rclcpp::ok() && !node->shouldQuit()) {
-    rclcpp::spin_some(node);
+    executor.spin_some();
     rate.sleep();
   }
 
