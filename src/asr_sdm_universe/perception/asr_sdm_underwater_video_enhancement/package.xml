@@ -4,10 +4,16 @@
   <name>asr_sdm_underwater_video_enhancement</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
-  <maintainer email="zhi.wang@tier4.jp">zhi</maintainer>
+  <maintainer email="your_email@example.com">Your Name</maintainer>
   <license>TODO: License declaration</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>cv_bridge</depend>
+  <depend>opencv</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

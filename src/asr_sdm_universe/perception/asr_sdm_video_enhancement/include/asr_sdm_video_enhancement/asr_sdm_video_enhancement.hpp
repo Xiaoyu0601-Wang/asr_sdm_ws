@@ -1,11 +1,12 @@
 #ifndef ASR_SDM_VIDEO_ENHANCEMENT_HPP_
 #define ASR_SDM_VIDEO_ENHANCEMENT_HPP_
 
-#include <cv_bridge/cv_bridge.hpp>  // ubuntu 24.04 -> cv_bridge.hpp; ubuntu 22.04 -> cv_bridge.h
 #include <opencv2/opencv.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <sensor_msgs/msg/image.hpp>
+
+#include <cv_bridge/cv_bridge.h>  // ubuntu 24.04 -> cv_bridge.hpp; ubuntu 22.04 -> cv_bridge.h
 
 namespace asr_sdm_video_enhancement
 {
