@@ -1,0 +1,27 @@
+vio_frontend_stereo_ros2:
+  ros__parameters:
+    # IMU parameters for EuRoC dataset, formatted for SVO.
+    # This is now a ROS2 parameter file.
+
+    # Gyroscope noise density (sigma_g) [rad/s/sqrt(Hz)]
+    gyroscope_noise_density: 1.6968e-04
+
+    # Gyroscope random walk (sigma_bg) [rad/s^2/sqrt(Hz)]
+    gyroscope_random_walk: 1.9393e-05
+
+    # Accelerometer noise density (sigma_a) [m/s^2/sqrt(Hz)]
+    accelerometer_noise_density: 2.0000e-3
+
+    # Accelerometer random walk (sigma_ba) [m/s^3/sqrt(Hz)]
+    accelerometer_random_walk: 3.0000e-3
+
+    # Rate of the IMU in Hz
+    imu_rate: 200.0
+
+    # Transformation from IMU to Camera (T_cam_imu)
+    # This is a placeholder, you should use the actual values from EuRoC's sensor.yaml
+    # For MH_01_easy, T_BS (body to sensor) is provided. Assuming body is IMU frame.
+    # T_cam0_imu: [0.0148655429818, -0.999880929698, 0.00414029679422, -0.0216401454975,
+    #              0.99988385428, 0.0148075556014, -0.00498903698246, -0.064676986768,
+    #              -0.00493371610735, 0.00420575346216, 0.999977309858, 0.00981073058949,
+    #              0.0, 0.0, 0.0, 1.0]

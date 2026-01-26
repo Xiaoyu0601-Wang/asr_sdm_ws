@@ -9,6 +9,48 @@
 namespace vk
 {
 
+template <typename T>
+T param(rclcpp::Node::SharedPtr node, const std::string & name, const T & defaultValue, const bool silent = false)
+{
+  if (!node->has_parameter(name)) {
+    node->declare_parameter(name, defaultValue);
+  }
+  T v;
+  if (node->get_parameter(name, v)) {
+    if (!silent) {
+      RCLCPP_INFO_STREAM(node->get_logger(), "Found parameter: " << name << ", value: " << v);
+    }
+    return v;
+  }
+  if (!silent) {
+    RCLCPP_WARN_STREAM(
+      node->get_logger(),
+      "Cannot find value for parameter: " << name << ", assigning default: " << defaultValue);
+  }
+  return defaultValue;
+}
+
+template <typename T>
+T param(rclcpp::Node * node, const std::string & name, const T & defaultValue, const bool silent = false)
+{
+  if (!node->has_parameter(name)) {
+    node->declare_parameter(name, defaultValue);
+  }
+  T v;
+  if (node->get_parameter(name, v)) {
+    if (!silent) {
+      RCLCPP_INFO_STREAM(node->get_logger(), "Found parameter: " << name << ", value: " << v);
+    }
+    return v;
+  }
+  if (!silent) {
+    RCLCPP_WARN_STREAM(
+      node->get_logger(),
+      "Cannot find value for parameter: " << name << ", assigning default: " << defaultValue);
+  }
+  return defaultValue;
+}
+
 inline bool hasParam(rclcpp::Node::SharedPtr node, const std::string & name)
 {
   return node->has_parameter(name);
