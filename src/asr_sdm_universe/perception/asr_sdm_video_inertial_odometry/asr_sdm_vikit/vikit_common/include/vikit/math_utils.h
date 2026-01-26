@@ -1,6 +1,8 @@
 #ifndef MATH_UTILS_H_
 #define MATH_UTILS_H_
 
+#include <cmath>
+
 #include <Eigen/Core>
 #include <Eigen/StdVector>
 #include <sophus/se3.hpp>
@@ -8,9 +10,13 @@
 namespace vk
 {
 
-using namespace Eigen;
-using namespace std;
-using namespace Sophus;
+using Eigen::Vector2d;
+using Eigen::Vector3d;
+using Eigen::Vector4d;
+using Eigen::Matrix3d;
+using Eigen::Quaterniond;
+
+using std::vector;
 
 Vector3d triangulateFeatureNonLin(
   const Matrix3d & R, const Vector3d & t, const Vector3d & feature1, const Vector3d & feature2);
@@ -66,9 +72,23 @@ inline double norm_max(const Eigen::VectorXd & v)
   return max;
 }
 
+template<typename Derived>
+Eigen::Matrix<typename Derived::Scalar, 2, 1> project2(const Eigen::MatrixBase<Derived>& v)
+{
+  EIGEN_STATIC_ASSERT_MATRIX_SPECIFIC_SIZE(Derived, 3, 1);
+  return v.template head<2>() / v(2);
+}
+
 inline Vector2d project2d(const Vector3d & v)
 {
-  return v.head<2>() / v[2];
+  return project2(v);
+}
+
+template<class T>
+inline T normPdf(const T x, const T mean, const T sigma)
+{
+  const T exponent = -((x - mean) * (x - mean)) / (2 * sigma * sigma);
+  return std::exp(exponent) / (sigma * std::sqrt(2 * M_PI));
 }
 
 inline Vector3d unproject2d(const Vector2d & v)

@@ -66,13 +66,13 @@ if(BUILD_TESTING)
     ${EIGEN3_INCLUDE_DIRS}
   )
   
-  # Use ament_target_dependencies to handle eigen_checks
-  # ament_target_dependencies(${PROJECT_NAME}_tests eigen_checks)
+  ament_target_dependencies(${PROJECT_NAME}_tests
+    eigen_checks
+  )
   
   # Link libraries for the test
   target_link_libraries(${PROJECT_NAME}_tests
     glog::glog
-    eigen_checks::eigen_checks
     ${CMAKE_THREAD_LIBS_INIT}
   )
 endif()

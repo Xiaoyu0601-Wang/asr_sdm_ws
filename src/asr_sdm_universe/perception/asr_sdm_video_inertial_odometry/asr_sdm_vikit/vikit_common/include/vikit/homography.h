@@ -59,6 +59,50 @@ public:
   vector<HomographyDecomposition> decompositions;
 };
 
+// --------------------------------------------------------------------------------------
+// Compatibility layer for SVO (rpg_svo_pro_open) style API.
+//
+// rpg_svo_pro_open expects:
+// - vk::Homography to be a simple struct with members: t_cur_ref, R_cur_ref, n_cur, score
+// - vk::estimateHomography(...) returning that struct
+//
+// This workspace contains a different Homography class implementation. To avoid rewriting
+// SVO code, we provide a small adapter type and function.
+// --------------------------------------------------------------------------------------
+
+using BearingVector = Eigen::Vector3d;
+using Bearings = Eigen::Matrix<double, 3, Eigen::Dynamic, Eigen::ColMajor>;
+
+struct HomographyResult
+{
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+  Eigen::Vector3d t_cur_ref;
+  Eigen::Matrix3d R_cur_ref;
+  Eigen::Vector3d n_cur;
+  double score;
+
+  HomographyResult()
+  : t_cur_ref(Eigen::Vector3d::Zero()),
+    R_cur_ref(Eigen::Matrix3d::Identity()),
+    n_cur(Eigen::Vector3d::Zero()),
+    score(0.0)
+  {}
+};
+
+/// Estimates Homography from corresponding feature bearing vectors.
+/// Score of returned homography is set to the number of inliers.
+HomographyResult estimateHomography(
+  const Bearings& f_cur,
+  const Bearings& f_ref,
+  const double focal_length,
+  const double reproj_error_thresh,
+  const size_t min_num_inliers);
+
+// Backward-compat alias: SVO code expects vk::Homography with these fields.
+// This repository already has a class named vk::Homography; to avoid breaking it,
+// SVO code should use vk::HomographyResult.
+
 } /* end namespace vk */
 
 #endif /* HOMOGRAPHY_H_ */

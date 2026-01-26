@@ -1,7 +1,0 @@
-grid_size: 18
-max_fts: 200
-triang_min_corner_score: 10.0
-n_pyr_levels: 4
-max_n_kfs: 50
-loba_num_iter: 10
-

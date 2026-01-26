@@ -47,6 +47,8 @@ set(SOURCEFILES
   src/pinhole_camera.cpp
   src/homography.cpp
   src/img_align.cpp
+  src/sample.cpp
+  src/homography_api_adapter.cpp
 )
 
 # Create vikit library
