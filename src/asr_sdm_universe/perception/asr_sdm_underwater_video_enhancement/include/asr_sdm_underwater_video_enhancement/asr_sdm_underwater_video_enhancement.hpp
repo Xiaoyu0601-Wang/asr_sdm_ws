@@ -6,7 +6,11 @@
 
 #include <sensor_msgs/msg/image.hpp>
 
-#include <cv_bridge/cv_bridge.h>  // ubuntu 24.04 -> cv_bridge.hpp; ubuntu 22.04 -> cv_bridge.h
+#ifdef HAVE_CV_BRIDGE_HPP
+#include <cv_bridge/cv_bridge.hpp>
+#else
+#include <cv_bridge/cv_bridge.h>
+#endif
 
 namespace asr_sdm_underwater_video_enhancement
 {
@@ -25,7 +29,9 @@ private:
   float beta_b;
   float beta_g;
   float beta_r;
-  double scale;
+  bool is_show_fps;
+  bool is_resize;
+  double resize_scale;
 
   // Subscriber
   rclcpp::Subscription<Image>::SharedPtr sub_image_;

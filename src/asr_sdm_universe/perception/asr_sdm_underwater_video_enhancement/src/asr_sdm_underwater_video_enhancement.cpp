@@ -8,21 +8,23 @@ UnderWaterVideoEnhancementNode::UnderWaterVideoEnhancementNode(
 : Node("asr_sdm_underwater_video_enhancement", node_options)
 {
   // Parameter
-  airlight = static_cast<float>(declare_parameter("airlight", 100));
-  beta_b = static_cast<float>(declare_parameter("beta_b", 0.5));
-  beta_g = static_cast<float>(declare_parameter("beta_g", 1.0));
-  beta_r = static_cast<float>(declare_parameter("beta_r", 2.0));
-  scale = static_cast<double>(declare_parameter("scale", 0.5));
+  airlight = static_cast<float>(declare_parameter("airlight", 0.0));
+  beta_b = static_cast<float>(declare_parameter("beta_b", 0.0));
+  beta_g = static_cast<float>(declare_parameter("beta_g", 0.0));
+  beta_r = static_cast<float>(declare_parameter("beta_r", 0.0));
+  is_show_fps = static_cast<bool>(declare_parameter("is_show_fps", false));
+  is_resize = static_cast<bool>(declare_parameter("is_resize", false));
+  resize_scale = static_cast<double>(declare_parameter("resize_scale", 0.5));
 
   // Subscriber
   sub_image_ = this->create_subscription<Image>(
-    "/asr_sdm_underwater_video_enhancement/input/image",
+    "input/image",
     rclcpp::SensorDataQoS(),  // QoS 明确设成 SensorDataQoS，和 RealSense 完全一致
     std::bind(&UnderWaterVideoEnhancementNode::onImageCallback, this, _1));
 
   // Publisher
   pub_image_ = this->create_publisher<Image>(
-    "/asr_sdm_underwater_video_enhancement/output/image",
+    "output/image",
     rclcpp::SensorDataQoS());  // QoS 明确设成 SensorDataQoS，和 RealSense 完全一致
 }
 
@@ -36,21 +38,28 @@ void UnderWaterVideoEnhancementNode::onImageCallback(const Image::SharedPtr msg)
     auto cv_ptr = cv_bridge::toCvCopy(msg, "bgr8");
 
     // Calculate FPS
-    auto now = std::chrono::steady_clock::now();
-    if (frame_count_ > 0) {
-      double elapsed = std::chrono::duration<double>(now - last_frame_time_).count();
-      double fps_now = 1.0 / elapsed;
-      avg_fps_ = (avg_fps_ * (frame_count_ - 1) + fps_now) / frame_count_;
-      std::string text = "FPS: " + std::to_string(fps_now).substr(0, 5) +
-                         " Avg: " + std::to_string(avg_fps_).substr(0, 5);
-      putText(
-        cv_ptr->image, text, cv::Point(20, 40), cv::FONT_HERSHEY_SIMPLEX, 1.0,
-        cv::Scalar(0, 255, 0), 2);
+    if (is_show_fps) {
+      auto now = std::chrono::steady_clock::now();
+      if (frame_count_ > 0) {
+        double elapsed = std::chrono::duration<double>(now - last_frame_time_).count();
+        double fps_now = 1.0 / elapsed;
+        avg_fps_ = (avg_fps_ * (frame_count_ - 1) + fps_now) / frame_count_;
+        std::string text = "FPS: " + std::to_string(fps_now).substr(0, 5) +
+                           " Avg: " + std::to_string(avg_fps_).substr(0, 5);
+        putText(
+          cv_ptr->image, text, cv::Point(20, 40), cv::FONT_HERSHEY_SIMPLEX, 1.0,
+          cv::Scalar(0, 255, 0), 2);
+      }
+      last_frame_time_ = now;
+      frame_count_++;
     }
-    last_frame_time_ = now;
-    frame_count_++;
 
-    resize(cv_ptr->image, cv_ptr->image, cv::Size(), scale, scale, cv::INTER_LINEAR);
+    // If processing 360p images directly, this step can be skipped.
+    if (is_resize) {
+      resize(
+        cv_ptr->image, cv_ptr->image, cv::Size(), resize_scale, resize_scale, cv::INTER_LINEAR);
+    }
+
     Mat processed = processFrame(cv_ptr->image, airlight, beta_b, beta_g, beta_r);
     auto out_msg = cv_bridge::CvImage(msg->header, "bgr8", processed).toImageMsg();
     pub_image_->publish(*out_msg);
