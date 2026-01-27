@@ -54,7 +54,7 @@ void UnderWaterVideoEnhancementNode::onImageCallback(const Image::SharedPtr msg)
       frame_count_++;
     }
 
-    // If processing 360p images directly, this step can be skipped.
+    // If processing 360p images directly, this step can be skipped (need test).
     if (is_resize) {
       resize(
         cv_ptr->image, cv_ptr->image, cv::Size(), resize_scale, resize_scale, cv::INTER_LINEAR);
@@ -73,7 +73,7 @@ void UnderWaterVideoEnhancementNode::onImageCallback(const Image::SharedPtr msg)
 Mat UnderWaterVideoEnhancementNode::calcBGRChannel(const Mat & src)
 {
   Mat b_channel;
-  extractChannel(src, b_channel, 0);
+  extractChannel(src, b_channel, 0);  // faster than split
   return b_channel;
 }
 
@@ -83,11 +83,11 @@ Mat UnderWaterVideoEnhancementNode::calcTransmissionMap(
   Mat b;
   b_channel.convertTo(b, CV_32F);
 
-  Mat d = 1.0f - b / A;
+  Mat d = 1.0f - b / A;  // d(x) = 1 - I^b(x) / A
   d = max(d, 0);
   d = min(d, 1);
 
-  Mat t_b = -beta_b * d;
+  Mat t_b = -beta_b * d;  // t_b(x) = exp^(-beta_b * d(x))
   exp(t_b, t_b);
 
   Mat t_g = -beta_g * d;
@@ -96,7 +96,7 @@ Mat UnderWaterVideoEnhancementNode::calcTransmissionMap(
   Mat t_r = -beta_r * d;
   exp(t_r, t_r);
 
-  std::vector<Mat> t_channels = {t_b, t_g, t_r};
+  std::vector<Mat> t_channels = {t_b, t_g, t_r};  // merge 3 channels
   Mat t_bgr;
   merge(t_channels, t_bgr);
 
@@ -114,7 +114,7 @@ Mat UnderWaterVideoEnhancementNode::imageRestoration(const Mat & src, const Mat 
 
   Mat A_mat(src.size(), CV_32FC3, Scalar(A, A, A));
 
-  Mat J = (src_f - A_mat) / t_map + A_mat;
+  Mat J = (src_f - A_mat) / t_map + A_mat;  // J(x) = (I(x) - A) / t + A
   J = max(J, 0);
   J = min(J, 255);
 
