@@ -1,0 +1,9 @@
+<launch>
+  <arg name="param_path" default="$(find-pkg-share asr_sdm_underwater_video_enhancement)/config/asr_sdm_underwater_video_enhancement.param.yaml"/>
+
+  <node pkg="asr_sdm_underwater_video_enhancement" exec="asr_sdm_underwater_video_enhancement" name="asr_sdm_underwater_video_enhancement" output="screen">
+    <param from="$(var param_path)"/>
+    <remap from="input/image" to="/asr_sdm_underwater_video_enhancement/input/image"/>
+    <remap from="output/image" to="/asr_sdm_underwater_video_enhancement/output/image"/>
+  </node>
+</launch>
