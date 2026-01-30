@@ -9,7 +9,7 @@
 #ifdef HAVE_CV_BRIDGE_HPP
 #include <cv_bridge/cv_bridge.hpp>
 #else
-#include <cv_bridge/cv_bridge.h>
+#include <cv_bridge/cv_bridge.hpp>  // TODO: Change it back to .h once the issue is resolved.
 #endif
 
 namespace asr_sdm_underwater_video_enhancement
