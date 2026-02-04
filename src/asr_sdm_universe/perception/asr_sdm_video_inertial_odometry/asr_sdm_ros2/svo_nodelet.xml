@@ -1,0 +1,9 @@
+<library path="libsvo_nodelet">
+  <class name="asr_sdm_ros2/SvoNodelet"
+         type="asr_sdm_svo2::SvoNodelet"
+         base_class_type="nodelet::Nodelet">
+    <description> 
+      A nodelet wrapper for asr_sdm_svo2.
+    </description>
+  </class>
+</library>

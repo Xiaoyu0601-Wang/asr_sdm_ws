@@ -27,6 +27,7 @@ void publishTfTransform(
   const Sophus::SE3d & T, const rclcpp::Time & stamp, const string & frame_id,
   const string & child_frame_id, tf2_ros::TransformBroadcaster & br);
 
+
 void publishPointMarker(
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr pub, const Vector3d & pos,
   const string & ns, const rclcpp::Time & timestamp, int id, int action, double marker_scale,

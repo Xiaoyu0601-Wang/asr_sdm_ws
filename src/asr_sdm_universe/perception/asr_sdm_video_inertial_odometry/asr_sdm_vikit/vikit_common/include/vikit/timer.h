@@ -54,6 +54,11 @@ public:
     return time_;
   }
 
+  inline double getMilliseconds()
+  {
+    return stop() * 1000.0;
+  }
+
   inline void reset()
   {
     time_ = 0.0;
