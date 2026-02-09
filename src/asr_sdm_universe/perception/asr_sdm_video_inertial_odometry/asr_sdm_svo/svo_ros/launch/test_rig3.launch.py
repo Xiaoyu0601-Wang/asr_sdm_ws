@@ -16,7 +16,7 @@ def generate_launch_description():
     # Get the package share directory
     svo_ros_dir = get_package_share_directory('svo_ros')
 
-    camera_yaml_path = os.path.join(svo_ros_dir, 'param', 'camera_atan.yaml')
+    camera_yaml_path = os.path.join(svo_ros_dir, 'param', 'realsense_camera_atan.yaml')
     vo_yaml_path = os.path.join(svo_ros_dir, 'param', 'vo_rig3_stable.yaml')
 
     # Declare launch arguments
@@ -36,7 +36,7 @@ def generate_launch_description():
     svo_node = Node(
         package='svo_ros',
         executable='vo',
-        name='svo',
+        name='asr_sdm_svo',
         output='screen',
         parameters=[
             camera_yaml_path,
