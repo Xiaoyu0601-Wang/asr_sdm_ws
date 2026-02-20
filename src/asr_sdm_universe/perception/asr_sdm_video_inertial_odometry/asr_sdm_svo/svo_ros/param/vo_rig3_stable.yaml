@@ -1,0 +1,6 @@
+/asr_sdm_svo:
+  ros__parameters:
+    # Align with original rpg_svo/test_rig3.launch (vo_fast.yaml)
+    grid_size: 30
+    max_n_kfs: 10
+    loba_num_iter: 0

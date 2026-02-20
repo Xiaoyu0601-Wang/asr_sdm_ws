@@ -52,15 +52,15 @@ namespace svo
 Visualizer::Visualizer(rclcpp::Node::SharedPtr node)
 : node_(node),
   trace_id_(0),  // Frame counter for nth-frame publishing logic
-  img_pub_level_(vk::getParam<int>(node_.get(), "svo/publish_img_pyr_level", 0)),
-  img_pub_nth_(vk::getParam<int>(node_.get(), "svo/publish_every_nth_img", 1)),
-  dense_pub_nth_(vk::getParam<int>(node_.get(), "svo/publish_every_nth_dense_input", 1)),
+  img_pub_level_(vk::getParam<int>(node_.get(), "publish_img_pyr_level", 0)),
+  img_pub_nth_(vk::getParam<int>(node_.get(), "publish_every_nth_img", 1)),
+  dense_pub_nth_(vk::getParam<int>(node_.get(), "publish_every_nth_dense_input", 1)),
   publish_world_in_cam_frame_(
-    vk::getParam<bool>(node_.get(), "svo/publish_world_in_cam_frame", true)),
-  publish_map_every_frame_(vk::getParam<bool>(node_.get(), "svo/publish_map_every_frame", false)),
+    vk::getParam<bool>(node_.get(), "publish_world_in_cam_frame", true)),
+  publish_map_every_frame_(vk::getParam<bool>(node_.get(), "publish_map_every_frame", false)),
   publish_points_display_time_(
     rclcpp::Duration::from_seconds(
-      vk::getParam<double>(node_.get(), "svo/publish_point_display_time", 0.0))),
+      vk::getParam<double>(node_.get(), "publish_point_display_time", 0.0))),
   // Identity transform: vision frame = world frame (can be overridden)
   T_world_from_vision_(Eigen::Matrix3d::Identity(), Eigen::Vector3d::Zero())
 {
@@ -118,7 +118,7 @@ void Visualizer::publishMinimal(
 
   // Create header with camera frame and timestamp
   std_msgs::msg::Header header_msg;
-  header_msg.frame_id = "cam";
+  header_msg.frame_id = "cam_pos";
   header_msg.stamp = rclcpp::Time(static_cast<int64_t>(timestamp * 1e9));
 
   // ---------------------------------------------------------------------------
@@ -155,8 +155,7 @@ void Visualizer::publishMinimal(
     // Still publish image when paused so user can see what camera sees
     if (pub_images_.getNumSubscribers() > 0 && slam.stage() == FrameHandlerBase::STAGE_PAUSED) {
       cv_bridge::CvImage img_msg;
-      img_msg.header.stamp = node_->now();
-      img_msg.header.frame_id = "image";
+      img_msg.header = header_msg;
       img_msg.image = img;
       img_msg.encoding = sensor_msgs::image_encodings::MONO8;
       pub_images_.publish(img_msg.toImageMsg());
@@ -295,17 +294,18 @@ void Visualizer::visualizeMarkers(
 
   // Broadcast TF transform: world -> cam_pos
   vk::output_helper::publishTfTransform(
-    frame->T_f_w_ * T_world_from_vision_.inverse(), stamp, "cam_pos", "world", *br_);
+    frame->T_f_w_ * T_world_from_vision_.inverse(), stamp, "world", "cam_pos", *br_);
 
   // Only publish markers if there are subscribers
   if (pub_frames_->get_subscription_count() > 0 || pub_points_->get_subscription_count() > 0) {
     // Current camera frustum marker (blue)
+    // Publish in world frame to stay consistent with point markers (which are in world).
     vk::output_helper::publishCameraMarker(
-      pub_frames_, "cam_pos", "cams", stamp, 1, 0.3, Eigen::Vector3d(0., 0., 1.));
+      pub_frames_, "world", "cams", stamp, 1, 0.3, Eigen::Vector3d(0., 0., 1.));
 
     // Add point to trajectory trail (dark blue)
     vk::output_helper::publishPointMarker(
-      pub_points_, T_world_from_vision_ * frame->pos(), "trajectory", node_->now(), trace_id_, 0,
+      pub_points_, T_world_from_vision_ * frame->pos(), "trajectory", stamp, trace_id_, 0,
       0.006, Eigen::Vector3d(0., 0., 0.5));
 
     // Publish full map region on keyframes (or every frame if configured)
