@@ -27,8 +27,9 @@ ImgClassifierNode::ImgClassifierNode(const rclcpp::NodeOptions & options)
   RCLCPP_INFO(this->get_logger(), "ROS 2 Version: %s - Using Jazzy interface", ROS2_VERSION);
 
   const auto qos = rclcpp::QoS(rclcpp::KeepLast(10));
-  img_sub_.subscribe(this, "/image_raw", qos);
-  roi_sub_.subscribe(this, "/output/rois", qos);
+  rmw_qos_profile_t qos_profile = qos.get_rmw_qos_profile();
+  img_sub_.subscribe(this, "/image_raw", qos_profile);
+  roi_sub_.subscribe(this, "/output/rois", qos_profile);
 #endif
 
   // 参数
