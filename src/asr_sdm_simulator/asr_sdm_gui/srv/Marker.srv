@@ -1,0 +1,10 @@
+# topic to subscribe for this marker
+string topic
+
+# RGB color of the marker
+float64[3] rgb
+
+# Message type, empty to delete the marker on this topic
+string message
+
+---

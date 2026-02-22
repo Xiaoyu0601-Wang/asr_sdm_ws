@@ -1,0 +1,28 @@
+/coral/scene_color:
+  weather:
+    to: weather
+    default: [clear, cloudy, night, dusk]
+  origin:
+    to: origin
+    default: [light, fog, uwDiffuse, sunAmbient, uwFog, sunDiffuse, uwAttenuation, uwDensity]
+  r:
+    default: 4
+    max: 255
+    min: 0
+    to: r
+  g:
+    default: 4
+    max: 255
+    min: 0
+    to: g
+  b:
+    default: 4
+    max: 255
+    min: 0
+    to: b
+  a:
+    default: 255
+    max: 255
+    min: 0
+    to: a
+  type: coral/SceneColor
