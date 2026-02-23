@@ -6,12 +6,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# ROS2 / ament
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-
-# System
 find_package(Eigen3 REQUIRED)
+find_package(Matplot++ REQUIRED)
 
 # Options
 option(BUILD_PYTHON_BINDINGS "Build Python bindings" OFF)
@@ -59,7 +57,7 @@ target_link_libraries(gp PUBLIC Eigen3::Eigen)
 
 # ---- ROS2 executable node ----
 add_executable(gp_example_dense src/gp_example_dense.cpp)
-target_link_libraries(gp_example_dense gp)
+target_link_libraries(gp_example_dense gp Matplot++::matplot)
 ament_target_dependencies(gp_example_dense rclcpp)
 
 # ---- Python bindings (optional) ----

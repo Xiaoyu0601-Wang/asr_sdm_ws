@@ -11,22 +11,21 @@ JOBS="$(nproc 2>/dev/null || echo 4)"
 REPO="https://github.com/alandefreitas/matplotplusplus.git"
 BUILD_DIR="/tmp/matplotplusplus_build"
 
-echo "=== Installing matplot++ dependencies ==="
-sudo apt-get update -qq
-sudo apt-get install -y --no-install-recommends \
-    gnuplot \
-    cmake \
-    g++ \
-    git \
-    pkg-config \
-    libpng-dev \
-    libjpeg-dev \
-    libtiff-dev \
-    libfftw3-dev \
-    libblas-dev \
-    liblapack-dev \
-    zlib1g-dev
+# Install build dependencies if missing
+DEPS=(cmake g++ git pkg-config gnuplot libpng-dev libjpeg-dev libtiff-dev libfftw3-dev libblas-dev liblapack-dev zlib1g-dev)
+MISSING=()
+for dep in "${DEPS[@]}"; do
+    if ! dpkg -s "$dep" &>/dev/null; then
+        MISSING+=("$dep")
+    fi
+done
+if [ ${#MISSING[@]} -gt 0 ]; then
+    echo "=== Installing missing dependencies: ${MISSING[*]} ==="
+    sudo apt-get update -qq
+    sudo apt-get install -y --no-install-recommends "${MISSING[@]}"
+fi
 
+# Fetch the newest release tag
 LATEST_TAG="$(git ls-remote --tags --sort=-v:refname "${REPO}" 'v*' | head -1 | sed 's|.*/||')"
 echo "=== Cloning matplot++ ${LATEST_TAG} ==="
 rm -rf "${BUILD_DIR}"
@@ -45,15 +44,17 @@ cmake -S "${BUILD_DIR}" -B "${BUILD_DIR}/build" \
 cmake --build "${BUILD_DIR}/build" --parallel "${JOBS}" --config Release
 
 echo "=== Installing matplot++ to ${PREFIX} ==="
-sudo cmake --install "${BUILD_DIR}/build"
-
-echo "=== Updating linker cache ==="
-sudo ldconfig
+if [ -w "${PREFIX}" ]; then
+    cmake --install "${BUILD_DIR}/build"
+else
+    sudo cmake --install "${BUILD_DIR}/build"
+    sudo ldconfig
+fi
 
 echo "=== Cleaning up ==="
 rm -rf "${BUILD_DIR}"
 
-echo "=== matplot++ installed successfully ==="
+echo "=== matplot++ ${LATEST_TAG} installed successfully ==="
 echo "  Headers:   ${PREFIX}/include/matplot/"
 echo "  Libraries: ${PREFIX}/lib/"
 echo "  Use in CMake: find_package(Matplot++ REQUIRED)"
