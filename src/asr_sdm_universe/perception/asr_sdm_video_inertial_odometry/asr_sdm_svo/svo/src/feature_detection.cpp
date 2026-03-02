@@ -158,19 +158,19 @@ void FastDetector::detect(
     vector<fast::fast_xy> fast_corners;
     
     // FAST corner detection with architecture-specific SIMD
-#if __SSE2__
+#if __SSE2__ && 0 // Temporarily disabled SSE2 to use the new FAST-11 logic
       // SSE2-optimized FAST-10 for x86
       fast::fast_corner_detect_10_sse2(
           (fast::fast_byte*) img_pyr[L].data, img_pyr[L].cols,
           img_pyr[L].rows, img_pyr[L].cols, 20, fast_corners);
-#elif HAVE_FAST_NEON
+#elif HAVE_FAST_NEON && 0
       // NEON-optimized FAST-9 for ARM
       fast::fast_corner_detect_9_neon(
           (fast::fast_byte*) img_pyr[L].data, img_pyr[L].cols,
           img_pyr[L].rows, img_pyr[L].cols, 20, fast_corners);
 #else
-      // Scalar FAST-10 fallback
-      fast::fast_corner_detect_10(
+      // Use the new FAST-11 detector (from libcvd)
+      fast::fast_corner_detect_11(
           (fast::fast_byte*) img_pyr[L].data, img_pyr[L].cols,
           img_pyr[L].rows, img_pyr[L].cols, 20, fast_corners);
 #endif

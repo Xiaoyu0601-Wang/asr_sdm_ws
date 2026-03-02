@@ -12,29 +12,6 @@
 
 namespace fast
 {
-  template <int Alignment>
-  static inline bool is_aligned(const void* p)
-  {
-    return (reinterpret_cast<uintptr_t>(p) & (Alignment - 1)) == 0;
-  }
-
-  template <bool Aligned>
-  static inline __m128i load_si128(const __m128i* p)
-  {
-    if constexpr (Aligned)
-      return _mm_load_si128(p);
-    else
-      return _mm_loadu_si128(p);
-  }
-
-  static inline void CHECK_BARRIER(const __m128i& lo, const __m128i& hi, const __m128i& other, unsigned int& out)
-  {
-    const __m128i lo_mask = _mm_cmplt_epi8(other, lo);
-    const __m128i hi_mask = _mm_cmpgt_epi8(other, hi);
-    const __m128i mask = _mm_or_si128(lo_mask, hi_mask);
-    out = static_cast<unsigned int>(_mm_movemask_epi8(mask));
-  }
-
   template <bool Aligned> void faster_corner_detect_10(const fast_byte* img, int img_width, int img_height, int img_stride,
                                                        short barrier, std::vector<fast_xy>& corners)
   {
