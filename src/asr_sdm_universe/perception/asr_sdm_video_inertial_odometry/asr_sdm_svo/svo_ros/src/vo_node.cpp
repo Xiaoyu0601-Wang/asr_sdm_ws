@@ -77,7 +77,7 @@ public:
 
     // Override SVO core parameters from ROS2 params before creating VO
     try {
-      int grid, maxfts, nlevels;
+      int grid, maxfts, nlevels, fast_type;
       double tri;
 
       if (dataset_name == "euroc") {
@@ -87,6 +87,7 @@ public:
         maxfts = 400;
         tri = 3.0;
         nlevels = 4;
+        fast_type = 12;
 
         // Additional EuRoC-specific tracking parameters
         svo::Config::kltMaxLevel() = 4;
@@ -131,6 +132,7 @@ public:
           this, "triang_min_corner_score", svo::Config::triangMinCornerScore());
         nlevels =
           vk::getParam<int>(this, "n_pyr_levels", static_cast<int>(svo::Config::nPyrLevels()));
+        fast_type = vk::getParam<int>(this, "fast_type", svo::Config::fastType());
 
         // 将关键的鲁棒性参数从 ROS2 参数写回到 SVO 核心单例 Config。
         // 原因：SVO 核心算法使用 svo::Config::* 的静态单例；
@@ -169,15 +171,16 @@ public:
       svo::Config::maxFts() = static_cast<size_t>(maxfts);
       svo::Config::triangMinCornerScore() = tri;
       svo::Config::nPyrLevels() = static_cast<size_t>(nlevels);
+      svo::Config::fastType() = (fast_type == 10 || fast_type == 11 || fast_type == 12) ? fast_type : 12;
 
       // 打印最终生效的 SVO 核心配置（权威值）。
       // 用途：排查“yaml 改了但没生效 / 参数被覆盖 / 类型不匹配”等问题时非常关键。
       RCLCPP_INFO(
         this->get_logger(),
-        "SVO Config(final): grid=%zu max_fts=%zu pyr_levels=%zu tri_score=%.2f | reproj=%.2f poseopt=%.2f | "
+        "SVO Config(final): grid=%zu max_fts=%zu pyr_levels=%zu fast_type=%d tri_score=%.2f | reproj=%.2f poseopt=%.2f | "
         "quality_min=%zu quality_max_drop=%d | kf_min_dist=%.4f max_kfs=%zu map_scale=%.2f | "
         "klt_levels=[%zu..%zu] zmssd_factor=%.2f subpix_iter=%zu",
-        svo::Config::gridSize(), svo::Config::maxFts(), svo::Config::nPyrLevels(),
+        svo::Config::gridSize(), svo::Config::maxFts(), svo::Config::nPyrLevels(), svo::Config::fastType(),
         svo::Config::triangMinCornerScore(), svo::Config::reprojThresh(),
         svo::Config::poseOptimThresh(), svo::Config::qualityMinFts(),
         svo::Config::qualityMaxFtsDrop(), svo::Config::kfSelectMinDist(),

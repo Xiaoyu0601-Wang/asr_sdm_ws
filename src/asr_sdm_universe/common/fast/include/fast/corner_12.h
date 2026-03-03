@@ -29,60 +29,2116 @@ inline bool is_corner_12(const unsigned char* p, const int w, const int barrier)
     -1 + w * 3,
   };
 
-  // Logic extracted from libcvd's fast_12_detect.cxx
-  if (C::eval(*(p + pixel[8]), cb, c_b))
-    if (C::eval(*(p + pixel[0]), cb, c_b))
-      if (C::eval(*(p + pixel[3]), cb, c_b))
-        if (C::eval(*(p + pixel[6]), cb, c_b))
-          if (C::eval(*(p + pixel[2]), cb, c_b))
-            if (C::eval(*(p + pixel[14]), cb, c_b))
-              if (C::eval(*(p + 3), cb, c_b))
-                if (C::eval(*(p + pixel[5]), cb, c_b))
-                  if (C::eval(*(p + pixel[15]), cb, c_b))
-                    if (C::eval(*(p + pixel[7]), cb, c_b))
-                      if (C::eval(*(p + pixel[1]), cb, c_b))
-                        if (C::eval(*(p + pixel[9]), cb, c_b))
-                          return true;
-                        else if (C::eval(*(p + pixel[13]), cb, c_b))
-                          return true;
-                        else
-                          return false;
-                      else if (C::eval(*(p + pixel[1]), cb, c_b))
-                        return false;
-                      else if (C::eval(*(p + pixel[9]), cb, c_b))
-                        if (C::eval(*(p + pixel[10]), cb, c_b))
-                          if (C::eval(*(p + pixel[11]), cb, c_b))
-                            if (C::eval(*(p + -3), cb, c_b))
-                              if (C::eval(*(p + pixel[13]), cb, c_b))
-                                return true;
-                              else
-                                return false;
-                            else
-                              return false;
-                          else
-                            return false;
-                        else
-                          return false;
-                      else
-                        return false;
-                    else
-                      return false;
-                  else
-                    return false;
-                else
-                  return false;
-              else
-                return false;
-            else
-              return false;
-          else
-            return false;
-        else
-          return false;
-      else
-        return false;
-    else
-      return false;
+
+			if(*(p + pixel[8]) > cb)
+				if(*(p + pixel[0]) > cb)
+					if(*(p + pixel[3]) > cb)
+						if(*(p + pixel[6]) > cb)
+							if(*(p + pixel[2]) > cb)
+								if(*(p + pixel[14]) > cb)
+									if(*(p + 3) > cb)
+										if(*(p + pixel[5]) > cb)
+											if(*(p + pixel[15]) > cb)
+												if(*(p + pixel[7]) > cb)
+													if(*(p + pixel[1]) > cb)
+														if(*(p + pixel[9]) > cb)
+															return true;
+														else if(*(p + pixel[13]) > cb)
+															return true;
+														else
+															return false;
+													else if(*(p + pixel[1]) < c_b)
+														if(*(p + pixel[9]) > cb)
+															if(*(p + pixel[10]) > cb)
+																if(*(p + pixel[11]) > cb)
+																	if(*(p + -3) > cb)
+																		if(*(p + pixel[13]) > cb)
+																			return true;
+																		else
+																			return false;
+																	else
+																		return false;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else if(*(p + pixel[11]) > cb)
+														if(*(p + pixel[10]) > cb)
+															if(*(p + -3) > cb)
+																if(*(p + pixel[13]) > cb)
+																	if(*(p + pixel[9]) > cb)
+																		return true;
+																	else
+																		return false;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else if(*(p + pixel[7]) < c_b)
+													if(*(p + pixel[1]) > cb)
+														if(*(p + pixel[11]) > cb)
+															if(*(p + -3) > cb)
+																if(*(p + pixel[13]) > cb)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else if(*(p + pixel[11]) > cb)
+													if(*(p + pixel[13]) > cb)
+														if(*(p + pixel[1]) > cb)
+															if(*(p + -3) > cb)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else if(*(p + pixel[15]) < c_b)
+												if(*(p + pixel[7]) > cb)
+													if(*(p + pixel[9]) > cb)
+														if(*(p + pixel[10]) > cb)
+															if(*(p + pixel[11]) > cb)
+																if(*(p + pixel[1]) > cb)
+																	return true;
+																else if(*(p + -3) > cb)
+																	if(*(p + pixel[13]) > cb)
+																		return true;
+																	else
+																		return false;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else if(*(p + pixel[10]) > cb)
+												if(*(p + pixel[11]) > cb)
+													if(*(p + pixel[7]) > cb)
+														if(*(p + pixel[9]) > cb)
+															if(*(p + pixel[1]) > cb)
+																return true;
+															else if(*(p + -3) > cb)
+																if(*(p + pixel[13]) > cb)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else if(*(p + pixel[5]) < c_b)
+											if(*(p + pixel[1]) > cb)
+												if(*(p + pixel[9]) > cb)
+													if(*(p + pixel[10]) > cb)
+														if(*(p + pixel[11]) > cb)
+															if(*(p + -3) > cb)
+																if(*(p + pixel[13]) > cb)
+																	if(*(p + pixel[15]) > cb)
+																		return true;
+																	else
+																		return false;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else if(*(p + pixel[11]) > cb)
+											if(*(p + pixel[9]) > cb)
+												if(*(p + pixel[15]) > cb)
+													if(*(p + pixel[10]) > cb)
+														if(*(p + pixel[13]) > cb)
+															if(*(p + pixel[1]) > cb)
+																if(*(p + -3) > cb)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else if(*(p + 3) < c_b)
+										if(*(p + pixel[9]) > cb)
+											if(*(p + pixel[10]) > cb)
+												if(*(p + pixel[11]) > cb)
+													if(*(p + -3) > cb)
+														if(*(p + pixel[13]) > cb)
+															if(*(p + pixel[15]) > cb)
+																if(*(p + pixel[1]) > cb)
+																	return true;
+																else if(*(p + pixel[5]) > cb)
+																	if(*(p + pixel[7]) > cb)
+																		return true;
+																	else
+																		return false;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else if(*(p + -3) > cb)
+										if(*(p + pixel[10]) > cb)
+											if(*(p + pixel[11]) > cb)
+												if(*(p + pixel[13]) > cb)
+													if(*(p + pixel[15]) > cb)
+														if(*(p + pixel[9]) > cb)
+															if(*(p + pixel[1]) > cb)
+																return true;
+															else if(*(p + pixel[5]) > cb)
+																if(*(p + pixel[7]) > cb)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else if(*(p + pixel[14]) < c_b)
+									if(*(p + pixel[9]) > cb)
+										if(*(p + 3) > cb)
+											if(*(p + pixel[5]) > cb)
+												if(*(p + pixel[7]) > cb)
+													if(*(p + pixel[10]) > cb)
+														if(*(p + pixel[1]) > cb)
+															if(*(p + pixel[11]) > cb)
+																return true;
+															else if(*(p + pixel[15]) > cb)
+																return true;
+															else
+																return false;
+														else if(*(p + pixel[11]) > cb)
+															if(*(p + -3) > cb)
+																if(*(p + pixel[13]) > cb)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else if(*(p + pixel[10]) > cb)
+									if(*(p + pixel[5]) > cb)
+										if(*(p + pixel[7]) > cb)
+											if(*(p + pixel[15]) > cb)
+												if(*(p + 3) > cb)
+													if(*(p + pixel[1]) > cb)
+														if(*(p + pixel[9]) > cb)
+															return true;
+														else
+															return false;
+													else if(*(p + pixel[1]) < c_b)
+														if(*(p + pixel[9]) > cb)
+															if(*(p + pixel[11]) > cb)
+																if(*(p + -3) > cb)
+																	if(*(p + pixel[13]) > cb)
+																		return true;
+																	else
+																		return false;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else if(*(p + pixel[11]) > cb)
+														if(*(p + pixel[13]) > cb)
+															if(*(p + -3) > cb)
+																if(*(p + pixel[9]) > cb)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else if(*(p + pixel[15]) < c_b)
+												if(*(p + 3) > cb)
+													if(*(p + pixel[9]) > cb)
+														if(*(p + pixel[11]) > cb)
+															if(*(p + pixel[1]) > cb)
+																return true;
+															else if(*(p + -3) > cb)
+																if(*(p + pixel[13]) > cb)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else if(*(p + pixel[11]) > cb)
+												if(*(p + 3) > cb)
+													if(*(p + pixel[9]) > cb)
+														if(*(p + pixel[1]) > cb)
+															return true;
+														else if(*(p + pixel[1]) < c_b)
+															if(*(p + -3) > cb)
+																if(*(p + pixel[13]) > cb)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else if(*(p + pixel[13]) > cb)
+															if(*(p + -3) > cb)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else
+									return false;
+							else if(*(p + pixel[2]) < c_b)
+								if(*(p + pixel[11]) > cb)
+									if(*(p + pixel[7]) > cb)
+										if(*(p + pixel[9]) > cb)
+											if(*(p + pixel[10]) > cb)
+												if(*(p + -3) > cb)
+													if(*(p + pixel[13]) > cb)
+														if(*(p + pixel[14]) > cb)
+															if(*(p + pixel[15]) > cb)
+																if(*(p + pixel[5]) > cb)
+																	return true;
+																else if(*(p + pixel[1]) > cb)
+																	return true;
+																else
+																	return false;
+															else if(*(p + 3) > cb)
+																if(*(p + pixel[5]) > cb)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else
+									return false;
+							else if(*(p + pixel[11]) > cb)
+								if(*(p + pixel[10]) > cb)
+									if(*(p + pixel[13]) > cb)
+										if(*(p + pixel[14]) > cb)
+											if(*(p + pixel[9]) > cb)
+												if(*(p + -3) > cb)
+													if(*(p + pixel[7]) > cb)
+														if(*(p + pixel[5]) > cb)
+															if(*(p + 3) > cb)
+																return true;
+															else if(*(p + pixel[15]) > cb)
+																return true;
+															else
+																return false;
+														else if(*(p + pixel[1]) > cb)
+															if(*(p + pixel[15]) > cb)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else
+									return false;
+							else
+								return false;
+						else if(*(p + pixel[6]) < c_b)
+							if(*(p + pixel[13]) > cb)
+								if(*(p + pixel[2]) > cb)
+									if(*(p + pixel[1]) > cb)
+										if(*(p + pixel[10]) > cb)
+											if(*(p + pixel[11]) > cb)
+												if(*(p + -3) > cb)
+													if(*(p + pixel[14]) > cb)
+														if(*(p + pixel[15]) > cb)
+															if(*(p + pixel[9]) > cb)
+																return true;
+															else if(*(p + 3) > cb)
+																if(*(p + pixel[5]) > cb)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else
+									return false;
+							else
+								return false;
+						else if(*(p + -3) > cb)
+							if(*(p + pixel[14]) > cb)
+								if(*(p + pixel[2]) > cb)
+									if(*(p + pixel[10]) > cb)
+										if(*(p + pixel[15]) > cb)
+											if(*(p + pixel[1]) > cb)
+												if(*(p + pixel[11]) > cb)
+													if(*(p + pixel[9]) > cb)
+														if(*(p + pixel[13]) > cb)
+															return true;
+														else
+															return false;
+													else if(*(p + pixel[9]) < c_b)
+														if(*(p + 3) > cb)
+															if(*(p + pixel[5]) > cb)
+																if(*(p + pixel[13]) > cb)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else if(*(p + pixel[5]) > cb)
+														if(*(p + pixel[13]) > cb)
+															if(*(p + 3) > cb)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else
+									return false;
+							else
+								return false;
+						else
+							return false;
+					else if(*(p + pixel[3]) < c_b)
+						if(*(p + pixel[14]) > cb)
+							if(*(p + pixel[7]) > cb)
+								if(*(p + pixel[11]) > cb)
+									if(*(p + -3) > cb)
+										if(*(p + pixel[9]) > cb)
+											if(*(p + pixel[10]) > cb)
+												if(*(p + pixel[13]) > cb)
+													if(*(p + pixel[1]) > cb)
+														if(*(p + pixel[15]) > cb)
+															if(*(p + pixel[6]) > cb)
+																return true;
+															else if(*(p + pixel[2]) > cb)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else if(*(p + pixel[5]) > cb)
+														if(*(p + pixel[6]) > cb)
+															if(*(p + pixel[15]) > cb)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else
+									return false;
+							else
+								return false;
+						else
+							return false;
+					else if(*(p + -3) > cb)
+						if(*(p + pixel[10]) > cb)
+							if(*(p + pixel[14]) > cb)
+								if(*(p + pixel[7]) > cb)
+									if(*(p + pixel[11]) > cb)
+										if(*(p + pixel[1]) > cb)
+											if(*(p + pixel[15]) > cb)
+												if(*(p + pixel[13]) > cb)
+													if(*(p + pixel[6]) > cb)
+														if(*(p + pixel[9]) > cb)
+															return true;
+														else
+															return false;
+													else if(*(p + pixel[2]) > cb)
+														if(*(p + pixel[9]) > cb)
+															return true;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else if(*(p + pixel[1]) < c_b)
+											if(*(p + pixel[5]) > cb)
+												if(*(p + pixel[6]) > cb)
+													if(*(p + pixel[9]) > cb)
+														if(*(p + pixel[13]) > cb)
+															if(*(p + pixel[15]) > cb)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else if(*(p + pixel[5]) > cb)
+											if(*(p + pixel[15]) > cb)
+												if(*(p + pixel[6]) > cb)
+													if(*(p + pixel[9]) > cb)
+														if(*(p + pixel[13]) > cb)
+															return true;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else
+									return false;
+							else
+								return false;
+						else
+							return false;
+					else
+						return false;
+				else if(*(p + pixel[0]) < c_b)
+					if(*(p + 3) > cb)
+						if(*(p + -3) > cb)
+							if(*(p + pixel[11]) > cb)
+								if(*(p + pixel[7]) > cb)
+									if(*(p + pixel[9]) > cb)
+										if(*(p + pixel[5]) > cb)
+											if(*(p + pixel[6]) > cb)
+												if(*(p + pixel[10]) > cb)
+													if(*(p + pixel[13]) > cb)
+														if(*(p + pixel[3]) > cb)
+															if(*(p + pixel[2]) > cb)
+																return true;
+															else if(*(p + pixel[14]) > cb)
+																return true;
+															else
+																return false;
+														else if(*(p + pixel[14]) > cb)
+															if(*(p + pixel[15]) > cb)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else if(*(p + pixel[1]) > cb)
+														if(*(p + pixel[2]) > cb)
+															if(*(p + pixel[3]) > cb)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else
+									return false;
+							else
+								return false;
+						else
+							return false;
+					else if(*(p + 3) < c_b)
+						if(*(p + -3) < c_b)
+							if(*(p + pixel[2]) < c_b)
+								if(*(p + pixel[14]) < c_b)
+									if(*(p + pixel[11]) > cb)
+										if(*(p + pixel[6]) < c_b)
+											if(*(p + pixel[1]) < c_b)
+												if(*(p + pixel[3]) < c_b)
+													if(*(p + pixel[5]) < c_b)
+														if(*(p + pixel[7]) < c_b)
+															if(*(p + pixel[13]) < c_b)
+																if(*(p + pixel[15]) < c_b)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else if(*(p + pixel[11]) < c_b)
+										if(*(p + pixel[5]) > cb)
+											if(*(p + pixel[1]) < c_b)
+												if(*(p + pixel[3]) < c_b)
+													if(*(p + pixel[9]) < c_b)
+														if(*(p + pixel[10]) < c_b)
+															if(*(p + pixel[13]) < c_b)
+																if(*(p + pixel[15]) < c_b)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else if(*(p + pixel[5]) < c_b)
+											if(*(p + pixel[3]) < c_b)
+												if(*(p + pixel[15]) < c_b)
+													if(*(p + pixel[7]) > cb)
+														if(*(p + pixel[10]) > cb)
+															if(*(p + pixel[1]) < c_b)
+																if(*(p + pixel[6]) < c_b)
+																	if(*(p + pixel[13]) < c_b)
+																		return true;
+																	else
+																		return false;
+																else
+																	return false;
+															else
+																return false;
+														else if(*(p + pixel[10]) < c_b)
+															if(*(p + pixel[1]) < c_b)
+																if(*(p + pixel[13]) < c_b)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else if(*(p + pixel[6]) < c_b)
+															if(*(p + pixel[1]) < c_b)
+																if(*(p + pixel[13]) < c_b)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else if(*(p + pixel[7]) < c_b)
+														if(*(p + pixel[1]) < c_b)
+															if(*(p + pixel[13]) < c_b)
+																if(*(p + pixel[10]) < c_b)
+																	return true;
+																else if(*(p + pixel[6]) < c_b)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else if(*(p + pixel[9]) > cb)
+														if(*(p + pixel[6]) > cb)
+															if(*(p + pixel[10]) < c_b)
+																if(*(p + pixel[1]) < c_b)
+																	if(*(p + pixel[13]) < c_b)
+																		return true;
+																	else
+																		return false;
+																else
+																	return false;
+															else
+																return false;
+														else if(*(p + pixel[6]) < c_b)
+															if(*(p + pixel[1]) < c_b)
+																if(*(p + pixel[13]) < c_b)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else if(*(p + pixel[1]) < c_b)
+															if(*(p + pixel[10]) < c_b)
+																if(*(p + pixel[13]) < c_b)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else if(*(p + pixel[9]) < c_b)
+														if(*(p + pixel[1]) < c_b)
+															if(*(p + pixel[13]) < c_b)
+																if(*(p + pixel[10]) < c_b)
+																	return true;
+																else if(*(p + pixel[6]) < c_b)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else if(*(p + pixel[1]) < c_b)
+														if(*(p + pixel[13]) < c_b)
+															if(*(p + pixel[6]) < c_b)
+																return true;
+															else if(*(p + pixel[10]) < c_b)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else if(*(p + pixel[9]) < c_b)
+											if(*(p + pixel[1]) < c_b)
+												if(*(p + pixel[3]) < c_b)
+													if(*(p + pixel[10]) < c_b)
+														if(*(p + pixel[13]) < c_b)
+															if(*(p + pixel[15]) < c_b)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else if(*(p + pixel[7]) < c_b)
+										if(*(p + pixel[1]) < c_b)
+											if(*(p + pixel[3]) < c_b)
+												if(*(p + pixel[5]) < c_b)
+													if(*(p + pixel[6]) < c_b)
+														if(*(p + pixel[13]) < c_b)
+															if(*(p + pixel[15]) < c_b)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else
+									return false;
+							else
+								return false;
+						else
+							return false;
+					else
+						return false;
+				else if(*(p + -3) > cb)
+					if(*(p + 3) > cb)
+						if(*(p + pixel[6]) > cb)
+							if(*(p + pixel[10]) > cb)
+								if(*(p + pixel[3]) > cb)
+									if(*(p + pixel[11]) > cb)
+										if(*(p + pixel[7]) > cb)
+											if(*(p + pixel[5]) > cb)
+												if(*(p + pixel[9]) > cb)
+													if(*(p + pixel[14]) > cb)
+														if(*(p + pixel[13]) > cb)
+															return true;
+														else if(*(p + pixel[1]) > cb)
+															if(*(p + pixel[2]) > cb)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else if(*(p + pixel[2]) > cb)
+														if(*(p + pixel[13]) > cb)
+															return true;
+														else if(*(p + pixel[1]) > cb)
+															return true;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else if(*(p + pixel[3]) < c_b)
+									if(*(p + pixel[5]) > cb)
+										if(*(p + pixel[7]) > cb)
+											if(*(p + pixel[9]) > cb)
+												if(*(p + pixel[11]) > cb)
+													if(*(p + pixel[13]) > cb)
+														if(*(p + pixel[14]) > cb)
+															if(*(p + pixel[15]) > cb)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else if(*(p + pixel[15]) > cb)
+									if(*(p + pixel[14]) > cb)
+										if(*(p + pixel[9]) > cb)
+											if(*(p + pixel[11]) > cb)
+												if(*(p + pixel[5]) > cb)
+													if(*(p + pixel[7]) > cb)
+														if(*(p + pixel[13]) > cb)
+															return true;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else
+									return false;
+							else
+								return false;
+						else
+							return false;
+					else
+						return false;
+				else
+					return false;
+			else if(*(p + pixel[8]) < c_b)
+				if(*(p + pixel[0]) > cb)
+					if(*(p + -3) > cb)
+						if(*(p + 3) > cb)
+							if(*(p + pixel[14]) > cb)
+								if(*(p + pixel[2]) > cb)
+									if(*(p + pixel[1]) > cb)
+										if(*(p + pixel[3]) > cb)
+											if(*(p + pixel[13]) > cb)
+												if(*(p + pixel[15]) > cb)
+													if(*(p + pixel[5]) > cb)
+														if(*(p + pixel[6]) > cb)
+															if(*(p + pixel[7]) > cb)
+																return true;
+															else if(*(p + pixel[11]) > cb)
+																return true;
+															else
+																return false;
+														else if(*(p + pixel[10]) > cb)
+															if(*(p + pixel[11]) > cb)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else if(*(p + pixel[9]) > cb)
+														if(*(p + pixel[10]) > cb)
+															if(*(p + pixel[11]) > cb)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else
+									return false;
+							else
+								return false;
+						else
+							return false;
+					else if(*(p + -3) < c_b)
+						if(*(p + 3) < c_b)
+							if(*(p + pixel[10]) < c_b)
+								if(*(p + pixel[6]) < c_b)
+									if(*(p + pixel[2]) > cb)
+										if(*(p + pixel[14]) < c_b)
+											if(*(p + pixel[5]) < c_b)
+												if(*(p + pixel[7]) < c_b)
+													if(*(p + pixel[9]) < c_b)
+														if(*(p + pixel[11]) < c_b)
+															if(*(p + pixel[13]) < c_b)
+																if(*(p + pixel[15]) < c_b)
+																	return true;
+																else if(*(p + pixel[3]) < c_b)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else if(*(p + pixel[2]) < c_b)
+										if(*(p + pixel[11]) < c_b)
+											if(*(p + pixel[13]) < c_b)
+												if(*(p + pixel[5]) < c_b)
+													if(*(p + pixel[7]) < c_b)
+														if(*(p + pixel[9]) < c_b)
+															if(*(p + pixel[3]) < c_b)
+																return true;
+															else if(*(p + pixel[14]) < c_b)
+																if(*(p + pixel[15]) < c_b)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else if(*(p + pixel[1]) < c_b)
+												if(*(p + pixel[3]) < c_b)
+													if(*(p + pixel[5]) < c_b)
+														if(*(p + pixel[7]) < c_b)
+															if(*(p + pixel[9]) < c_b)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else if(*(p + pixel[14]) < c_b)
+										if(*(p + pixel[13]) < c_b)
+											if(*(p + pixel[7]) < c_b)
+												if(*(p + pixel[3]) > cb)
+													if(*(p + pixel[5]) < c_b)
+														if(*(p + pixel[9]) < c_b)
+															if(*(p + pixel[11]) < c_b)
+																if(*(p + pixel[15]) < c_b)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else if(*(p + pixel[3]) < c_b)
+													if(*(p + pixel[5]) < c_b)
+														if(*(p + pixel[9]) < c_b)
+															if(*(p + pixel[11]) < c_b)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else if(*(p + pixel[15]) < c_b)
+													if(*(p + pixel[5]) < c_b)
+														if(*(p + pixel[9]) < c_b)
+															if(*(p + pixel[11]) < c_b)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else
+									return false;
+							else
+								return false;
+						else
+							return false;
+					else
+						return false;
+				else if(*(p + pixel[0]) < c_b)
+					if(*(p + pixel[3]) > cb)
+						if(*(p + -3) < c_b)
+							if(*(p + pixel[7]) < c_b)
+								if(*(p + pixel[14]) < c_b)
+									if(*(p + pixel[10]) < c_b)
+										if(*(p + pixel[6]) > cb)
+											if(*(p + pixel[2]) < c_b)
+												if(*(p + pixel[1]) < c_b)
+													if(*(p + pixel[9]) < c_b)
+														if(*(p + pixel[11]) < c_b)
+															if(*(p + pixel[13]) < c_b)
+																if(*(p + pixel[15]) < c_b)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else if(*(p + pixel[6]) < c_b)
+											if(*(p + pixel[13]) < c_b)
+												if(*(p + pixel[15]) < c_b)
+													if(*(p + pixel[9]) < c_b)
+														if(*(p + pixel[11]) < c_b)
+															if(*(p + pixel[1]) < c_b)
+																return true;
+															else if(*(p + pixel[5]) < c_b)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else if(*(p + pixel[2]) < c_b)
+											if(*(p + pixel[13]) < c_b)
+												if(*(p + pixel[15]) < c_b)
+													if(*(p + pixel[1]) < c_b)
+														if(*(p + pixel[9]) < c_b)
+															if(*(p + pixel[11]) < c_b)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else
+									return false;
+							else
+								return false;
+						else
+							return false;
+					else if(*(p + pixel[3]) < c_b)
+						if(*(p + pixel[10]) > cb)
+							if(*(p + pixel[14]) < c_b)
+								if(*(p + pixel[5]) < c_b)
+									if(*(p + pixel[1]) < c_b)
+										if(*(p + pixel[2]) < c_b)
+											if(*(p + 3) < c_b)
+												if(*(p + pixel[6]) < c_b)
+													if(*(p + pixel[15]) < c_b)
+														if(*(p + -3) < c_b)
+															if(*(p + pixel[13]) < c_b)
+																if(*(p + pixel[11]) < c_b)
+																	return true;
+																else if(*(p + pixel[7]) < c_b)
+																	return true;
+																else
+																	return false;
+															else if(*(p + pixel[7]) < c_b)
+																if(*(p + pixel[9]) < c_b)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else if(*(p + pixel[9]) > cb)
+															if(*(p + pixel[7]) < c_b)
+																if(*(p + pixel[13]) < c_b)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else if(*(p + pixel[9]) < c_b)
+															if(*(p + pixel[7]) < c_b)
+																return true;
+															else
+																return false;
+														else if(*(p + pixel[13]) < c_b)
+															if(*(p + pixel[7]) < c_b)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else
+									return false;
+							else
+								return false;
+						else if(*(p + pixel[10]) < c_b)
+							if(*(p + pixel[5]) > cb)
+								if(*(p + pixel[14]) < c_b)
+									if(*(p + pixel[15]) < c_b)
+										if(*(p + pixel[11]) < c_b)
+											if(*(p + pixel[9]) < c_b)
+												if(*(p + pixel[2]) > cb)
+													if(*(p + pixel[1]) < c_b)
+														if(*(p + pixel[6]) < c_b)
+															if(*(p + pixel[7]) < c_b)
+																if(*(p + -3) < c_b)
+																	if(*(p + pixel[13]) < c_b)
+																		return true;
+																	else
+																		return false;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else if(*(p + pixel[2]) < c_b)
+													if(*(p + pixel[1]) < c_b)
+														if(*(p + -3) < c_b)
+															if(*(p + pixel[13]) < c_b)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else if(*(p + pixel[7]) < c_b)
+													if(*(p + pixel[1]) < c_b)
+														if(*(p + pixel[6]) < c_b)
+															if(*(p + -3) < c_b)
+																if(*(p + pixel[13]) < c_b)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else
+									return false;
+							else if(*(p + pixel[5]) < c_b)
+								if(*(p + pixel[2]) > cb)
+									if(*(p + pixel[11]) < c_b)
+										if(*(p + pixel[6]) < c_b)
+											if(*(p + pixel[7]) < c_b)
+												if(*(p + pixel[9]) < c_b)
+													if(*(p + -3) < c_b)
+														if(*(p + pixel[13]) < c_b)
+															if(*(p + pixel[14]) < c_b)
+																if(*(p + pixel[15]) < c_b)
+																	return true;
+																else if(*(p + 3) < c_b)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else if(*(p + pixel[2]) < c_b)
+									if(*(p + pixel[6]) > cb)
+										if(*(p + pixel[11]) < c_b)
+											if(*(p + pixel[1]) < c_b)
+												if(*(p + -3) < c_b)
+													if(*(p + pixel[13]) < c_b)
+														if(*(p + pixel[14]) < c_b)
+															if(*(p + pixel[15]) < c_b)
+																if(*(p + pixel[9]) < c_b)
+																	return true;
+																else if(*(p + 3) < c_b)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else if(*(p + pixel[6]) < c_b)
+										if(*(p + 3) > cb)
+											if(*(p + pixel[9]) < c_b)
+												if(*(p + pixel[11]) < c_b)
+													if(*(p + -3) < c_b)
+														if(*(p + pixel[13]) < c_b)
+															if(*(p + pixel[14]) < c_b)
+																if(*(p + pixel[15]) < c_b)
+																	if(*(p + pixel[7]) < c_b)
+																		return true;
+																	else if(*(p + pixel[1]) < c_b)
+																		return true;
+																	else
+																		return false;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else if(*(p + 3) < c_b)
+											if(*(p + pixel[15]) > cb)
+												if(*(p + pixel[7]) < c_b)
+													if(*(p + pixel[9]) < c_b)
+														if(*(p + pixel[11]) < c_b)
+															if(*(p + pixel[1]) < c_b)
+																return true;
+															else if(*(p + -3) < c_b)
+																if(*(p + pixel[13]) < c_b)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else if(*(p + pixel[15]) < c_b)
+												if(*(p + pixel[1]) > cb)
+													if(*(p + pixel[7]) < c_b)
+														if(*(p + pixel[9]) < c_b)
+															if(*(p + pixel[11]) < c_b)
+																if(*(p + -3) < c_b)
+																	if(*(p + pixel[13]) < c_b)
+																		return true;
+																	else
+																		return false;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else if(*(p + pixel[1]) < c_b)
+													if(*(p + pixel[7]) > cb)
+														if(*(p + pixel[11]) < c_b)
+															if(*(p + -3) < c_b)
+																if(*(p + pixel[13]) < c_b)
+																	if(*(p + pixel[14]) < c_b)
+																		return true;
+																	else
+																		return false;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else if(*(p + pixel[7]) < c_b)
+														if(*(p + pixel[9]) < c_b)
+															return true;
+														else if(*(p + pixel[13]) < c_b)
+															if(*(p + pixel[14]) < c_b)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else if(*(p + -3) < c_b)
+														if(*(p + pixel[14]) < c_b)
+															if(*(p + pixel[11]) < c_b)
+																if(*(p + pixel[13]) < c_b)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else if(*(p + -3) < c_b)
+													if(*(p + pixel[13]) < c_b)
+														if(*(p + pixel[7]) < c_b)
+															if(*(p + pixel[9]) < c_b)
+																if(*(p + pixel[11]) < c_b)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else if(*(p + pixel[11]) < c_b)
+												if(*(p + pixel[7]) < c_b)
+													if(*(p + pixel[9]) < c_b)
+														if(*(p + pixel[1]) > cb)
+															if(*(p + -3) < c_b)
+																if(*(p + pixel[13]) < c_b)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else if(*(p + pixel[1]) < c_b)
+															return true;
+														else if(*(p + pixel[13]) < c_b)
+															if(*(p + -3) < c_b)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else if(*(p + -3) < c_b)
+											if(*(p + pixel[14]) < c_b)
+												if(*(p + pixel[11]) < c_b)
+													if(*(p + pixel[13]) < c_b)
+														if(*(p + pixel[15]) < c_b)
+															if(*(p + pixel[9]) < c_b)
+																if(*(p + pixel[1]) < c_b)
+																	return true;
+																else if(*(p + pixel[7]) < c_b)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else if(*(p + pixel[14]) < c_b)
+										if(*(p + -3) < c_b)
+											if(*(p + pixel[15]) < c_b)
+												if(*(p + pixel[11]) < c_b)
+													if(*(p + pixel[13]) < c_b)
+														if(*(p + pixel[1]) < c_b)
+															if(*(p + pixel[9]) < c_b)
+																return true;
+															else if(*(p + 3) < c_b)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else if(*(p + -3) < c_b)
+									if(*(p + pixel[14]) < c_b)
+										if(*(p + pixel[6]) < c_b)
+											if(*(p + pixel[11]) < c_b)
+												if(*(p + pixel[13]) < c_b)
+													if(*(p + pixel[7]) < c_b)
+														if(*(p + pixel[9]) < c_b)
+															if(*(p + pixel[15]) < c_b)
+																return true;
+															else if(*(p + 3) < c_b)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else
+									return false;
+							else if(*(p + -3) < c_b)
+								if(*(p + pixel[14]) < c_b)
+									if(*(p + pixel[1]) < c_b)
+										if(*(p + pixel[11]) < c_b)
+											if(*(p + pixel[13]) < c_b)
+												if(*(p + pixel[15]) < c_b)
+													if(*(p + pixel[9]) < c_b)
+														if(*(p + pixel[2]) < c_b)
+															return true;
+														else if(*(p + pixel[6]) < c_b)
+															if(*(p + pixel[7]) < c_b)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else
+									return false;
+							else
+								return false;
+						else if(*(p + pixel[14]) < c_b)
+							if(*(p + pixel[6]) < c_b)
+								if(*(p + pixel[2]) < c_b)
+									if(*(p + 3) < c_b)
+										if(*(p + pixel[15]) < c_b)
+											if(*(p + pixel[5]) < c_b)
+												if(*(p + pixel[1]) < c_b)
+													if(*(p + pixel[7]) < c_b)
+														if(*(p + pixel[9]) < c_b)
+															return true;
+														else if(*(p + pixel[13]) < c_b)
+															return true;
+														else
+															return false;
+													else if(*(p + pixel[11]) < c_b)
+														if(*(p + -3) < c_b)
+															if(*(p + pixel[13]) < c_b)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else
+									return false;
+							else
+								return false;
+						else
+							return false;
+					else if(*(p + -3) < c_b)
+						if(*(p + pixel[10]) < c_b)
+							if(*(p + pixel[7]) < c_b)
+								if(*(p + pixel[14]) < c_b)
+									if(*(p + pixel[11]) < c_b)
+										if(*(p + pixel[6]) > cb)
+											if(*(p + pixel[2]) < c_b)
+												if(*(p + pixel[1]) < c_b)
+													if(*(p + pixel[9]) < c_b)
+														if(*(p + pixel[13]) < c_b)
+															if(*(p + pixel[15]) < c_b)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else if(*(p + pixel[6]) < c_b)
+											if(*(p + pixel[13]) < c_b)
+												if(*(p + pixel[15]) < c_b)
+													if(*(p + pixel[9]) < c_b)
+														if(*(p + pixel[1]) < c_b)
+															return true;
+														else if(*(p + pixel[5]) < c_b)
+															return true;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else if(*(p + pixel[2]) < c_b)
+											if(*(p + pixel[9]) < c_b)
+												if(*(p + pixel[1]) < c_b)
+													if(*(p + pixel[13]) < c_b)
+														if(*(p + pixel[15]) < c_b)
+															return true;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else
+									return false;
+							else
+								return false;
+						else
+							return false;
+					else
+						return false;
+				else if(*(p + -3) < c_b)
+					if(*(p + 3) < c_b)
+						if(*(p + pixel[6]) < c_b)
+							if(*(p + pixel[10]) < c_b)
+								if(*(p + pixel[2]) > cb)
+									if(*(p + pixel[14]) < c_b)
+										if(*(p + pixel[13]) < c_b)
+											if(*(p + pixel[5]) < c_b)
+												if(*(p + pixel[7]) < c_b)
+													if(*(p + pixel[3]) > cb)
+														if(*(p + pixel[9]) < c_b)
+															if(*(p + pixel[11]) < c_b)
+																if(*(p + pixel[15]) < c_b)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else
+															return false;
+													else if(*(p + pixel[3]) < c_b)
+														if(*(p + pixel[9]) < c_b)
+															if(*(p + pixel[11]) < c_b)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else if(*(p + pixel[15]) < c_b)
+														if(*(p + pixel[9]) < c_b)
+															if(*(p + pixel[11]) < c_b)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else if(*(p + pixel[2]) < c_b)
+									if(*(p + pixel[11]) < c_b)
+										if(*(p + pixel[7]) < c_b)
+											if(*(p + pixel[5]) < c_b)
+												if(*(p + pixel[9]) < c_b)
+													if(*(p + pixel[13]) < c_b)
+														if(*(p + pixel[3]) > cb)
+															if(*(p + pixel[14]) < c_b)
+																if(*(p + pixel[15]) < c_b)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else if(*(p + pixel[3]) < c_b)
+															return true;
+														else if(*(p + pixel[15]) < c_b)
+															if(*(p + pixel[14]) < c_b)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else if(*(p + pixel[1]) < c_b)
+														if(*(p + pixel[3]) < c_b)
+															return true;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else if(*(p + pixel[14]) < c_b)
+									if(*(p + pixel[13]) < c_b)
+										if(*(p + pixel[5]) < c_b)
+											if(*(p + pixel[3]) > cb)
+												if(*(p + pixel[7]) < c_b)
+													if(*(p + pixel[9]) < c_b)
+														if(*(p + pixel[11]) < c_b)
+															if(*(p + pixel[15]) < c_b)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else if(*(p + pixel[3]) < c_b)
+												if(*(p + pixel[11]) < c_b)
+													if(*(p + pixel[7]) < c_b)
+														if(*(p + pixel[9]) < c_b)
+															return true;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else if(*(p + pixel[15]) < c_b)
+												if(*(p + pixel[9]) < c_b)
+													if(*(p + pixel[7]) < c_b)
+														if(*(p + pixel[11]) < c_b)
+															return true;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else
+									return false;
+							else
+								return false;
+						else
+							return false;
+					else
+						return false;
+				else
+					return false;
+			else if(*(p + pixel[0]) > cb)
+				if(*(p + 3) > cb)
+					if(*(p + -3) > cb)
+						if(*(p + pixel[14]) > cb)
+							if(*(p + pixel[2]) > cb)
+								if(*(p + pixel[10]) > cb)
+									if(*(p + pixel[15]) > cb)
+										if(*(p + pixel[5]) > cb)
+											if(*(p + pixel[3]) > cb)
+												if(*(p + pixel[1]) > cb)
+													if(*(p + pixel[13]) > cb)
+														if(*(p + pixel[11]) > cb)
+															return true;
+														else if(*(p + pixel[11]) < c_b)
+															if(*(p + pixel[6]) > cb)
+																if(*(p + pixel[7]) > cb)
+																	return true;
+																else
+																	return false;
+															else
+																return false;
+														else if(*(p + pixel[7]) > cb)
+															if(*(p + pixel[6]) > cb)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else if(*(p + pixel[5]) < c_b)
+											if(*(p + pixel[1]) > cb)
+												if(*(p + pixel[3]) > cb)
+													if(*(p + pixel[9]) > cb)
+														if(*(p + pixel[11]) > cb)
+															if(*(p + pixel[13]) > cb)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else if(*(p + pixel[9]) > cb)
+											if(*(p + pixel[13]) > cb)
+												if(*(p + pixel[11]) > cb)
+													if(*(p + pixel[1]) > cb)
+														if(*(p + pixel[3]) > cb)
+															return true;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else if(*(p + pixel[10]) < c_b)
+									if(*(p + pixel[1]) > cb)
+										if(*(p + pixel[3]) > cb)
+											if(*(p + pixel[5]) > cb)
+												if(*(p + pixel[6]) > cb)
+													if(*(p + pixel[13]) > cb)
+														if(*(p + pixel[15]) > cb)
+															if(*(p + pixel[11]) > cb)
+																return true;
+															else if(*(p + pixel[7]) > cb)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else if(*(p + pixel[6]) > cb)
+									if(*(p + pixel[15]) > cb)
+										if(*(p + pixel[3]) > cb)
+											if(*(p + pixel[7]) > cb)
+												if(*(p + pixel[5]) > cb)
+													if(*(p + pixel[1]) > cb)
+														if(*(p + pixel[13]) > cb)
+															return true;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else if(*(p + pixel[7]) < c_b)
+												if(*(p + pixel[1]) > cb)
+													if(*(p + pixel[5]) > cb)
+														if(*(p + pixel[11]) > cb)
+															if(*(p + pixel[13]) > cb)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else if(*(p + pixel[11]) > cb)
+												if(*(p + pixel[13]) > cb)
+													if(*(p + pixel[1]) > cb)
+														if(*(p + pixel[5]) > cb)
+															return true;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else
+									return false;
+							else
+								return false;
+						else
+							return false;
+					else
+						return false;
+				else
+					return false;
+			else if(*(p + pixel[0]) < c_b)
+				if(*(p + 3) < c_b)
+					if(*(p + -3) < c_b)
+						if(*(p + pixel[14]) < c_b)
+							if(*(p + pixel[2]) < c_b)
+								if(*(p + pixel[11]) > cb)
+									if(*(p + pixel[6]) < c_b)
+										if(*(p + pixel[1]) < c_b)
+											if(*(p + pixel[3]) < c_b)
+												if(*(p + pixel[5]) < c_b)
+													if(*(p + pixel[7]) < c_b)
+														if(*(p + pixel[13]) < c_b)
+															if(*(p + pixel[15]) < c_b)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else if(*(p + pixel[11]) < c_b)
+									if(*(p + pixel[3]) < c_b)
+										if(*(p + pixel[15]) < c_b)
+											if(*(p + pixel[5]) > cb)
+												if(*(p + pixel[9]) < c_b)
+													if(*(p + pixel[1]) < c_b)
+														if(*(p + pixel[10]) < c_b)
+															if(*(p + pixel[13]) < c_b)
+																return true;
+															else
+																return false;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else if(*(p + pixel[5]) < c_b)
+												if(*(p + pixel[1]) < c_b)
+													if(*(p + pixel[10]) < c_b)
+														if(*(p + pixel[13]) < c_b)
+															return true;
+														else
+															return false;
+													else if(*(p + pixel[6]) < c_b)
+														if(*(p + pixel[13]) < c_b)
+															return true;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else if(*(p + pixel[9]) < c_b)
+												if(*(p + pixel[10]) < c_b)
+													if(*(p + pixel[13]) < c_b)
+														if(*(p + pixel[1]) < c_b)
+															return true;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else if(*(p + pixel[7]) < c_b)
+									if(*(p + pixel[6]) < c_b)
+										if(*(p + pixel[13]) < c_b)
+											if(*(p + pixel[3]) < c_b)
+												if(*(p + pixel[1]) < c_b)
+													if(*(p + pixel[15]) < c_b)
+														if(*(p + pixel[5]) < c_b)
+															return true;
+														else
+															return false;
+													else
+														return false;
+												else
+													return false;
+											else
+												return false;
+										else
+											return false;
+									else
+										return false;
+								else
+									return false;
+							else
+								return false;
+						else
+							return false;
+					else
+						return false;
+				else
+					return false;
+			else
+				return false;
+
+
   return false;
 }
 

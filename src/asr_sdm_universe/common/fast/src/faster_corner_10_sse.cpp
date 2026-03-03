@@ -3,6 +3,7 @@
 #include <fast/faster_corner_utilities.h>
 #include <vector>
 #include <list>
+  #include <cstdint>
 
 #ifndef __SSE2__
 #  error "This file requires SSE2 support. Check your compiler flags."

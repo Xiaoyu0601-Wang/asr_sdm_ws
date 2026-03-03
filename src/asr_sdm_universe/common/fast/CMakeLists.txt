@@ -46,6 +46,7 @@ set(SOURCES
   src/fast_11.cpp
   src/fast_12.cpp
   src/fast_10_score.cpp
+  src/fast_12_score.cpp
   src/nonmax_3x3.cpp
 )
 
@@ -84,6 +85,17 @@ if(BUILD_TESTING)
   else()
     message(STATUS "OpenCV not found, skipping fast_test")
   endif()
+
+  message(STATUS "Building FAST-11/12 validation test")
+  add_executable(fast_11_12_validation_test test/test_fast_11_12_validation.cpp)
+  target_link_libraries(fast_11_12_validation_test ${PROJECT_NAME})
+  target_include_directories(fast_11_12_validation_test PRIVATE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  )
+
+  install(TARGETS fast_11_12_validation_test
+    DESTINATION lib/${PROJECT_NAME}
+  )
 endif()
 
 # Install headers

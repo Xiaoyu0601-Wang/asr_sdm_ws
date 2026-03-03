@@ -69,14 +69,16 @@ ament_target_dependencies(${PROJECT_NAME}
 )
 
 # Tests
-add_executable(test_vk_common_camera test/test_camera.cpp)
-target_link_libraries(test_vk_common_camera ${PROJECT_NAME})
+if(BUILD_TESTING)
+  add_executable(test_vk_common_camera test/test_camera.cpp)
+  target_link_libraries(test_vk_common_camera ${PROJECT_NAME})
 
-add_executable(test_vk_common_triangulation test/test_triangulation.cpp)
-target_link_libraries(test_vk_common_triangulation ${PROJECT_NAME})
+  add_executable(test_vk_common_triangulation test/test_triangulation.cpp)
+  target_link_libraries(test_vk_common_triangulation ${PROJECT_NAME})
 
-add_executable(test_vk_common_patch_score test/test_patch_score.cpp)
-target_link_libraries(test_vk_common_patch_score ${PROJECT_NAME})
+  add_executable(test_vk_common_patch_score test/test_patch_score.cpp)
+  target_link_libraries(test_vk_common_patch_score ${PROJECT_NAME})
+endif()
 
 # Install
 install(
@@ -92,10 +94,12 @@ install(
   RUNTIME DESTINATION bin
 )
 
-install(
-  TARGETS test_vk_common_camera test_vk_common_triangulation test_vk_common_patch_score
-  DESTINATION lib/${PROJECT_NAME}
-)
+if(BUILD_TESTING)
+  install(
+    TARGETS test_vk_common_camera test_vk_common_triangulation test_vk_common_patch_score
+    DESTINATION lib/${PROJECT_NAME}
+  )
+endif()
 
 # Export targets
 ament_export_targets(${PROJECT_NAME}Targets HAS_LIBRARY_TARGET)
