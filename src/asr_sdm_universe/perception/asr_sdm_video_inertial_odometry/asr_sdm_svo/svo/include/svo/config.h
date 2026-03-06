@@ -112,6 +112,9 @@ public:
   /// Factor to scale ZMSSD patch matching acceptance threshold (>=1.0 more permissive)
   static double & patchMatchThresholdFactor() { return getInstance().patch_match_thresh_factor; }
 
+  /// FAST type selector: 10 / 11 / 12.
+  static int & fastType() { return getInstance().fast_type; }
+
 private:
   Config();
   Config(Config const &);
@@ -147,6 +150,7 @@ private:
   size_t quality_min_fts;
   int quality_max_drop_fts;
   double patch_match_thresh_factor;
+  int fast_type;
 };
 
 }  // namespace svo

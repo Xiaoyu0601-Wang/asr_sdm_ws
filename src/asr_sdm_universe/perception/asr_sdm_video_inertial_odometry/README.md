@@ -34,6 +34,9 @@ source install/setup.bash
 Terminal 1 — start SVO
 ```sh
 ros2 launch svo_ros test_rig3.launch.py
+ros2 launch svo_ros test_rig3.launch.py fast_type:=10
+ros2 launch svo_ros test_rig3.launch.py fast_type:=11
+ros2 launch svo_ros test_rig3.launch.py fast_type:=12
 ros2 launch svo_ros test_euroc.launch.py
 ros2 launch svo_ros vio_euroc.launch.py
 ```

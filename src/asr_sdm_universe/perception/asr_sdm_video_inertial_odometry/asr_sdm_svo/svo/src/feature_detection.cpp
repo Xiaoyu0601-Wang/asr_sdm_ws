@@ -35,6 +35,7 @@
 
 #include <svo/feature_detection.h>
 #include <svo/feature.h>
+#include <svo/config.h>
 #include <fast/fast.h>
 #include <vikit/vision.h>
 
@@ -157,27 +158,42 @@ void FastDetector::detect(
     const int scale = (1<<L);  // Scale factor: 1, 2, 4, 8...
     vector<fast::fast_xy> fast_corners;
     
-    // FAST corner detection with architecture-specific SIMD
+    // FAST corner detection with configurable FAST type: 10 / 11 / 12
+    const int fast_type = Config::fastType();
+    if (fast_type == 12) {
+      fast::fast_corner_detect_12(
+          (fast::fast_byte*) img_pyr[L].data, img_pyr[L].cols,
+          img_pyr[L].rows, img_pyr[L].cols, 20, fast_corners);
+    } else if (fast_type == 11) {
+      fast::fast_corner_detect_11(
+          (fast::fast_byte*) img_pyr[L].data, img_pyr[L].cols,
+          img_pyr[L].rows, img_pyr[L].cols, 20, fast_corners);
+    } else {
 #if __SSE2__
-      // SSE2-optimized FAST-10 for x86
       fast::fast_corner_detect_10_sse2(
           (fast::fast_byte*) img_pyr[L].data, img_pyr[L].cols,
           img_pyr[L].rows, img_pyr[L].cols, 20, fast_corners);
 #elif HAVE_FAST_NEON
-      // NEON-optimized FAST-9 for ARM
       fast::fast_corner_detect_9_neon(
           (fast::fast_byte*) img_pyr[L].data, img_pyr[L].cols,
           img_pyr[L].rows, img_pyr[L].cols, 20, fast_corners);
 #else
-      // Scalar FAST-10 fallback
       fast::fast_corner_detect_10(
           (fast::fast_byte*) img_pyr[L].data, img_pyr[L].cols,
           img_pyr[L].rows, img_pyr[L].cols, 20, fast_corners);
 #endif
-    
-    // Compute FAST scores for non-maximum suppression
+    }
+
+    // Compute FAST scores for non-maximum suppression.
+    // For FAST-11 we reuse FAST-10 score to keep compatibility.
     vector<int> scores, nm_corners;
-    fast::fast_corner_score_10((fast::fast_byte*) img_pyr[L].data, img_pyr[L].cols, fast_corners, 20, scores);
+    if (fast_type == 12) {
+      fast::fast_corner_score_12(
+          (fast::fast_byte*) img_pyr[L].data, img_pyr[L].cols, fast_corners, 20, scores);
+    } else {
+      fast::fast_corner_score_10(
+          (fast::fast_byte*) img_pyr[L].data, img_pyr[L].cols, fast_corners, 20, scores);
+    }
     fast::fast_nonmax_3x3(fast_corners, scores, nm_corners);
 
     // Process non-maximum suppressed corners

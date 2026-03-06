@@ -35,6 +35,7 @@ find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Sophus REQUIRED)
 find_package(Boost REQUIRED COMPONENTS thread)
+find_package(CURL REQUIRED)
 
 # Create visualizer library
 add_library(svo_visualizer SHARED src/visualizer.cpp)
@@ -53,6 +54,7 @@ target_link_libraries(svo_visualizer PUBLIC
   Sophus::Sophus
   ${Boost_LIBRARIES}
   svo::svo
+  CURL::libcurl
 )
 
 ament_target_dependencies(svo_visualizer PUBLIC
@@ -94,7 +96,7 @@ target_include_directories(vio PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
-target_link_libraries(vio ${OpenCV_LIBS} svo::svo)
+target_link_libraries(vio ${OpenCV_LIBS} svo::svo CURL::libcurl)
 ament_target_dependencies(vio
   rclcpp
   sensor_msgs

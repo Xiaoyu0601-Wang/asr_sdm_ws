@@ -25,11 +25,17 @@ def generate_launch_description():
         default_value='/camera/image_raw',
         description='Camera topic to subscribe to'
     )
-    
+
     rviz_arg = DeclareLaunchArgument(
         'rviz',
         default_value='false',
         description='Launch RViz2 for visualization'
+    )
+
+    fast_type_arg = DeclareLaunchArgument(
+        'fast_type',
+        default_value='12',
+        description='FAST detector type: 10 / 11 / 12'
     )
 
     # SVO Visual Odometry node
@@ -49,6 +55,7 @@ def generate_launch_description():
                 'init_rx': 3.14,
                 'init_ry': 0.0,
                 'init_rz': 0.0,
+                'fast_type': LaunchConfiguration('fast_type'),
             },
         ],
     )
@@ -67,6 +74,7 @@ def generate_launch_description():
     return LaunchDescription([
         cam_topic_arg,
         rviz_arg,
+        fast_type_arg,
         svo_node,
         rviz_node,
     ])
