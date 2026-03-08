@@ -42,6 +42,9 @@ endif()
 
 # Add Sources
 set(SOURCES
+  src/fast_7.cpp
+  src/fast_8.cpp
+  src/fast_9.cpp
   src/fast_10.cpp
   src/fast_11.cpp
   src/fast_12.cpp
@@ -80,6 +83,15 @@ if(BUILD_TESTING)
     )
 
     install(TARGETS fast_test
+      DESTINATION lib/${PROJECT_NAME}
+    )
+
+    add_executable(fast_7_12_validation_test test/test_fast_7_12_validation.cpp)
+    target_link_libraries(fast_7_12_validation_test ${PROJECT_NAME})
+    target_include_directories(fast_7_12_validation_test PRIVATE
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    )
+    install(TARGETS fast_7_12_validation_test
       DESTINATION lib/${PROJECT_NAME}
     )
   else()

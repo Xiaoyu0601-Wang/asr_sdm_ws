@@ -183,7 +183,7 @@ void FastDetector::detect(
           img_pyr[L].rows, img_pyr[L].cols, 20, fast_corners);
 #endif
     }
-
+    
     // Compute FAST scores for non-maximum suppression.
     // For FAST-11 we reuse FAST-10 score to keep compatibility.
     vector<int> scores, nm_corners;
