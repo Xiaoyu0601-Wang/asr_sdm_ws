@@ -40,6 +40,9 @@ void fast_corner_detect_11(const fast_byte* img, int imgWidth, int imgHeight, in
 /// plain C++ version of the corner 12
 void fast_corner_detect_12(const fast_byte* img, int imgWidth, int imgHeight, int widthStep, short barrier, vector<fast_xy>& corners);
 
+/// corner score 9
+void fast_corner_score_9(const fast_byte* img, const int img_stride, const vector<fast_xy>& corners, const int threshold, vector<int>& scores);
+
 /// corner score 10
 void fast_corner_score_10(const fast_byte* img, const int img_stride, const vector<fast_xy>& corners, const int threshold, vector<int>& scores);
 
