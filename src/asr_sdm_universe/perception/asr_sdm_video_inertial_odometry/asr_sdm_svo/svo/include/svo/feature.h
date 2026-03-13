@@ -43,6 +43,6 @@ struct Feature
   }
 };
 
-}  // namespace svo
+}  
 
-#endif  // SVO_FEATURE_H_
+#endif  

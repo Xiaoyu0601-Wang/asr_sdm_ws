@@ -1,5 +1,5 @@
 /*
- * ROS2 utilities for MSCKF_VIO within svo_ros
+ * 
  */
 
 #ifndef SVO_ROS_MSCKF_VIO_UTILS_H
@@ -31,6 +31,6 @@ cv::Mat getVec16Transform(rclcpp::Node& node, const std::string& field);
 cv::Mat getKalibrStyleTransform(rclcpp::Node& node, const std::string& field);
 
 }  // namespace utils
-}  // namespace msckf_vio
+}  
 
-#endif  // SVO_ROS_MSCKF_VIO_UTILS_H
+#endif  

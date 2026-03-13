@@ -78,4 +78,4 @@ public:
 }  // namespace feature_detection
 }  // namespace svo
 
-#endif  // SVO_FEATURE_DETECTION_H_
+#endif  

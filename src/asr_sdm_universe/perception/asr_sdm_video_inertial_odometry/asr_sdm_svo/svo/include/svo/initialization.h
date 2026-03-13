@@ -58,6 +58,6 @@ void computeHomography(
   Sophus::SE3d & T_cur_from_ref);
 
 }  // namespace initialization
-}  // namespace svo
+}  
 
-#endif  // SVO_INITIALIZATION_H
+#endif  

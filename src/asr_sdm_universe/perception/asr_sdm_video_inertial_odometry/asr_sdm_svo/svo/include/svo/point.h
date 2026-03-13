@@ -86,6 +86,6 @@ public:
   }
 };
 
-}  // namespace svo
+}  
 
-#endif  // SVO_POINT_H_
+#endif 

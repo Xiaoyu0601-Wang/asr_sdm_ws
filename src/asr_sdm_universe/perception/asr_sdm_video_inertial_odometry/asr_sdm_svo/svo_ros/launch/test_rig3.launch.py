@@ -38,7 +38,7 @@ def generate_launch_description():
         description='FAST detector type: 7 / 8 / 9 / 10 / 11 / 12'
     )
 
-    # SVO Visual Odometry node
+
     svo_node = Node(
         package='svo_ros',
         executable='vo',

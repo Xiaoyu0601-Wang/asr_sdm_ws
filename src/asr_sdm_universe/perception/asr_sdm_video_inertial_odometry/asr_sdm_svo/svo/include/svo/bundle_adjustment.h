@@ -75,6 +75,6 @@ g2oEdgeSE3 * createG2oEdgeSE3(
   double huber_width, double weight = 1);
 
 }  // namespace ba
-}  // namespace svo
+}  
 
-#endif  // SVO_BUNDLE_ADJUSTMENT_H_
+#endif  

@@ -11,7 +11,7 @@
 namespace svo
 {
 
-/// Monocular Visual Odometry Pipeline as described in the SVO paper.
+
 class FrameHandlerMono : public FrameHandlerBase
 {
 public:
@@ -89,6 +89,6 @@ protected:
   void setCoreKfs(size_t n_closest);
 };
 
-}  // namespace svo
+}  
 
-#endif  // SVO_FRAME_HANDLER_H_
+#endif  

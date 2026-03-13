@@ -1,13 +1,5 @@
 // =============================================================================
-// VISUALIZER.CPP - ROS2 Visualization Interface for SVO
-// =============================================================================
-// This module provides real-time visualization of the SVO visual odometry
-// pipeline. It publishes:
-//   - Camera poses with uncertainty (covariance)
-//   - Tracked feature images with annotations
-//   - 3D markers for keyframes, trajectory, and map points
-//   - TF transforms for coordinate frame relationships
-//   - Dense reconstruction input data
+
 // =============================================================================
 
 #include <cv_bridge/cv_bridge.hpp>
@@ -40,14 +32,7 @@ namespace svo
 // =============================================================================
 // Initializes the Visualizer with ROS2 publishers, TF broadcaster, and
 // configuration parameters loaded from the ROS2 parameter server.
-//
-// Parameters loaded from ROS2:
-//   - svo/publish_img_pyr_level: Which pyramid level to publish (0=full res)
-//   - svo/publish_every_nth_img: Publish frequency for images
-//   - svo/publish_every_nth_dense_input: Publish frequency for dense data
-//   - svo/publish_world_in_cam_frame: Transform convention toggle
-//   - svo/publish_map_every_frame: Whether to publish full map each frame
-//   - svo/publish_point_display_time: How long points persist in RViz
+
 // =============================================================================
 Visualizer::Visualizer(rclcpp::Node::SharedPtr node)
 : node_(node),
@@ -454,4 +439,4 @@ void Visualizer::exportToDense(const FramePtr & frame)
   }
 }
 
-}  // end namespace svo
+}  

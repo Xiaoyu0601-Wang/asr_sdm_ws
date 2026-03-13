@@ -59,6 +59,6 @@ protected:
   virtual void finishIteration();
 };
 
-}  // namespace svo
+}  
 
-#endif  // SVO_SPARSE_IMG_ALIGN_H_
+#endif 

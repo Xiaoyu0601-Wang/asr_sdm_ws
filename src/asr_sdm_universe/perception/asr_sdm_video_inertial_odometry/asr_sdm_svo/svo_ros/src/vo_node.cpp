@@ -24,7 +24,7 @@
 namespace svo
 {
 
-/// SVO Interface as ROS2 Node
+
 class VoNode : public rclcpp::Node
 {
 public:
@@ -75,7 +75,7 @@ public:
       RCLCPP_INFO(this->get_logger(), "Successfully created '%s' camera model.", cam_model.c_str());
     }
 
-    // Override SVO core parameters from ROS2 params before creating VO
+
     try {
       int grid, maxfts, nlevels, fast_type;
       double tri;
@@ -135,7 +135,7 @@ public:
         fast_type = vk::getParam<int>(this, "fast_type", svo::Config::fastType());
 
         // 将关键的鲁棒性参数从 ROS2 参数写回到 SVO 核心单例 Config。
-        // 原因：SVO 核心算法使用 svo::Config::* 的静态单例；
+
         // 仅仅把参数作为 ROS param 传入并不足够，必须显式写回 Config 才会真正生效。
         // 这些参数以前只在 dataset_name=="euroc" 的硬编码分支里设置，导致非 euroc 分支跟踪很不稳定。
         svo::Config::reprojThresh() = vk::getParam<double>(
@@ -174,7 +174,7 @@ public:
       svo::Config::fastType() =
         (fast_type >= 7 && fast_type <= 12) ? fast_type : 12;
 
-      // 打印最终生效的 SVO 核心配置（权威值）。
+
       // 用途：排查“yaml 改了但没生效 / 参数被覆盖 / 类型不匹配”等问题时非常关键。
       RCLCPP_INFO(
         this->get_logger(),
@@ -290,7 +290,7 @@ public:
   bool shouldQuit() const { return quit_; }
 };
 
-}  // namespace svo
+}  
 
 int main(int argc, char ** argv)
 {
