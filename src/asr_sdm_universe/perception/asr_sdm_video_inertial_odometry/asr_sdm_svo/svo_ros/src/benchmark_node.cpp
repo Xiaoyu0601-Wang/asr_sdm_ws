@@ -228,7 +228,7 @@ public:
   }
 };
 
-}  // namespace svo
+}  
 
 int main(int argc, char ** argv)
 {

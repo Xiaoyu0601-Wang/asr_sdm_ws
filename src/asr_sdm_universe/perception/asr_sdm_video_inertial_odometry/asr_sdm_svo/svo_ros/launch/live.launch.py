@@ -45,7 +45,7 @@ def generate_launch_description():
         description='Camera topic to subscribe to'
     )
     
-    # SVO Visual Odometry node
+    
     svo_node = Node(
         package='svo_ros',
         executable='vo',

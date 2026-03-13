@@ -98,6 +98,6 @@ protected:
   virtual void optimizeStructure(FramePtr frame, size_t max_n_pts, int max_iter);
 };
 
-}  // namespace svo
+}  
 
-#endif  // SVO_FRAME_HANDLER_BASE_H_
+#endif 

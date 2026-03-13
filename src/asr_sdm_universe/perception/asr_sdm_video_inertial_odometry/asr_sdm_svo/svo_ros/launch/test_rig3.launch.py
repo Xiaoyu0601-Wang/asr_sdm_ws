@@ -35,10 +35,10 @@ def generate_launch_description():
     fast_type_arg = DeclareLaunchArgument(
         'fast_type',
         default_value='12',
-        description='FAST detector type: 10 / 11 / 12'
+        description='FAST detector type: 7 / 8 / 9 / 10 / 11 / 12'
     )
 
-    # SVO Visual Odometry node
+
     svo_node = Node(
         package='svo_ros',
         executable='vo',

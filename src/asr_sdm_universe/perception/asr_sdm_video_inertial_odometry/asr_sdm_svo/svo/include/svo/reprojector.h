@@ -78,6 +78,6 @@ private:
   bool reprojectPoint(FramePtr frame, Point * point);
 };
 
-}  // namespace svo
+}  
 
-#endif  // SVO_REPROJECTION_H_
+#endif  

@@ -113,6 +113,6 @@ extern vk::PerformanceMonitor * g_permon;
 
 class Frame;
 typedef boost::shared_ptr<Frame> FramePtr;
-}  // namespace svo
+}  
 
-#endif  // SVO_GLOBAL_H_
+#endif  

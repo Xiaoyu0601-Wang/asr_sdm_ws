@@ -7,9 +7,7 @@
 namespace svo
 {
 
-/// Subpixel refinement of a reference feature patch with the current image.
-/// Implements the inverse-compositional approach (see "Lucas-Kanade 20 Years on"
-/// paper by Baker.
+
 namespace feature_alignment
 {
 
@@ -31,7 +29,7 @@ bool align2D_NEON(
   const cv::Mat & cur_img, uint8_t * ref_patch_with_border, uint8_t * ref_patch, const int n_iter,
   Vector2d & cur_px_estimate);
 
-}  // namespace feature_alignment
-}  // namespace svo
+}  
+}  
 
-#endif  // SVO_FEATURE_ALIGNMENT_H_
+#endif  

@@ -21,6 +21,6 @@ void optimizeGaussNewton(
   double & estimated_scale, double & error_init, double & error_final, size_t & num_obs);
 
 }  // namespace pose_optimizer
-}  // namespace svo
+} 
 
-#endif  // SVO_POSE_OPTIMIZER_H_
+#endif  

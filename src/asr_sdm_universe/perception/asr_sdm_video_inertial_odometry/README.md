@@ -16,7 +16,7 @@ colcon build --symlink-install --parallel-workers 8
 
 
 
-### SVO Visual Odometry demo (rosbag + RViz2)
+### Visual Odometry demo (rosbag + RViz2)
 This section shows how to run the SVO visual odometry node with the included rosbag and visualize results in RViz2.
 
 Prerequisites
@@ -33,7 +33,7 @@ source install/setup.bash
 
 Terminal 1 — start SVO
 ```sh
-ros2 launch svo_ros test_rig3.launch.py
+ros2 launch svo_ros test_rig3.launch.py fast_type:=9
 ros2 launch svo_ros test_rig3.launch.py fast_type:=10
 ros2 launch svo_ros test_rig3.launch.py fast_type:=11
 ros2 launch svo_ros test_rig3.launch.py fast_type:=12
@@ -85,6 +85,6 @@ pkill -f "rviz2 -d .*rviz_config.rviz"
 ```
 
 Notes
-- The SVO launch (`test_rig3.launch.py`) subscribes to `/camera/image_raw`, which matches the bag topics, so no remapping is needed.
+- The launch (`test_rig3.launch.py`) subscribes to `/camera/image_raw`, which matches the bag topics, so no remapping is needed.
 - The rosbag is played with `--clock`. RViz2 is started with `use_sim_time:=true` so the timeline follows the bag.
 - If you prefer a single combined launch that starts SVO, rosbag, and RViz together, open an issue or request and we can add an integrated launch file.

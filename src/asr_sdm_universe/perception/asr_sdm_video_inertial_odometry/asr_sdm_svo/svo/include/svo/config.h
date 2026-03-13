@@ -153,6 +153,6 @@ private:
   int fast_type;
 };
 
-}  // namespace svo
+}  
 
-#endif  // SVO_CONFIG_H_
+#endif 

@@ -1,8 +1,5 @@
 /*
- * COPYRIGHT AND PERMISSION NOTICE
- * Penn Software MSCKF_VIO
- * Copyright (C) 2017 The Trustees of the University of Pennsylvania
- * All rights reserved.
+
  */
 
 #include <Eigen/Dense>
@@ -25,12 +22,12 @@
 
 #include <random>
 
-// ================= SVO 相关改动说明 =================
+// ================= 相关改动说明 =================
 // 本文件在“时序跟踪(上一帧->当前帧)的 cam0 tracking”环节，
-// 将原 MSCKF_VIO 常见的 OpenCV LK 光流(calcOpticalFlowPyrLK)替换为：
+// 将VIO 常见的 OpenCV LK 光流(calcOpticalFlowPyrLK)替换为：
 //   svo::feature_alignment::align2D
 // 该方法基于小 patch 的直接法对齐(光度一致性)，可提供亚像素精度。
-// 注意：本注释仅聚焦“单目核心流程 + SVO 改动”，双目(stereoMatch/cam1)相关流程不展开。
+
 // ====================================================
 
 #include <svo_ros/msckf_frontend/utils.h>
@@ -612,7 +609,7 @@ void ImageProcessor::trackFeatures()
 
   predictFeatureTracking(prev_cam0_points, cam0_R_p_c, cam0_intrinsics, curr_cam0_points);
 
-  // -------------------- 【SVO 改动：用直接法 patch 对齐替换 KLT 光流】 --------------------
+  // -------------------- 【用直接法 patch 对齐替换 KLT 光流】 --------------------
   // 这里不再调用 OpenCV calcOpticalFlowPyrLK 做上一帧->当前帧的 LK 跟踪，
   // 而是对每个特征点：
   //   1) 在上一帧提取一个以特征为中心的 ref_patch（patch_size x patch_size）
@@ -1801,4 +1798,4 @@ void ImageProcessor::featureLifetimeStatistics()
   return;
 }
 
-}  // end namespace msckf_vio
+}  

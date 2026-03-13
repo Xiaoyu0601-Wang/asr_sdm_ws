@@ -39,6 +39,8 @@
 #include <fast/fast.h>
 #include <vikit/vision.h>
 
+#include <iostream>
+
 namespace svo {
 namespace feature_detection {
 
@@ -153,12 +155,15 @@ void FastDetector::detect(
   Corners corners(grid_n_cols_*grid_n_rows_, Corner(0,0,detection_threshold,0,0.0f));
   
   // Process each pyramid level
+  size_t raw_fast_corners = 0;
+  size_t nms_fast_corners = 0;
+  size_t kept_corners = 0;
   for(int L=0; L<n_pyr_levels_; ++L)
   {
     const int scale = (1<<L);  // Scale factor: 1, 2, 4, 8...
     vector<fast::fast_xy> fast_corners;
     
-    // FAST corner detection with configurable FAST type: 10 / 11 / 12
+    // FAST corner detection with configurable FAST type: 7 / 8 / 9 / 10 / 11 / 12
     const int fast_type = Config::fastType();
     if (fast_type == 12) {
       fast::fast_corner_detect_12(
@@ -168,13 +173,9 @@ void FastDetector::detect(
       fast::fast_corner_detect_11(
           (fast::fast_byte*) img_pyr[L].data, img_pyr[L].cols,
           img_pyr[L].rows, img_pyr[L].cols, 20, fast_corners);
-    } else {
+    } else if (fast_type == 10) {
 #if __SSE2__
       fast::fast_corner_detect_10_sse2(
-          (fast::fast_byte*) img_pyr[L].data, img_pyr[L].cols,
-          img_pyr[L].rows, img_pyr[L].cols, 20, fast_corners);
-#elif HAVE_FAST_NEON
-      fast::fast_corner_detect_9_neon(
           (fast::fast_byte*) img_pyr[L].data, img_pyr[L].cols,
           img_pyr[L].rows, img_pyr[L].cols, 20, fast_corners);
 #else
@@ -182,19 +183,43 @@ void FastDetector::detect(
           (fast::fast_byte*) img_pyr[L].data, img_pyr[L].cols,
           img_pyr[L].rows, img_pyr[L].cols, 20, fast_corners);
 #endif
+    } else if (fast_type == 9) {
+#if HAVE_FAST_NEON
+      fast::fast_corner_detect_9_neon(
+          (fast::fast_byte*) img_pyr[L].data, img_pyr[L].cols,
+          img_pyr[L].rows, img_pyr[L].cols, 20, fast_corners);
+#else
+      fast::fast_corner_detect_9(
+          (fast::fast_byte*) img_pyr[L].data, img_pyr[L].cols,
+          img_pyr[L].rows, img_pyr[L].cols, 20, fast_corners);
+#endif
+    } else if (fast_type == 8) {
+      fast::fast_corner_detect_8(
+          (fast::fast_byte*) img_pyr[L].data, img_pyr[L].cols,
+          img_pyr[L].rows, img_pyr[L].cols, 20, fast_corners);
+    } else {
+      fast::fast_corner_detect_7(
+          (fast::fast_byte*) img_pyr[L].data, img_pyr[L].cols,
+          img_pyr[L].rows, img_pyr[L].cols, 20, fast_corners);
     }
-
+    
+    raw_fast_corners += fast_corners.size();
+    
     // Compute FAST scores for non-maximum suppression.
     // For FAST-11 we reuse FAST-10 score to keep compatibility.
     vector<int> scores, nm_corners;
     if (fast_type == 12) {
       fast::fast_corner_score_12(
           (fast::fast_byte*) img_pyr[L].data, img_pyr[L].cols, fast_corners, 20, scores);
+    } else if (fast_type == 9) {
+      fast::fast_corner_score_9(
+          (fast::fast_byte*) img_pyr[L].data, img_pyr[L].cols, fast_corners, 20, scores);
     } else {
       fast::fast_corner_score_10(
           (fast::fast_byte*) img_pyr[L].data, img_pyr[L].cols, fast_corners, 20, scores);
     }
     fast::fast_nonmax_3x3(fast_corners, scores, nm_corners);
+    nms_fast_corners += nm_corners.size();
 
     // Process non-maximum suppressed corners
     for(auto it=nm_corners.begin(), ite=nm_corners.end(); it!=ite; ++it)
@@ -216,6 +241,7 @@ void FastDetector::detect(
       // Update if this corner has higher score than current best in cell
       if(score > corners.at(k).score)
         corners.at(k) = Corner(xy.x*scale, xy.y*scale, score, L, 0.0f);
+      kept_corners += (score > detection_threshold) ? 1 : 0;
     }
   }
 
@@ -224,6 +250,13 @@ void FastDetector::detect(
     if(c.score > detection_threshold)
       fts.push_back(new Feature(frame, Vector2d(c.x, c.y), c.level));
   });
+
+  if (Config::fastType() == 9 || Config::fastType() == 10) {
+    std::cerr << "FAST" << Config::fastType() << " stats: raw=" << raw_fast_corners
+              << " nms=" << nms_fast_corners
+              << " kept>thr=" << kept_corners
+              << " final=" << fts.size() << std::endl;
+  }
 
   // Reset grid for next detection
   resetGrid();

@@ -25,7 +25,7 @@ private:
   std::unique_ptr<ImageProcessor> image_processor_;
 };
 
-}  // namespace msckf_vio
+}  
 
 int main(int argc, char** argv)
 {
