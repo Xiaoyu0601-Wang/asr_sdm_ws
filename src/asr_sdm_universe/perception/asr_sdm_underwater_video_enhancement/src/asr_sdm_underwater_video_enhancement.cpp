@@ -80,10 +80,15 @@ Mat UnderWaterVideoEnhancementNode::calcBGRChannel(const Mat & src)
 Mat UnderWaterVideoEnhancementNode::calcTransmissionMap(
   const Mat & b_channel, float A, float beta_b, float beta_g, float beta_r)
 {
-  Mat b;
-  b_channel.convertTo(b, CV_32F);
+  Mat b_norm;
+  b_channel.convertTo(b_norm, CV_32F);
+  b_norm /= A;
 
-  Mat d = 1.0f - b / A;  // d(x) = 1 - I^b(x) / A
+  float eps = 1e-6;
+  Mat d;
+  log(b_norm + eps, d);
+  d = -d;  // d = - log(b/A)
+
   d = max(d, 0);
   d = min(d, 1);
 
@@ -117,6 +122,13 @@ Mat UnderWaterVideoEnhancementNode::imageRestoration(const Mat & src, const Mat 
   Mat J = (src_f - A_mat) / t_map + A_mat;  // J(x) = (I(x) - A) / t + A
   J = max(J, 0);
   J = min(J, 255);
+
+  // Color Correction
+  vector<Mat> ch;
+  split(J, ch);
+  ch[2] *= 1.3f;  // improve red color
+  ch[1] *= 1.1f;  // improve yellow color
+  merge(ch, J);
 
   Mat J8U;
   J.convertTo(J8U, CV_8U);
