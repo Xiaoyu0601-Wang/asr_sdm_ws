@@ -20,6 +20,11 @@
 #include <vikit/user_input_thread.h>
 
 #include <string>
+#include <atomic>
+#include <condition_variable>
+#include <deque>
+#include <mutex>
+#include <thread>
 
 namespace svo
 {
@@ -39,6 +44,20 @@ public:
   bool quit_;
   std::shared_ptr<image_transport::ImageTransport> it_;
   image_transport::Subscriber it_sub_;
+
+  struct ImageJob
+  {
+    cv::Mat img;
+    double timestamp;
+  };
+
+  std::mutex queue_mutex_;
+  std::condition_variable queue_cv_;
+  std::deque<ImageJob> image_queue_;
+  std::thread processing_thread_;
+  std::atomic<bool> processing_running_{false};
+  std::atomic<bool> drop_frames_{true};
+  size_t max_queue_size_{2};
 
   VoNode() : Node("svo"), vo_(nullptr), cam_(nullptr), quit_(false)
   {
@@ -199,6 +218,9 @@ public:
     // Subscribe to remote input
     sub_remote_key_ = this->create_subscription<std_msgs::msg::String>(
       "remote_key", 5, std::bind(&VoNode::remoteKeyCb, this, std::placeholders::_1));
+
+    max_queue_size_ = static_cast<size_t>(vk::getParam<int>(this, "max_queue_size", 2));
+    drop_frames_ = vk::getParam<bool>(this, "drop_frames", true);
   }
 
   // Initialize components that need shared_from_this() - must be called after construction
@@ -222,11 +244,18 @@ public:
     it_ = std::make_shared<image_transport::ImageTransport>(shared_from_this());
     it_sub_ = it_->subscribe(cam_topic, 5, std::bind(&VoNode::imgCb, this, std::placeholders::_1));
 
+    processing_running_ = true;
+    processing_thread_ = std::thread(&VoNode::processingLoop, this);
+
     RCLCPP_INFO(this->get_logger(), "SVO node initialized, subscribing to: %s", cam_topic.c_str());
   }
 
   ~VoNode()
   {
+    processing_running_ = false;
+    queue_cv_.notify_all();
+    if (processing_thread_.joinable()) processing_thread_.join();
+
     delete vo_;
     delete cam_;
     if (user_input_thread_ != nullptr) user_input_thread_->stop();
@@ -241,18 +270,47 @@ public:
       RCLCPP_ERROR(this->get_logger(), "cv_bridge exception: %s", e.what());
       return;
     }
-    processUserActions();
 
-    double timestamp = rclcpp::Time(msg->header.stamp).seconds();
-    vo_->addImage(img, timestamp);
-    visualizer_->publishMinimal(img, vo_->lastFrame(), *vo_, timestamp);
+    ImageJob job{img.clone(), rclcpp::Time(msg->header.stamp).seconds()};
+    std::unique_lock<std::mutex> lock(queue_mutex_);
+    if (drop_frames_ && image_queue_.size() >= max_queue_size_) {
+      image_queue_.pop_front();
+    } else if (!drop_frames_ && image_queue_.size() >= max_queue_size_) {
+      return;
+    }
+    image_queue_.push_back(std::move(job));
+    lock.unlock();
+    queue_cv_.notify_one();
+  }
 
-    if (publish_markers_ && vo_->stage() != FrameHandlerBase::STAGE_PAUSED)
-      visualizer_->visualizeMarkers(vo_->lastFrame(), vo_->coreKeyframes(), vo_->map());
+  void processingLoop()
+  {
+    while (processing_running_) {
+      ImageJob job;
+      {
+        std::unique_lock<std::mutex> lock(queue_mutex_);
+        queue_cv_.wait(lock, [this]() {
+          return !processing_running_ || !image_queue_.empty();
+        });
+        if (!processing_running_) {
+          break;
+        }
+        job = std::move(image_queue_.front());
+        image_queue_.pop_front();
+      }
 
-    if (publish_dense_input_) visualizer_->exportToDense(vo_->lastFrame());
+      processUserActions();
 
-    if (vo_->stage() == FrameHandlerMono::STAGE_PAUSED) usleep(100000);
+      vo_->addImage(job.img, job.timestamp);
+      visualizer_->publishMinimal(job.img, vo_->lastFrame(), *vo_, job.timestamp);
+
+      if (publish_markers_ && vo_->stage() != FrameHandlerBase::STAGE_PAUSED)
+        visualizer_->visualizeMarkers(vo_->lastFrame(), vo_->coreKeyframes(), vo_->map());
+
+      if (publish_dense_input_) visualizer_->exportToDense(vo_->lastFrame());
+
+      if (vo_->stage() == FrameHandlerMono::STAGE_PAUSED) usleep(100000);
+    }
   }
 
   void processUserActions()
@@ -303,7 +361,7 @@ int main(int argc, char ** argv)
 
   RCLCPP_INFO(node->get_logger(), "SVO node created");
 
-  rclcpp::executors::SingleThreadedExecutor executor;
+  rclcpp::executors::MultiThreadedExecutor executor;
   executor.add_node(node);
 
   rclcpp::Rate rate(100);

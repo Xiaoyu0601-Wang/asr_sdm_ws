@@ -37,6 +37,10 @@ ros2 launch svo_ros test_rig3.launch.py fast_type:=9
 ros2 launch svo_ros test_rig3.launch.py fast_type:=10
 ros2 launch svo_ros test_rig3.launch.py fast_type:=11
 ros2 launch svo_ros test_rig3.launch.py fast_type:=12
+丢帧（默认），队列 2：
+ros2 launch svo_ros test_rig3.launch.py fast_type:=10 max_queue_size:=2 drop_frames:=true
+不丢帧（满了就阻塞回调）：
+ros2 launch svo_ros test_rig3.launch.py fast_type:=10 max_queue_size:=4 drop_frames:=false
 ros2 launch svo_ros test_euroc.launch.py
 ros2 launch svo_ros vio_euroc.launch.py
 ```

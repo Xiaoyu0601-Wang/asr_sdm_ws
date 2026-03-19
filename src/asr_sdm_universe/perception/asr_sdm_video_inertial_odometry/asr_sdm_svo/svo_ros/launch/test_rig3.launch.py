@@ -38,6 +38,18 @@ def generate_launch_description():
         description='FAST detector type: 7 / 8 / 9 / 10 / 11 / 12'
     )
 
+    max_queue_size_arg = DeclareLaunchArgument(
+        'max_queue_size',
+        default_value='2',
+        description='Max image queue size for processing thread'
+    )
+
+    drop_frames_arg = DeclareLaunchArgument(
+        'drop_frames',
+        default_value='true',
+        description='Drop oldest frames when queue is full'
+    )
+
 
     svo_node = Node(
         package='svo_ros',
@@ -56,6 +68,8 @@ def generate_launch_description():
                 'init_ry': 0.0,
                 'init_rz': 0.0,
                 'fast_type': LaunchConfiguration('fast_type'),
+                'max_queue_size': LaunchConfiguration('max_queue_size'),
+                'drop_frames': LaunchConfiguration('drop_frames'),
             },
         ],
     )
@@ -75,6 +89,8 @@ def generate_launch_description():
         cam_topic_arg,
         rviz_arg,
         fast_type_arg,
+        max_queue_size_arg,
+        drop_frames_arg,
         svo_node,
         rviz_node,
     ])
