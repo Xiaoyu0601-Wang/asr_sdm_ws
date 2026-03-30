@@ -251,12 +251,7 @@ void FastDetector::detect(
       fts.push_back(new Feature(frame, Vector2d(c.x, c.y), c.level));
   });
 
-  if (Config::fastType() == 9 || Config::fastType() == 10) {
-    std::cerr << "FAST" << Config::fastType() << " stats: raw=" << raw_fast_corners
-              << " nms=" << nms_fast_corners
-              << " kept>thr=" << kept_corners
-              << " final=" << fts.size() << std::endl;
-  }
+  // Disabled per-frame FAST statistics printing to reduce runtime jitter.
 
   // Reset grid for next detection
   resetGrid();

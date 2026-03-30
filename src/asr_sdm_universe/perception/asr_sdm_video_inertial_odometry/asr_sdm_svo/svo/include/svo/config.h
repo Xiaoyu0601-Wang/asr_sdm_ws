@@ -115,6 +115,11 @@ public:
   /// FAST type selector: 10 / 11 / 12.
   static int & fastType() { return getInstance().fast_type; }
 
+  /// Maximum evaluations along epipolar line before skipping depth update.
+  /// Increase this when tracking fast motion or downward-looking cameras
+  /// where px_length (displacement estimate) exceeds ~700px per frame.
+  static size_t & maxEpiSearchSteps() { return getInstance().max_epi_search_steps; }
+
 private:
   Config();
   Config(Config const &);
@@ -151,6 +156,7 @@ private:
   int quality_max_drop_fts;
   double patch_match_thresh_factor;
   int fast_type;
+  size_t max_epi_search_steps;
 };
 
 }  

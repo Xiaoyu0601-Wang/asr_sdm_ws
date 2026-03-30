@@ -1,0 +1,76 @@
+# VIO 参数文件 - Rig3 (单目相机 + IMU)
+#
+# 基于 svo_ros/param/vio_euroc_params.yaml 修改，
+# 适配 airground_rig_s3_ros2 数据集的相机内参。
+#
+# 关键说明：
+#   - cam0 对应 /camera/image_raw（752x480，下视相机）
+#   - cam1 填为与 cam0 相同（单目模式不影响）
+#   - cam0/T_cam_imu 使用单位矩阵（无精确标定）
+#     —— 预积分旋转近似成立，因为相机与 IMU 刚性固联
+#     —— 无标定误差时 R_cam0_imu = I，旋转估计仍然准确
+#   - IMU topic 映射到 /imu/data（bag 中实际 topic）
+#   - use_stereo = false（单目模式）
+
+svo_vio:
+  ros__parameters:
+    # === Camera 0 内参（与 camera_pinhole.yaml 保持一致）===
+    cam0/distortion_model: "radtan"
+    cam0/distortion_coeffs: [-0.283076, 0.066674, 0.000896, 0.000778]
+    cam0/intrinsics: [414.536145, 414.284429, 348.804988, 240.076451]
+    cam0/resolution: [752.0, 480.0]
+    # IMU->Camera0 外参（无标定时用单位矩阵）
+    # T_cam_imu 是 4x4 矩阵（行主序），表示 T_imu_cam0
+    # 这里用单位矩阵，近似假设 IMU 与相机固联（两帧间旋转即为相机旋转）
+    cam0/T_cam_imu:
+      [1.0, 0.0, 0.0, 0.0,
+       0.0, 1.0, 0.0, 0.0,
+       0.0, 0.0, 1.0, 0.0,
+       0.0, 0.0, 0.0, 1.0]
+
+    # === Camera 1（单目模式，填为与 cam0 相同，不影响使用）===
+    cam1/distortion_model: "radtan"
+    cam1/distortion_coeffs: [-0.283076, 0.066674, 0.000896, 0.000778]
+    cam1/intrinsics: [414.536145, 414.284429, 348.804988, 240.076451]
+    cam1/resolution: [752.0, 480.0]
+    # T_cam0_cam1 填单位矩阵（单目）
+    cam1/T_cn_cnm1:
+      [1.0, 0.0, 0.0, 0.0,
+       0.0, 1.0, 0.0, 0.0,
+       0.0, 0.0, 1.0, 0.0,
+       0.0, 0.0, 0.0, 1.0]
+    # IMU->Camera1（单目不需要精确值）
+    cam1/T_cam_imu:
+      [1.0, 0.0, 0.0, 0.0,
+       0.0, 1.0, 0.0, 0.0,
+       0.0, 0.0, 1.0, 0.0,
+       0.0, 0.0, 0.0, 1.0]
+
+    # === IMU 参数 ===
+    # IMU topic（bag 中实际 topic 为 /imu/data）
+    imu_topic: "/imu/data"
+    # IMU->Body（未标定，填单位矩阵）
+    T_imu_body:
+      [1.0, 0.0, 0.0, 0.0,
+       0.0, 1.0, 0.0, 0.0,
+       0.0, 0.0, 1.0, 0.0,
+       0.0, 0.0, 0.0, 1.0]
+
+    # === ROS topic 映射（bag 中实际 topic）===
+    cam0_topic: "/camera/image_raw"
+    cam1_topic: "/camera/image_raw"  # 单目模式无所谓
+    use_stereo: false
+
+    # === ImageProcessor 算法参数（参考 vo_rig3_stable.yaml 调优）===
+    # 网格划分：适度密度，避免特征丢失
+    grid_row: 4
+    grid_col: 4
+    grid_min_feature_num: 2
+    grid_max_feature_num: 5  # 适度提高，增加跟踪成功率
+    pyramid_levels: 3        # 已有下视图像，金字塔不需要太多层
+    patch_size: 31
+    fast_threshold: 20       # 适中：保证检测质量
+    max_iteration: 30
+    track_precision: 0.01
+    ransac_threshold: 3.0
+    stereo_threshold: 3.0     # 单目模式不生效

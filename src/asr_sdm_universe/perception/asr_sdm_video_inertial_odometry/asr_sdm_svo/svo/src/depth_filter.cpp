@@ -105,6 +105,13 @@ DepthFilter::~DepthFilter()
   SVO_INFO_STREAM("DepthFilter destructed.");
 }
 
+void DepthFilter::applyConfigOptions()
+{
+  Matcher::Options opts;
+  opts.max_epi_search_steps = Config::maxEpiSearchSteps();
+  matcher_.setOptions(opts);
+}
+
 /**
  * @brief Starts the background thread for seed updates.
  * 
