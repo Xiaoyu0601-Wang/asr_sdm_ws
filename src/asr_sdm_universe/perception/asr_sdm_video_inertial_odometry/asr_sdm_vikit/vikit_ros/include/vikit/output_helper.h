@@ -51,6 +51,14 @@ void publishCameraMarker(
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr pub, const string & frame_id,
   const string & ns, const rclcpp::Time & timestamp, int id, double marker_scale,
   const Vector3d & color);
+
+/// Same wireframe frustum as publishCameraMarker, but placed at \p T_world_cam in \c world frame
+/// (ORB-SLAM style keyframe / camera frustums at arbitrary poses).
+void publishCameraMarker(
+  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr pub,
+  const Sophus::SE3d & T_world_cam, const string & ns, const rclcpp::Time & timestamp, int base_id,
+  double marker_scale, const Vector3d & color);
+
 void publishFrameMarker(
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr pub, const Matrix3d & rot,
   const Vector3d & pos, const string & ns, const rclcpp::Time & timestamp, int id, int action,

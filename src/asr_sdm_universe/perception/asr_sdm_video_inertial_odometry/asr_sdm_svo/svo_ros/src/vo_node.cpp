@@ -400,6 +400,7 @@ public:
         break;
       case 'r':
         vo_->reset();
+        visualizer_->resetTrajectory();
         RCLCPP_INFO(this->get_logger(), "SVO user input: RESET");
         break;
       case 's':
@@ -432,7 +433,7 @@ int main(int argc, char ** argv)
   RCLCPP_INFO(node->get_logger(), "SVO node created");
 
   rclcpp::executors::MultiThreadedExecutor executor(
-    rclcpp::ExecutorOptions(), 4);
+  rclcpp::ExecutorOptions(), 4);
   executor.add_node(node);
   executor.spin();
 
