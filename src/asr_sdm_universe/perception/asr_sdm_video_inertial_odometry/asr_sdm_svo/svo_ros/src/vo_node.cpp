@@ -7,7 +7,9 @@
 #include <std_msgs/msg/string.hpp>
 
 #include <svo/config.h>
+#include <svo/frame.h>
 #include <svo/frame_handler_mono.h>
+#include <svo/imu_types.h>
 #include <svo/map.h>
 #include <svo_ros/visualizer.h>
 #include <vikit/abstract_camera.h>
@@ -44,6 +46,16 @@ public:
   vk::AbstractCamera * cam_;
   bool quit_;
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_img_;
+  rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr sub_imu_;
+
+  // IMU handler and configuration
+  std::shared_ptr<svo::ImuHandler> imu_handler_;
+  bool use_imu_ = false;
+  bool set_initial_attitude_from_gravity_ = true;
+  svo::ImuCalibration imu_calib_;
+  svo::ImuInitialization imu_init_;
+  svo::IMUHandlerOptions imu_options_;
+  Eigen::Quaterniond last_imu_rotation_;  // For incremental IMU rotation prior
 
   struct ImageJob
   {
@@ -63,7 +75,8 @@ public:
   double target_fps_{15.0};
   double last_accepted_ts_{0.0};
 
-  VoNode() : Node("svo"), vo_(nullptr), cam_(nullptr), quit_(false)
+  VoNode() : Node("svo"), vo_(nullptr), cam_(nullptr), quit_(false),
+             last_imu_rotation_(Eigen::Quaterniond::Identity())
   {
     // Declare and get parameters
     publish_markers_ = vk::getParam<bool>(this, "publish_markers", true);
@@ -239,6 +252,67 @@ public:
     drop_frames_ = vk::getParam<bool>(this, "drop_frames", true);
     enable_frame_throttle_ = vk::getParam<bool>(this, "enable_frame_throttle", true);
     target_fps_ = vk::getParam<double>(this, "target_fps", 15.0);
+
+    // === IMU Configuration ===
+    use_imu_ = vk::getParam<bool>(this, "use_imu", false);
+    if (use_imu_)
+    {
+      RCLCPP_INFO(this->get_logger(), "IMU support is ENABLED");
+      set_initial_attitude_from_gravity_ =
+          vk::getParam<bool>(this, "set_initial_attitude_from_gravity", true);
+
+      // Load IMU calibration parameters
+      imu_calib_.delay_imu_cam =
+          vk::getParam<double>(this, "imu_delay_imu_cam", 0.0);
+      imu_calib_.max_imu_delta_t =
+          vk::getParam<double>(this, "imu_max_imu_delta_t", 0.1);
+      imu_calib_.saturation_accel_max =
+          vk::getParam<double>(this, "imu_acc_max", 200.0);
+      imu_calib_.saturation_omega_max =
+          vk::getParam<double>(this, "imu_omega_max", 20.0);
+      imu_calib_.gyro_noise_density =
+          vk::getParam<double>(this, "imu_gyro_noise_density", 1.0e-5);
+      imu_calib_.acc_noise_density =
+          vk::getParam<double>(this, "imu_acc_noise_density", 1.0e-4);
+      imu_calib_.gyro_bias_random_walk_sigma =
+          vk::getParam<double>(this, "imu_gyro_bias_rw", 1.0e-6);
+      imu_calib_.acc_bias_random_walk_sigma =
+          vk::getParam<double>(this, "imu_acc_bias_rw", 1.0e-5);
+      imu_calib_.gravity_magnitude =
+          vk::getParam<double>(this, "imu_gravity_magnitude", 9.81);
+      imu_calib_.imu_rate =
+          vk::getParam<double>(this, "imu_rate", 200.0);
+
+      // Load IMU initialization (bias) parameters
+      imu_init_.velocity.setZero();
+      imu_init_.omega_bias.setZero();
+      imu_init_.acc_bias.setZero();
+      imu_init_.velocity_sigma =
+          vk::getParam<double>(this, "imu_velocity_sigma", 0.1);
+      imu_init_.omega_bias_sigma =
+          vk::getParam<double>(this, "imu_omega_bias_sigma", 0.01);
+      imu_init_.acc_bias_sigma =
+          vk::getParam<double>(this, "imu_acc_bias_sigma", 0.1);
+
+      // IMU handler options
+      imu_options_.temporal_stationary_check =
+          vk::getParam<bool>(this, "imu_temporal_stationary_check", false);
+      imu_options_.temporal_window_length_sec_ =
+          vk::getParam<double>(this, "imu_temporal_window_length_sec", 0.5);
+      imu_options_.stationary_acc_sigma_thresh_ =
+          vk::getParam<double>(this, "stationary_acc_sigma_thresh", 0.0);
+      imu_options_.stationary_gyr_sigma_thresh_ =
+          vk::getParam<double>(this, "stationary_gyr_sigma_thresh", 0.0);
+
+      // Create IMU handler
+      imu_handler_ = std::make_shared<svo::ImuHandler>(imu_calib_, imu_init_, imu_options_);
+      last_imu_rotation_ = Eigen::Quaterniond::Identity();
+
+      RCLCPP_INFO(this->get_logger(),
+                  "IMU initialized: delay=%.3fs, rate=%.0fHz, gravity=%.2f",
+                  imu_calib_.delay_imu_cam, imu_calib_.imu_rate,
+                  imu_calib_.gravity_magnitude);
+    }
   }
 
   // Initialize components that need shared_from_this() - must be called after construction
@@ -263,6 +337,16 @@ public:
     sub_img_ = this->create_subscription<sensor_msgs::msg::Image>(
       cam_topic, qos, std::bind(&VoNode::imgCb, this, std::placeholders::_1));
 
+    // Subscribe to IMU topic (if enabled)
+    if (use_imu_)
+    {
+      std::string imu_topic = vk::getParam<std::string>(this, "imu_topic", "/imu/data");
+      sub_imu_ = this->create_subscription<sensor_msgs::msg::Imu>(
+        imu_topic, rclcpp::SensorDataQoS(),
+        std::bind(&VoNode::imuCb, this, std::placeholders::_1));
+      RCLCPP_INFO(this->get_logger(), "Subscribed to IMU topic: %s", imu_topic.c_str());
+    }
+
     if (use_async_processing_) {
       processing_running_ = true;
       processing_thread_ = std::thread(&VoNode::processingLoop, this);
@@ -286,6 +370,21 @@ public:
     if (user_input_thread_ != nullptr) user_input_thread_->stop();
   }
 
+  void imuCb(const sensor_msgs::msg::Imu::ConstSharedPtr & msg)
+  {
+    if (!use_imu_ || !imu_handler_)
+      return;
+
+    Eigen::Vector3d omega(
+        msg->angular_velocity.x, msg->angular_velocity.y, msg->angular_velocity.z);
+    Eigen::Vector3d acc(
+        msg->linear_acceleration.x, msg->linear_acceleration.y, msg->linear_acceleration.z);
+    double t = rclcpp::Time(msg->header.stamp).seconds();
+
+    svo::ImuMeasurement m(t, omega, acc);
+    imu_handler_->addImuMeasurement(m);
+  }
+
   void imgCb(const sensor_msgs::msg::Image::ConstSharedPtr & msg)
   {
     const double timestamp = rclcpp::Time(msg->header.stamp).seconds();
@@ -307,6 +406,35 @@ public:
     }
 
     processUserActions();
+
+    // === Set IMU Rotation Prior ===
+    if (use_imu_ && imu_handler_)
+    {
+      if (!vo_->hasStarted() && set_initial_attitude_from_gravity_)
+      {
+        // Initialize: align world frame with gravity using accelerometer
+        Eigen::Quaterniond R_imu_world;
+        if (imu_handler_->getInitialAttitude(timestamp, R_imu_world))
+        {
+          vo_->setRotationPrior(R_imu_world);
+          last_imu_rotation_ = R_imu_world;  // Store current IMU rotation
+          RCLCPP_INFO(this->get_logger(), "IMU: Initial attitude set from gravity");
+        }
+      }
+      else if (vo_->hasStarted() && vo_->lastFrame() != nullptr)
+      {
+        // Incremental IMU rotation prior between consecutive frames
+        Eigen::Quaterniond R_imu_last_cur;
+        const double last_ts = vo_->lastFrame()->timestamp_;
+        if (imu_handler_->getRelativeRotationPrior(
+                last_ts, timestamp, false, R_imu_last_cur))
+        {
+          vo_->setRotationIncrementPrior(R_imu_last_cur);
+          last_imu_rotation_ = R_imu_last_cur * last_imu_rotation_;
+        }
+      }
+    }
+
     vo_->addImage(img, timestamp);
       if (enable_visualization_) {
     visualizer_->publishMinimal(img, vo_->lastFrame(), *vo_, timestamp);
@@ -365,6 +493,32 @@ public:
 
       processUserActions();
 
+      // === Set IMU Rotation Prior (same as sync path) ===
+      if (use_imu_ && imu_handler_)
+      {
+        if (!vo_->hasStarted() && set_initial_attitude_from_gravity_)
+        {
+          Eigen::Quaterniond R_imu_world;
+          if (imu_handler_->getInitialAttitude(job.timestamp, R_imu_world))
+          {
+            vo_->setRotationPrior(R_imu_world);
+            last_imu_rotation_ = R_imu_world;
+            RCLCPP_INFO(this->get_logger(), "IMU (async): Initial attitude set from gravity");
+          }
+        }
+        else if (vo_->hasStarted() && vo_->lastFrame() != nullptr)
+        {
+          Eigen::Quaterniond R_imu_last_cur;
+          const double last_ts = vo_->lastFrame()->timestamp_;
+          if (imu_handler_->getRelativeRotationPrior(
+                  last_ts, job.timestamp, false, R_imu_last_cur))
+          {
+            vo_->setRotationIncrementPrior(R_imu_last_cur);
+            last_imu_rotation_ = R_imu_last_cur * last_imu_rotation_;
+          }
+        }
+      }
+
       vo_->addImage(img, job.timestamp);
       if (enable_visualization_) {
         visualizer_->publishMinimal(img, vo_->lastFrame(), *vo_, job.timestamp);
@@ -401,6 +555,10 @@ public:
       case 'r':
         vo_->reset();
         visualizer_->resetTrajectory();
+        if (imu_handler_) {
+          imu_handler_->reset();
+          last_imu_rotation_ = Eigen::Quaterniond::Identity();
+        }
         RCLCPP_INFO(this->get_logger(), "SVO user input: RESET");
         break;
       case 's':

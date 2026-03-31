@@ -18,6 +18,7 @@ def generate_launch_description():
 
     camera_yaml_path = os.path.join(svo_ros_dir, 'param', 'camera_pinhole.yaml')
     vo_yaml_path = os.path.join(svo_ros_dir, 'param', 'vo_rig3_stable.yaml')
+    imu_yaml_path = os.path.join(svo_ros_dir, 'param', 'imu_rig3.yaml')
 
     # Declare launch arguments
     cam_topic_arg = DeclareLaunchArgument(
@@ -68,6 +69,18 @@ def generate_launch_description():
         description='Target accepted input FPS when throttling is enabled'
     )
 
+    use_imu_arg = DeclareLaunchArgument(
+        'use_imu',
+        default_value='false',
+        description='Enable IMU rotation prior (requires IMU topic)'
+    )
+
+    imu_topic_arg = DeclareLaunchArgument(
+        'imu_topic',
+        default_value='/imu/data',
+        description='IMU ROS 2 topic name'
+    )
+
 
     svo_node = Node(
         package='svo_ros',
@@ -77,6 +90,7 @@ def generate_launch_description():
         parameters=[
             camera_yaml_path,
             vo_yaml_path,
+            imu_yaml_path,
             {
                 # Allow overriding via launch arg
                 'cam_topic': LaunchConfiguration('cam_topic'),
@@ -97,6 +111,10 @@ def generate_launch_description():
                 'publish_every_nth_img': 1,
                 'publish_every_nth_dense_input': 4,
                 'publish_map_every_frame': False,
+
+                # IMU configuration (loaded from imu_rig3.yaml)
+                'use_imu': LaunchConfiguration('use_imu'),
+                'imu_topic': LaunchConfiguration('imu_topic'),
             },
         ],
     )
@@ -160,6 +178,8 @@ def generate_launch_description():
         drop_frames_arg,
         enable_frame_throttle_arg,
         target_fps_arg,
+        use_imu_arg,
+        imu_topic_arg,
         env_libgl,
         env_gallium,
         env_gl_version,

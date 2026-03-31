@@ -1,0 +1,53 @@
+# IMU Parameters for SVO - Rig3
+#
+# Based on standard IMU noise model (Kalman filter prior):
+#   - gyro_noise_density: gyroscope white noise (rad/s/sqrt(Hz))
+#   - acc_noise_density: accelerometer white noise (m/s^2/sqrt(Hz))
+#   - gyro_bias_random_walk_sigma: gyroscope bias random walk (rad/s/sqrt(s))
+#   - acc_bias_random_walk_sigma: accelerometer bias random walk (m/s^2/sqrt(s))
+#
+# Adjust these values based on your IMU datasheet:
+#   - Realsense D435i: gyro ~0.004 rad/s/sqrt(Hz), acc ~300 ug/sqrt(Hz)
+#   - Euroc MAV datasets: ADIS16448 IMU
+#
+
+/asr_sdm_svo:
+  ros__parameters:
+
+    # === Enable IMU fusion ===
+    use_imu: false                    # Set to true to enable IMU rotation prior
+    imu_topic: "/imu/data"           # ROS 2 IMU topic (must match bag file)
+    set_initial_attitude_from_gravity: true  # Align world frame with gravity at startup
+
+    # === Timing & Calibration ===
+    imu_delay_imu_cam: 0.0            # Time delay from IMU measurement to camera (seconds)
+                                      # Positive = IMU leads camera
+    imu_max_imu_delta_t: 0.1         # Max time gap between IMU measurements (s)
+
+    # === IMU Physical Limits ===
+    imu_acc_max: 200.0               # Accelerometer saturation (m/s^2)
+    imu_omega_max: 20.0              # Gyroscope saturation (rad/s)
+
+    # === IMU Noise Parameters (for covariance / weighting) ===
+    imu_gyro_noise_density: 1.0e-5    # Gyroscope white noise sigma (rad/s/sqrt(Hz))
+    imu_acc_noise_density: 1.0e-4      # Accelerometer white noise sigma (m/s^2/sqrt(Hz))
+    imu_gyro_bias_rw: 1.0e-6         # Gyroscope bias random walk (rad/s/sqrt(s))
+    imu_acc_bias_rw: 1.0e-5          # Accelerometer bias random walk (m/s^2/sqrt(s))
+
+    # === Gravity ===
+    imu_gravity_magnitude: 9.81      # Gravity magnitude (m/s^2)
+                                       # Use local gravity: g = |acc| when IMU is stationary
+
+    # === IMU Sampling Rate ===
+    imu_rate: 200.0                  # IMU sample rate (Hz)
+
+    # === IMU Initialization (bias estimation) ===
+    imu_velocity_sigma: 0.1            # Initial velocity uncertainty (m/s)
+    imu_omega_bias_sigma: 0.01        # Initial gyro bias uncertainty (rad/s)
+    imu_acc_bias_sigma: 0.1           # Initial accelerometer bias uncertainty (m/s^2)
+
+    # === Temporal Stationary Detection (optional) ===
+    imu_temporal_stationary_check: false  # Enable IMU-based stationary detection
+    imu_temporal_window_length_sec: 0.5     # Time window for stationary check (s)
+    stationary_acc_sigma_thresh: 0.0        # Accelerometer stddev threshold for stationary (m/s^2/sqrt(Hz))
+    stationary_gyr_sigma_thresh: 0.0       # Gyroscope stddev threshold for stationary (rad/s/sqrt(Hz))

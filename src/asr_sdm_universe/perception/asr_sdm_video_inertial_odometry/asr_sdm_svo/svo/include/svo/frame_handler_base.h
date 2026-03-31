@@ -57,6 +57,9 @@ public:
   /// Get tracking quality.
   TrackingQuality trackingQuality() const { return tracking_quality_; }
 
+  /// Check if the system has started (not in PAUSED state).
+  bool hasStarted() const { return stage_ != STAGE_PAUSED; }
+
   /// Get the processing time of the previous iteration.
   double lastProcessingTime() const { return timer_.getTime(); }
 

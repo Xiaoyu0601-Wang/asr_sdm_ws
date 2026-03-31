@@ -1,0 +1,57 @@
+rosbag2_bagfile_information:
+  compression_format: ''
+  compression_mode: ''
+  custom_data: null
+  duration:
+    nanoseconds: 162441720640
+  files:
+  - duration:
+      nanoseconds: 162441720640
+    message_count: 61273
+    path: airground_rig_s3_ros2.db3
+    starting_time:
+      nanoseconds_since_epoch: 1363639130318793523
+  message_count: 61273
+  relative_file_paths:
+  - airground_rig_s3_ros2.db3
+  ros_distro: rosbags
+  starting_time:
+    nanoseconds_since_epoch: 1363639130318793523
+  storage_identifier: sqlite3
+  topics_with_message_count:
+  - message_count: 19039
+    topic_metadata:
+      name: Rig
+      offered_qos_profiles: []
+      serialization_format: cdr
+      type: geometry_msgs/msg/PoseStamped
+      type_description_hash: RIHS01_10f3786d7d40fd2b54367835614bff85d4ad3b5dab62bf8bca0cc232d73b4cd8
+  - message_count: 16244
+    topic_metadata:
+      name: imu/data
+      offered_qos_profiles: []
+      serialization_format: cdr
+      type: sensor_msgs/msg/Imu
+      type_description_hash: RIHS01_7d9a00ff131080897a5ec7e26e315954b8eae3353c3f995c55faf71574000b5b
+  - message_count: 16244
+    topic_metadata:
+      name: /imu/magnetometer
+      offered_qos_profiles: []
+      serialization_format: cdr
+      type: geometry_msgs/msg/Vector3Stamped
+      type_description_hash: RIHS01_d4829622288cbb443886e7ea94ea5671a3b1be6bab4ad04224432a65f7d7887a
+  - message_count: 4873
+    topic_metadata:
+      name: camera/camera_info
+      offered_qos_profiles: []
+      serialization_format: cdr
+      type: sensor_msgs/msg/CameraInfo
+      type_description_hash: RIHS01_b303399feda782bcc44e57b8eec9baaa9e0e5a7cd4a89fee8cffe588d6dc93ed
+  - message_count: 4873
+    topic_metadata:
+      name: camera/image_raw
+      offered_qos_profiles: []
+      serialization_format: cdr
+      type: sensor_msgs/msg/Image
+      type_description_hash: RIHS01_d31d41a9a4c4bc8eae9be757b0beed306564f7526c88ea6a4588fb9582527d47
+  version: 9
