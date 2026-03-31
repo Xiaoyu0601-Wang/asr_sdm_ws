@@ -73,6 +73,6 @@ public:
   void exportToDense(const FramePtr & frame);
 };
 
-}  // end namespace svo
+}  
 
-#endif /* SVO_VISUALIZER_H_ */
+#endif 

@@ -150,6 +150,6 @@ protected:
   void updateSeedsLoop();
 };
 
-}  // namespace svo
+}  
 
-#endif  // SVO_DEPTH_FILTER_H_
+#endif 

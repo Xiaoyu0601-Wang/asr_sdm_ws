@@ -122,6 +122,6 @@ void frameValidation(Frame * frame, int id);
 void pointValidation(Point * point, int id);
 
 }  // namespace map_debug
-}  // namespace svo
+} 
 
-#endif  // SVO_MAP_H_
+#endif 

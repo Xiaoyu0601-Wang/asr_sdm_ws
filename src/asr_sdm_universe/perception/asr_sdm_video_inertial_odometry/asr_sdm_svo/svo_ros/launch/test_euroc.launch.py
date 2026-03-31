@@ -41,8 +41,6 @@ def _load_yaml(path: str):
 
 
 def generate_launch_description():
-    # 获取 svo_ros 包的 share 目录（注意：launch 实际读取的是 install/share 下的文件）。
-    # 这也是为什么你改了 src 下的 yaml 后，需要 colcon build + source install 才能生效。
     svo_ros_dir = get_package_share_directory('svo_ros')
 
     camera_yaml_path = os.path.join(svo_ros_dir, 'param', 'camera_euroc.yaml')
@@ -54,8 +52,7 @@ def generate_launch_description():
     # 兼容两种 VO yaml 格式：
     #  1) ROS2 nested: {svo: {ros__parameters: {...}}}
     #  2) flat: {grid_size:..., max_fts:..., ...}
-    #
-    # 最终我们要得到一个“扁平字典” vo_params，直接 update 到 node_parameters。
+
     if isinstance(vo_params_raw, dict) and 'svo' in vo_params_raw and isinstance(vo_params_raw['svo'], dict):
         vo_params = vo_params_raw.get('svo', {}).get('ros__parameters', {})
         if not vo_params:
@@ -101,7 +98,7 @@ def generate_launch_description():
         description='Camera topic to subscribe to'
     )
 
-    # SVO 节点
+
     svo_node = Node(
         package='svo_ros',
         executable='vo',

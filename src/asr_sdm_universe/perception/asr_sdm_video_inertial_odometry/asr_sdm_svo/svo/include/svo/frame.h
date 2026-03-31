@@ -136,6 +136,6 @@ void createImgPyramid(const cv::Mat & img_level_0, int n_levels, ImgPyr & pyr);
 bool getSceneDepth(const Frame & frame, double & depth_mean, double & depth_min);
 
 }  // namespace frame_utils
-}  // namespace svo
+} 
 
-#endif  // SVO_FRAME_H_
+#endif  

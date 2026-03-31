@@ -98,6 +98,6 @@ public:
   void createPatchFromPatchWithBorder();
 };
 
-}  // namespace svo
+} 
 
-#endif  // SVO_MATCHER_H_
+#endif 
