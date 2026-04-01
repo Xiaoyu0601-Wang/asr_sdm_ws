@@ -66,6 +66,9 @@ public:
   /// Lambda for IMU rotation prior regularization in pose optimizer.
   double rotationPriorLambda() const { return rotation_prior_lambda_; }
 
+  /// Get the incremental IMU rotation between frames.
+  const Quaterniond& rotationIncrement() const { return rotation_increment_; }
+
 protected:
   vk::AbstractCamera * cam_;     //!< Camera model, can be ATAN, Pinhole or Ocam (see vikit).
   Reprojector reprojector_;      //!< Projects points from other keyframes into the current frame
@@ -82,8 +85,9 @@ protected:
                                //!< used to initialize new 3D points.
 
   // IMU rotation prior (set externally via setRotationPrior / setRotationIncrementPrior)
-  Quaterniond rotation_prior_;        //!< Prior rotation from IMU (e.g., gravity-aligned world)
-  double rotation_prior_lambda_;     //!< Regularization strength for IMU rotation prior
+  Quaterniond rotation_prior_;           //!< Gravity-aligned IMU world orientation (from initial attitude)
+  Quaterniond rotation_increment_;       //!< Incremental IMU rotation between last and current frame
+  double rotation_prior_lambda_;         //!< Regularization strength for IMU rotation prior
 
   /// Initialize the visual odometry algorithm.
   virtual void initialize();

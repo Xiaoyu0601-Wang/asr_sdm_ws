@@ -27,13 +27,31 @@ void PreintegratedImuMeasurement::addMeasurement(const ImuMeasurement& m)
   if (last_imu_measurement_set_)
   {
     const double dt = m.timestamp_ - last_imu_measurement.timestamp_;
+    if (dt <= 0.0 || dt > 0.5) return;  // Reject non-positive or unreasonably large dt
+
     const Eigen::Vector3d a = last_imu_measurement.linear_acceleration_ - acc_bias_;
     const Eigen::Vector3d w = last_imu_measurement.angular_velocity_ - omega_bias_;
-    const Eigen::Quaterniond R_incr = Eigen::Quaterniond(Eigen::AngleAxisd(w.norm() * dt, w.normalized()));
 
-    // Second order integration:
-    delta_t_ij_ += delta_v_ij_ * dt + (delta_R_ij_.toRotationMatrix() * a) * dt * dt * 0.5;
-    delta_v_ij_ += delta_R_ij_.toRotationMatrix() * a * dt;
+    // Saturate angular velocity and acceleration to physical limits
+    const double omega_norm = w.norm();
+    const double acc_norm = a.norm();
+    Eigen::Vector3d w_corr = w;
+    Eigen::Vector3d a_corr = a;
+    if (omega_norm > saturation_omega_max_)
+    {
+      w_corr = w.normalized() * saturation_omega_max_;
+    }
+    if (acc_norm > saturation_accel_max_)
+    {
+      a_corr = a.normalized() * saturation_accel_max_;
+    }
+
+    // Second-order integration:
+    delta_t_ij_ += delta_v_ij_ * dt + (delta_R_ij_.toRotationMatrix() * a_corr) * dt * dt * 0.5;
+    delta_v_ij_ += delta_R_ij_.toRotationMatrix() * a_corr * dt;
+    const double wn = w_corr.norm();
+    const Eigen::Quaterniond R_incr = Eigen::Quaterniond(
+        Eigen::AngleAxisd(wn * dt, wn > 1e-8 ? w_corr.normalized() : Eigen::Vector3d::UnitX()));
     delta_R_ij_ = delta_R_ij_ * R_incr;
     dt_sum_ += dt;
   }
@@ -100,7 +118,16 @@ bool ImuHandler::getMeasurements(
     }
   }
 
-  if (it1 == measurements_.end() || it2 == measurements_.end() || it1 == it2)
+  if (!it2_set || it1 == measurements_.end())
+  {
+    SVO_WARN_STREAM("ImuHandler: Not enough IMU measurements for the time interval.");
+    return false;
+  }
+
+  // it1 = last measurement <= t1 (older)
+  // it2 = last measurement < t2 (newer)
+  // Require at least 2 measurements to integrate
+  if (it2 == it1 || std::distance(it2, it1) < 1)
   {
     SVO_WARN_STREAM("ImuHandler: Not enough IMU measurements for the time interval.");
     return false;
@@ -147,10 +174,13 @@ bool ImuHandler::getClosestMeasurement(
     }
   }
 
-  if (dt_best > imu_calib_.max_imu_delta_t)
+  // Use 10x max_imu_delta_t as the initial-attitude lookup threshold
+  // (much looser than the preintegration threshold, since we just need one nearby measurement)
+  const double max_lookup_dt = std::max(imu_calib_.max_imu_delta_t * 10.0, 1.0);
+  if (dt_best > max_lookup_dt)
   {
     SVO_WARN_STREAM("ImuHandler: No IMU measurement found within threshold. "
-                    "Closest: " << dt_best * 1000.0 << " ms.");
+                    "Closest: " << dt_best * 1000.0 << " ms > " << max_lookup_dt * 1000.0 << " ms.");
     return false;
   }
   return true;
@@ -167,7 +197,7 @@ bool ImuHandler::getRelativeRotationPrior(
                        delete_old_measurements, measurements))
     return false;
 
-  // Integrate angular velocity from t1 to t2 with bias correction.
+  // Integrate angular velocity from t1 to t2 with bias correction and saturation.
   R_oldimu_newimu.setIdentity();
   ImuMeasurements::reverse_iterator it = measurements.rbegin();
   ImuMeasurements::reverse_iterator it_plus = measurements.rbegin();
@@ -181,11 +211,28 @@ bool ImuHandler::getRelativeRotationPrior(
     else
       dt = it_plus->timestamp_ - it->timestamp_;
 
-    const Eigen::Vector3d omega_corrected = it->angular_velocity_ - omega_bias_;
+    if (dt <= 0.0 || dt > 0.5)
+    {
+      SVO_WARN_STREAM("ImuHandler: Rejected dt=" << dt << " in rotation prior integration.");
+      continue;
+    }
+
+    const Eigen::Vector3d omega_raw = it->angular_velocity_ - omega_bias_;
+    // Apply gyroscope saturation limit
+    Eigen::Vector3d omega_corrected = omega_raw;
+    const double omega_norm = omega_corrected.norm();
+    if (omega_norm > imu_calib_.saturation_omega_max)
+    {
+      omega_corrected = omega_corrected.normalized() * imu_calib_.saturation_omega_max;
+      SVO_WARN_STREAM("ImuHandler: Gyro saturation detected. omega_norm="
+                      << omega_norm << " > " << imu_calib_.saturation_omega_max);
+    }
+
     const double theta = omega_corrected.norm() * dt;
     if (theta > 1e-8)
     {
-      Eigen::Quaterniond R_incr(Eigen::AngleAxisd(theta, omega_corrected.normalized()));
+      Eigen::Quaterniond R_incr(Eigen::AngleAxisd(
+          theta, omega_corrected.normalized()));
       R_oldimu_newimu = R_oldimu_newimu * R_incr;
     }
   }
@@ -244,51 +291,59 @@ void ImuHandler::reset()
 
 IMUTemporalStatus ImuHandler::checkTemporalStatus(const double time_sec)
 {
-  IMUTemporalStatus res = IMUTemporalStatus::kMoving;
-
   if (!options_.temporal_stationary_check)
   {
     SVO_WARN_STREAM("ImuHandler: Stationary check is disabled.");
-    return res;
+    return IMUTemporalStatus::kMoving;
   }
 
+  IMUTemporalStatus res = IMUTemporalStatus::kMoving;
+
+  ulock_t lock(measurements_mut_);
   if (temporal_imu_window_.empty() ||
       temporal_imu_window_.front().timestamp_ < time_sec)
     return IMUTemporalStatus::kUnkown;
 
-  int start_idx = -1;
-  int end_idx = -1;
-  for (size_t idx = 0; idx < temporal_imu_window_.size(); idx++)
+  // Find indices: start = first measurement older than time_sec, end = oldest in window
+  ssize_t start_idx = -1;
+  ssize_t end_idx = -1;
+  for (ssize_t idx = 0; idx < static_cast<ssize_t>(temporal_imu_window_.size()); ++idx)
   {
-    if (start_idx == -1 && temporal_imu_window_[idx].timestamp_ < time_sec)
+    if (temporal_imu_window_[static_cast<size_t>(idx)].timestamp_ >= time_sec)
     {
-      if (idx == 0) return IMUTemporalStatus::kUnkown;
-      start_idx = static_cast<int>(idx) - 1;
-      continue;
-    }
-    if (start_idx != -1 &&
-        (time_sec - temporal_imu_window_[idx].timestamp_ >
-         options_.temporal_window_length_sec_))
-    {
-      end_idx = static_cast<int>(idx);
+      end_idx = idx;
       break;
     }
   }
-  if (end_idx == -1 || start_idx == -1)
+  if (end_idx == -1)
     return IMUTemporalStatus::kUnkown;
 
-  std::vector<double> gyr_x(end_idx - start_idx + 1), gyr_y(end_idx - start_idx + 1),
-                      gyr_z(end_idx - start_idx + 1), acc_x(end_idx - start_idx + 1),
-                      acc_y(end_idx - start_idx + 1), acc_z(end_idx - start_idx + 1);
-  for (int midx = start_idx; midx <= end_idx; ++midx)
+  // Search for start of a full temporal window
+  const double window_end_ts = temporal_imu_window_[static_cast<size_t>(end_idx)].timestamp_;
+  for (ssize_t idx = end_idx - 1; idx >= 0; --idx)
+  {
+    if (window_end_ts - temporal_imu_window_[static_cast<size_t>(idx)].timestamp_ >
+        options_.temporal_window_length_sec_)
+    {
+      start_idx = idx + 1;
+      break;
+    }
+  }
+  if (start_idx == -1 || end_idx < start_idx)
+    return IMUTemporalStatus::kUnkown;
+
+  const size_t n = static_cast<size_t>(end_idx - start_idx + 1);
+  std::vector<double> gyr_x(n), gyr_y(n), gyr_z(n), acc_x(n), acc_y(n), acc_z(n);
+  for (ssize_t midx = start_idx; midx <= end_idx; ++midx)
   {
     const ImuMeasurement& m = temporal_imu_window_[static_cast<size_t>(midx)];
-    gyr_x[static_cast<size_t>(midx - start_idx)] = m.angular_velocity_.x();
-    gyr_y[static_cast<size_t>(midx - start_idx)] = m.angular_velocity_.y();
-    gyr_z[static_cast<size_t>(midx - start_idx)] = m.angular_velocity_.z();
-    acc_x[static_cast<size_t>(midx - start_idx)] = m.linear_acceleration_.x();
-    acc_y[static_cast<size_t>(midx - start_idx)] = m.linear_acceleration_.y();
-    acc_z[static_cast<size_t>(midx - start_idx)] = m.linear_acceleration_.z();
+    const size_t off = static_cast<size_t>(midx - start_idx);
+    gyr_x[off] = m.angular_velocity_.x();
+    gyr_y[off] = m.angular_velocity_.y();
+    gyr_z[off] = m.angular_velocity_.z();
+    acc_x[off] = m.linear_acceleration_.x();
+    acc_y[off] = m.linear_acceleration_.y();
+    acc_z[off] = m.linear_acceleration_.z();
   }
 
   const double sqrt_dt = std::sqrt(1.0 / imu_calib_.imu_rate);
@@ -306,8 +361,9 @@ IMUTemporalStatus ImuHandler::checkTemporalStatus(const double time_sec)
     stationary &= (acc_std[idx] < options_.stationary_acc_sigma_thresh_);
   }
 
+  // Prune: keep only measurements newer than the start of the window
   temporal_imu_window_.erase(
-      temporal_imu_window_.begin() + end_idx, temporal_imu_window_.end());
+      temporal_imu_window_.begin(), temporal_imu_window_.begin() + static_cast<ssize_t>(start_idx));
 
   return stationary ? IMUTemporalStatus::kStationary : IMUTemporalStatus::kMoving;
 }

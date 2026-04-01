@@ -73,8 +73,14 @@ public:
 
   PreintegratedImuMeasurement() = default;
   PreintegratedImuMeasurement(const Eigen::Vector3d& omega_bias,
-                             const Eigen::Vector3d& acc_bias)
-    : omega_bias_(omega_bias), acc_bias_(acc_bias) {}
+                             const Eigen::Vector3d& acc_bias,
+                             double saturation_omega_max,
+                             double saturation_accel_max)
+    : omega_bias_(omega_bias)
+    , acc_bias_(acc_bias)
+    , saturation_omega_max_(saturation_omega_max)
+    , saturation_accel_max_(saturation_accel_max)
+  {}
 
   void addMeasurement(const ImuMeasurement& m);
   void addMeasurements(const ImuMeasurements& ms);
@@ -87,6 +93,10 @@ public:
   double dt_sum_ = 0.0;
   bool last_imu_measurement_set_ = false;
   ImuMeasurement last_imu_measurement;
+
+private:
+  double saturation_omega_max_ = 20.0;
+  double saturation_accel_max_ = 200.0;
 };
 
 /// Handles IMU data buffering, bias correction, preintegration, and rotation priors.

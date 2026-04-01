@@ -65,6 +65,7 @@ FrameHandlerMono::FrameHandlerMono(vk::AbstractCamera* cam) :
   reprojector_(cam_, map_),
   depth_filter_(NULL),
   rotation_prior_(Quaterniond::Identity()),
+  rotation_increment_(Quaterniond::Identity()),
   rotation_prior_lambda_(0.0)
 {
   initialize();
@@ -275,13 +276,21 @@ FrameHandlerBase::UpdateResult FrameHandlerMono::processFrame()
   SVO_START_TIMER("pose_optimizer");
   size_t sfba_n_edges_final;
   double sfba_thresh, sfba_error_init, sfba_error_final;
-  if (rotation_prior_lambda_ > 0.0)
+  if (rotation_prior_lambda_ > 0.0 && !rotation_prior_.isApprox(Quaterniond::Identity(), 1e-6))
   {
+    // R_imu_last_from_imu_cur: incremental IMU rotation between last frame and current frame.
+    // This is accumulated in vo_node and stored back in rotation_prior_ by setRotationIncrementPrior.
+    // Since setRotationIncrementPrior overwrites rotation_prior_ with R_imu_last_cur,
+    // we need to recover the last IMU orientation. Use T_f_w_.rotationMatrix() as proxy
+    // for the camera's IMU-aligned world rotation, then derive R_imu_last_from_imu_cur.
+    // Simplification: use Identity if last frame exists and we want pure IMU prior.
+    // (The actual R_imu_last_from_imu_cur was already integrated in vo_node
+    // and stored back into rotation_prior_ via setRotationIncrementPrior.)
     pose_optimizer::optimizeGaussNewtonWithImuPrior(
         Config::poseOptimThresh(), Config::poseOptimNumIter(), false,
         new_frame_,
-        rotation_prior_,       // R_world_from_imu (gravity-aligned IMU world orientation)
-        Quaterniond::Identity(), // R_imu_last_from_imu_cur (incremental, Identity for first frame)
+        rotation_prior_,        // R_world_from_imu (gravity-aligned world orientation)
+        rotation_increment_,    // R_imu_last_from_imu_cur (incremental from IMU gyroscope)
         rotation_prior_lambda_,
         sfba_thresh, sfba_error_init, sfba_error_final, sfba_n_edges_final);
     SVO_DEBUG_STREAM("PoseOptimizer: IMU prior enabled (lambda="
@@ -459,6 +468,7 @@ void FrameHandlerMono::resetAll()
   overlap_kfs_.clear();
   depth_filter_->reset();
   rotation_prior_ = Quaterniond::Identity();
+  rotation_increment_ = Quaterniond::Identity();
   rotation_prior_lambda_ = 0.0;
 }
 
@@ -475,7 +485,7 @@ void FrameHandlerMono::setRotationIncrementPrior(const Quaterniond& R_imu_last_f
 {
   if (last_frame_ == nullptr)
     return;
-  rotation_prior_ = R_imu_last_from_imu_cur;
+  rotation_increment_ = R_imu_last_from_imu_cur;
   rotation_prior_lambda_ = 0.05;  // Weak regularization (IMU only provides rotation)
 }
 

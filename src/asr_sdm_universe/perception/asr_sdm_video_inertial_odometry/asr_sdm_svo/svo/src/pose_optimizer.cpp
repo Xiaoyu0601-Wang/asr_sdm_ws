@@ -51,34 +51,51 @@ inline Eigen::Matrix3d skew(const Eigen::Vector3d& v)
 
 /// IMU rotation prior regularization: adds a soft constraint on camera rotation
 /// to be consistent with IMU-predicted orientation.
-///   - R_cam_world_prior: approximate camera rotation in world (prior estimate)
-///   - R_imu_world_mat: IMU rotation in world frame as 3x3 matrix
-///   - lambda: regularization strength (0 = no prior)
+/// Uses block-diagonal separation: only affects the rotation block (top-left 3x3)
+/// of the full 6x6 se(3) Hessian, leaving translation optimization unaffected.
+///
+/// Parameters:
+///   - R_cam_world_prior: camera rotation in world frame (prior estimate)
+///   - R_imu_world_mat: IMU orientation in world frame (3x3 matrix)
+///   - R_imu_last_from_imu_cur: relative rotation of IMU between last and current frame
+///   - lambda: regularization strength (scaled by lambda^2)
+///
+/// Residual: theta = log(R_imu_world * R_imu_last_from_imu_cur * R_cam_world^{-1})
+/// Cost: J = theta^T * theta
+/// Gradient (w.r.t. se3 tangent): g_rot = w^2 * theta
+/// Hessian approximation: H_rot = w^2 * I_3 (Gauss-Newton)
 inline void computeImuPriorTerm(
     const Eigen::Matrix3d& R_cam_world_prior,
     const Eigen::Matrix3d& R_imu_world_mat,
+    const Eigen::Matrix3d& R_imu_last_from_imu_cur,
     double lambda,
     Vector6d* g_prior,
     Matrix6d* H_prior)
 {
-  // Error rotation: R_err = R_imu_world * R_cam_world^{-1}
-  // Measures "how far is camera from IMU-predicted orientation"
-  const Eigen::Matrix3d R_err = R_imu_world_mat * R_cam_world_prior.transpose();
+  // Target rotation: R_target = R_imu_world * R_imu_last_from_imu_cur
+  const Eigen::Matrix3d R_target = R_imu_world_mat * R_imu_last_from_imu_cur;
 
-  // Convert to axis-angle vector (logarithm map)
+  // Error rotation: R_err = R_target * R_cam_world_prior^{-1}
+  const Eigen::Matrix3d R_err = R_target * R_cam_world_prior.transpose();
+
+  // Axis-angle from SO(3) logarithm
   Eigen::AngleAxisd aa(R_err);
   double angle = aa.angle();
-  if (angle > M_PI)
+  if (angle > M_PI)  // Unwrap to [-pi, pi]
     angle -= 2 * M_PI;
   const Eigen::Vector3d theta = aa.axis() * angle;
 
-  // Prior error = theta (in tangent space at identity)
+  // Gauss-Newton: g = J^T * r, H ≈ J^T * J
+  // For rotation-only residual: r(theta) = theta, J = I
   const double w_sq = lambda * lambda;
-  *g_prior = Vector6d::Zero();
-  (*g_prior).tail<3>() = w_sq * theta;
+  g_prior->setZero();
+  g_prior->tail<3>() = w_sq * theta;
 
-  *H_prior = Matrix6d::Zero();
-  H_prior->bottomRightCorner<3, 3>() = w_sq * Eigen::Matrix3d::Identity();
+  H_prior->setZero();
+  // Block-diagonal: only affect rotation block (top-left 3x3)
+  // Translation block (bottom-right 3x3) remains zero — IMU prior constrains
+  // orientation, not position. Off-diagonal blocks also zero.
+  H_prior->topLeftCorner<3, 3>() = w_sq * Eigen::Matrix3d::Identity();
 }
 
 }  // anonymous namespace
@@ -276,10 +293,12 @@ void optimizeGaussNewtonWithImuPrior(
   // Compute IMU-related rotation matrices.
   // R_imu_world: IMU orientation in world frame = R_world_from_imu^{-1}
   const Eigen::Matrix3d R_imu_world_mat = R_world_from_imu.toRotationMatrix();
-  // Prior camera rotation = inverse of IMU orientation
+  // Target camera rotation consistent with IMU = R_imu_world * R_imu_last_from_imu_cur
+  // R_imu_last_from_imu_cur comes from gyroscope preintegration between frames.
+  // R_cam_world_prior is the current (pre-optimization) camera rotation estimate.
+  const Eigen::Matrix3d R_imu_last_from_imu_cur_mat = R_imu_last_from_imu_cur.toRotationMatrix();
   const Eigen::Matrix3d R_cam_world_prior =
-      R_imu_world_mat.transpose()
-      * R_imu_last_from_imu_cur.toRotationMatrix().transpose();
+      R_imu_world_mat * R_imu_last_from_imu_cur_mat;
 
   for (size_t iter = 0; iter < n_iter; ++iter)
   {
@@ -316,7 +335,8 @@ void optimizeGaussNewtonWithImuPrior(
       Vector6d g_prior;
       Matrix6d H_prior;
       computeImuPriorTerm(
-          R_cam_world_prior, R_imu_world_mat, lambda, &g_prior, &H_prior);
+          R_cam_world_prior, R_imu_world_mat, R_imu_last_from_imu_cur_mat,
+          lambda, &g_prior, &H_prior);
       A += H_prior;
       b += g_prior;
     }

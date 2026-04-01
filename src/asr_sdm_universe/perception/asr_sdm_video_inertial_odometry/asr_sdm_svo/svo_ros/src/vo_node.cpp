@@ -20,414 +20,400 @@
 #include <vikit/pinhole_camera.h>
 #include <vikit/user_input_thread.h>
 
-#include <string>
 #include <atomic>
-#include <condition_variable>
-#include <deque>
+#include <chrono>
 #include <mutex>
+#include <string>
 #include <thread>
 
 namespace svo
 {
 
-
 class VoNode : public rclcpp::Node
 {
 public:
-  svo::FrameHandlerMono * vo_;
-  std::unique_ptr<svo::Visualizer> visualizer_;
-  bool publish_markers_;
-  bool publish_dense_input_;
-  bool enable_visualization_;
-  bool use_async_processing_{false};
-  std::shared_ptr<vk::UserInputThread> user_input_thread_;
-  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr sub_remote_key_;
-  std::string remote_input_;
-  vk::AbstractCamera * cam_;
-  bool quit_;
-  rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_img_;
-  rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr sub_imu_;
+  VoNode();
+  ~VoNode();
+  void init();
+  void run();
+  bool shouldQuit() const { return quit_; }
 
-  // IMU handler and configuration
+  // Getters needed by main()
+  bool& quitFlag() { return quit_; }
+  std::condition_variable& imgCv() { return img_cv_; }
+
+private:
+  // --- ROS callbacks ---
+  void imgCb(const sensor_msgs::msg::Image::ConstSharedPtr& msg);
+  void imuCb(const sensor_msgs::msg::Imu::ConstSharedPtr& msg);
+  void remoteKeyCb(const std_msgs::msg::String::ConstSharedPtr& msg);
+  void processUserActions();
+
+  // --- Core ---
+  svo::FrameHandlerMono* vo_ = nullptr;
+  vk::AbstractCamera* cam_ = nullptr;
+  std::unique_ptr<svo::Visualizer> visualizer_;
+  std::shared_ptr<vk::UserInputThread> user_input_thread_;
+  bool quit_ = false;
+
+  // --- Image pipeline (producer-consumer, single-frame) ---
+  rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_img_;
+  sensor_msgs::msg::Image::ConstSharedPtr latest_img_;
+  std::mutex img_mutex_;
+  std::condition_variable img_cv_;
+  bool new_img_ready_ = false;
+
+  // --- Remote key ---
+  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr sub_remote_key_;
+  std::mutex remote_mutex_;
+  std::string remote_input_;
+
+  // --- IMU ---
+  rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr sub_imu_;
   std::shared_ptr<svo::ImuHandler> imu_handler_;
   bool use_imu_ = false;
   bool set_initial_attitude_from_gravity_ = true;
   svo::ImuCalibration imu_calib_;
   svo::ImuInitialization imu_init_;
   svo::IMUHandlerOptions imu_options_;
-  Eigen::Quaterniond last_imu_rotation_;  // For incremental IMU rotation prior
+  Eigen::Quaterniond last_imu_rotation_{Eigen::Quaterniond::Identity()};
 
-  struct ImageJob
+  // --- IMU health monitoring ---
+  int imu_meas_count_ = 0;
+  double last_imu_msg_ts_ = 0.0;
+  bool imu_timeout_warned_ = false;
+  static constexpr double IMU_TIMEOUT_SEC_ = 2.0;
+
+  // --- Publish control ---
+  bool publish_markers_ = true;
+  bool publish_dense_input_ = false;
+  bool enable_visualization_ = false;
+  double last_marker_publish_ts_ = 0.0;
+
+  // --- Frame throttling ---
+  bool enable_frame_throttle_ = true;
+  double target_fps_ = 15.0;
+  double last_accepted_ts_ = 0.0;
+};
+
+// =============================================================================
+// Constructor
+// =============================================================================
+VoNode::VoNode()
+  : Node("svo")
+{
+  publish_markers_      = vk::getParam<bool>(this, "publish_markers", true);
+  publish_dense_input_  = vk::getParam<bool>(this, "publish_dense_input", false);
+  enable_visualization_  = vk::getParam<bool>(this, "enable_visualization", false);
+
+  if (vk::getParam<bool>(this, "accept_console_user_input", true))
+    user_input_thread_ = std::make_shared<vk::UserInputThread>();
+
+  const std::string dataset_name = vk::getParam<std::string>(this, "dataset_name", "");
+
+  if (dataset_name == "euroc")
   {
-    sensor_msgs::msg::Image::ConstSharedPtr msg;
-    double timestamp;
-  };
-
-  std::mutex queue_mutex_;
-  std::condition_variable queue_cv_;
-  std::deque<ImageJob> image_queue_;
-  std::thread processing_thread_;
-  std::atomic<bool> processing_running_{false};
-  std::atomic<bool> drop_frames_{true};
-  size_t max_queue_size_{2};
-  double last_marker_publish_ts_{0.0};
-  bool enable_frame_throttle_{true};
-  double target_fps_{15.0};
-  double last_accepted_ts_{0.0};
-
-  VoNode() : Node("svo"), vo_(nullptr), cam_(nullptr), quit_(false),
-             last_imu_rotation_(Eigen::Quaterniond::Identity())
+    RCLCPP_INFO(this->get_logger(), "Using hardcoded EuRoC camera parameters");
+    cam_ = new vk::PinholeCamera(752, 480, 458.654, 457.296, 367.215, 248.375);
+  }
+  else
   {
-    // Declare and get parameters
-    publish_markers_ = vk::getParam<bool>(this, "publish_markers", true);
-    publish_dense_input_ = vk::getParam<bool>(this, "publish_dense_input", false);
-    enable_visualization_ = vk::getParam<bool>(this, "enable_visualization", false);
-    use_async_processing_ = vk::getParam<bool>(this, "use_async_processing", false);
-    remote_input_ = "";
-
-    // Start user input thread in parallel thread that listens to console keys
-    if (vk::getParam<bool>(this, "accept_console_user_input", true))
-      user_input_thread_ = std::make_shared<vk::UserInputThread>();
-
-    // Check if we should use hardcoded dataset parameters
-    std::string dataset_name = vk::getParam<std::string>(this, "dataset_name", "");
-
-    // 加载相机参数并创建相机模型
-    // 说明：这里使用 vikit::camera_loader（而不是手动 new PinholeCamera），
-    // 因为 camera_loader 支持 Pinhole + 径向-切向畸变参数（cam_d0..cam_d3，对应 OpenCV 的 k1,k2,p1,p2）。
-
-    if (dataset_name == "euroc") {
-      RCLCPP_INFO(this->get_logger(), "Using hardcoded EuRoC dataset parameters");
-      // Keep the old behavior for dataset_name==euroc (no distortion)
-      cam_ = new vk::PinholeCamera(752, 480, 458.654, 457.296, 367.215, 248.375);
-      RCLCPP_INFO(this->get_logger(), "Successfully created 'PINHOLE' camera model (hardcoded)." );
-    } else {
-      std::string cam_model = vk::getParam<std::string>(this, "cam_model", "Pinhole");
-      // Normalize common variants
-      if (cam_model == "PINHOLE") cam_model = "Pinhole";
-
-      bool ok = vk::camera_loader::loadFromRosNode(this, "", cam_);
-      if (!ok || cam_ == nullptr) {
-        throw std::runtime_error("Failed to load camera from ROS parameters. cam_model=" + cam_model);
-      }
-      RCLCPP_INFO(this->get_logger(), "Successfully created '%s' camera model.", cam_model.c_str());
-    }
-
-
-    try {
-      int grid, maxfts, nlevels, fast_type;
-      double tri;
-
-      if (dataset_name == "euroc") {
-        // Hardcoded EuRoC algorithm parameters for optimal performance
-        RCLCPP_INFO(this->get_logger(), "Using hardcoded EuRoC algorithm parameters");
-        grid = 18;
-        maxfts = 400;
-        tri = 3.0;
-        nlevels = 4;
-        fast_type = 12;
-
-        // Additional EuRoC-specific tracking parameters
-        svo::Config::kltMaxLevel() = 4;
-        svo::Config::kltMinLevel() = 0;
-        svo::Config::reprojThresh() = 4.0;     // More tolerant reprojection threshold
-        svo::Config::poseOptimThresh() = 4.0;  // More tolerant pose optim threshold
-        svo::Config::poseOptimNumIter() = 10;
-        svo::Config::qualityMinFts() = 40;      // More tolerant quality threshold
-        svo::Config::qualityMaxFtsDrop() = 80;  // Tolerate larger drops
-        svo::Config::initMinDisparity() = 50.0;
-        svo::Config::initMinTracked() = 50;
-        svo::Config::initMinInliers() = 40;
-        // Keyframe and map scale tuning
-        svo::Config::kfSelectMinDist() = 0.001;
-        svo::Config::maxNKfs() = 180;
-        svo::Config::mapScale() = 5.0;
-        // Misc flags
-        svo::Config::useImu() = true;  // currently not used in this codebase
-        svo::Config::useThreadedDepthfilter() =
-          false;  // run depth filter synchronously for bag playback
-        svo::Config::patchMatchThresholdFactor() = 1.5;  // relax ZMSSD acceptance
-        svo::Config::subpixNIter() = 20;                 // more iterations for subpixel alignment
-        // Lower feature quality requirement to avoid frequent relocalization
-        svo::Config::qualityMinFts() = 30;
-
-        RCLCPP_INFO(
-          this->get_logger(), "EuRoC config: grid=%d, max_fts=%d, triang_score=%.1f, pyr_levels=%d",
-          grid, maxfts, tri, nlevels);
-        RCLCPP_INFO(
-          this->get_logger(),
-          "EuRoC tracking: reproj_thresh=%.1f, quality_min_fts=%zu, quality_max_drop=%d, "
-          "kf_min_dist=%.4f, max_kfs=%zu, map_scale=%.1f, zmssd_factor=%.2f, subpix_iter=%zu",
-          svo::Config::reprojThresh(), svo::Config::qualityMinFts(),
-          svo::Config::qualityMaxFtsDrop(), svo::Config::kfSelectMinDist(), svo::Config::maxNKfs(),
-          svo::Config::mapScale(), svo::Config::patchMatchThresholdFactor(),
-          svo::Config::subpixNIter());
-      } else {
-        // Load parameters from ROS2 parameter server (default behavior)
-        grid = vk::getParam<int>(this, "grid_size", static_cast<int>(svo::Config::gridSize()));
-        maxfts = vk::getParam<int>(this, "max_fts", static_cast<int>(svo::Config::maxFts()));
-        tri = vk::getParam<double>(
-          this, "triang_min_corner_score", svo::Config::triangMinCornerScore());
-        nlevels =
-          vk::getParam<int>(this, "n_pyr_levels", static_cast<int>(svo::Config::nPyrLevels()));
-        fast_type = vk::getParam<int>(this, "fast_type", svo::Config::fastType());
-
-        // 将关键的鲁棒性参数从 ROS2 参数写回到 SVO 核心单例 Config。
-
-        // 仅仅把参数作为 ROS param 传入并不足够，必须显式写回 Config 才会真正生效。
-        // 这些参数以前只在 dataset_name=="euroc" 的硬编码分支里设置，导致非 euroc 分支跟踪很不稳定。
-        svo::Config::reprojThresh() = vk::getParam<double>(
-          this, "reproj_thresh", svo::Config::reprojThresh());
-        svo::Config::poseOptimThresh() = vk::getParam<double>(
-          this, "poseoptim_thresh", svo::Config::poseOptimThresh());
-        svo::Config::qualityMinFts() = static_cast<size_t>(vk::getParam<int>(
-          this, "quality_min_fts", static_cast<int>(svo::Config::qualityMinFts())));
-        svo::Config::qualityMaxFtsDrop() = vk::getParam<int>(
-          this, "quality_max_drop_fts", svo::Config::qualityMaxFtsDrop());
-        svo::Config::kfSelectMinDist() = vk::getParam<double>(
-          this, "kfselect_mindist", svo::Config::kfSelectMinDist());
-        // max_n_kfs is a node param already; keep SVO core in sync too.
-        svo::Config::maxNKfs() = static_cast<size_t>(vk::getParam<int>(
-          this, "max_n_kfs", static_cast<int>(svo::Config::maxNKfs())));
-        svo::Config::mapScale() = vk::getParam<double>(
-          this, "map_scale", svo::Config::mapScale());
-        svo::Config::initMinDisparity() = vk::getParam<double>(
-          this, "init_min_disparity", svo::Config::initMinDisparity());
-        svo::Config::initMinTracked() = static_cast<size_t>(vk::getParam<int>(
-          this, "init_min_tracked", static_cast<int>(svo::Config::initMinTracked())));
-        svo::Config::initMinInliers() = static_cast<size_t>(vk::getParam<int>(
-          this, "init_min_inliers", static_cast<int>(svo::Config::initMinInliers())));
-        svo::Config::patchMatchThresholdFactor() = vk::getParam<double>(
-          this, "patch_match_thresh_factor", svo::Config::patchMatchThresholdFactor());
-
-        // KLT tracker tuning (for fast motion / larger inter-frame displacement)
-        svo::Config::kltMinLevel() = static_cast<size_t>(vk::getParam<int>(
-          this, "klt_min_level", static_cast<int>(svo::Config::kltMinLevel())));
-        svo::Config::kltMaxLevel() = static_cast<size_t>(vk::getParam<int>(
-          this, "klt_max_level", static_cast<int>(svo::Config::kltMaxLevel())));
-
-        // Subpixel refinement iterations
-        svo::Config::subpixNIter() = static_cast<size_t>(vk::getParam<int>(
-          this, "subpix_n_iter", static_cast<int>(svo::Config::subpixNIter())));
-
-        // Epipolar search max steps (supports large px_length from fast motion / downward-looking cameras)
-        svo::Config::maxEpiSearchSteps() = static_cast<size_t>(vk::getParam<int>(
-          this, "max_epi_search_steps", static_cast<int>(svo::Config::maxEpiSearchSteps())));
-      }
-
-      svo::Config::gridSize() = static_cast<size_t>(grid);
-      svo::Config::maxFts() = static_cast<size_t>(maxfts);
-      svo::Config::triangMinCornerScore() = tri;
-      svo::Config::nPyrLevels() = static_cast<size_t>(nlevels);
-      svo::Config::fastType() =
-        (fast_type >= 7 && fast_type <= 12) ? fast_type : 12;
-
-
-      // 用途：排查“yaml 改了但没生效 / 参数被覆盖 / 类型不匹配”等问题时非常关键。
-      RCLCPP_INFO(
-        this->get_logger(),
-        "SVO Config(final): grid=%zu max_fts=%zu pyr_levels=%zu fast_type=%d tri_score=%.2f | reproj=%.2f poseopt=%.2f | "
-        "quality_min=%zu quality_max_drop=%d | kf_min_dist=%.4f max_kfs=%zu map_scale=%.2f | "
-        "klt_levels=[%zu..%zu] zmssd_factor=%.2f subpix_iter=%zu epi_search_steps=%zu",
-        svo::Config::gridSize(), svo::Config::maxFts(), svo::Config::nPyrLevels(), svo::Config::fastType(),
-        svo::Config::triangMinCornerScore(), svo::Config::reprojThresh(),
-        svo::Config::poseOptimThresh(), svo::Config::qualityMinFts(),
-        svo::Config::qualityMaxFtsDrop(), svo::Config::kfSelectMinDist(),
-        svo::Config::maxNKfs(), svo::Config::mapScale(), svo::Config::kltMinLevel(),
-        svo::Config::kltMaxLevel(), svo::Config::patchMatchThresholdFactor(),
-        svo::Config::subpixNIter(), svo::Config::maxEpiSearchSteps());
-    } catch (const std::exception & e) {
-      RCLCPP_WARN(this->get_logger(), "Parameter override failed: %s", e.what());
-    }
-
-    // Init VO and start
-    vo_ = new svo::FrameHandlerMono(cam_);
-    vo_->start();
-
-    // Subscribe to remote input
-    sub_remote_key_ = this->create_subscription<std_msgs::msg::String>(
-      "remote_key", 5, std::bind(&VoNode::remoteKeyCb, this, std::placeholders::_1));
-
-    max_queue_size_ = static_cast<size_t>(vk::getParam<int>(this, "max_queue_size", 2));
-    drop_frames_ = vk::getParam<bool>(this, "drop_frames", true);
-    enable_frame_throttle_ = vk::getParam<bool>(this, "enable_frame_throttle", true);
-    target_fps_ = vk::getParam<double>(this, "target_fps", 15.0);
-
-    // === IMU Configuration ===
-    use_imu_ = vk::getParam<bool>(this, "use_imu", false);
-    if (use_imu_)
-    {
-      RCLCPP_INFO(this->get_logger(), "IMU support is ENABLED");
-      set_initial_attitude_from_gravity_ =
-          vk::getParam<bool>(this, "set_initial_attitude_from_gravity", true);
-
-      // Load IMU calibration parameters
-      imu_calib_.delay_imu_cam =
-          vk::getParam<double>(this, "imu_delay_imu_cam", 0.0);
-      imu_calib_.max_imu_delta_t =
-          vk::getParam<double>(this, "imu_max_imu_delta_t", 0.1);
-      imu_calib_.saturation_accel_max =
-          vk::getParam<double>(this, "imu_acc_max", 200.0);
-      imu_calib_.saturation_omega_max =
-          vk::getParam<double>(this, "imu_omega_max", 20.0);
-      imu_calib_.gyro_noise_density =
-          vk::getParam<double>(this, "imu_gyro_noise_density", 1.0e-5);
-      imu_calib_.acc_noise_density =
-          vk::getParam<double>(this, "imu_acc_noise_density", 1.0e-4);
-      imu_calib_.gyro_bias_random_walk_sigma =
-          vk::getParam<double>(this, "imu_gyro_bias_rw", 1.0e-6);
-      imu_calib_.acc_bias_random_walk_sigma =
-          vk::getParam<double>(this, "imu_acc_bias_rw", 1.0e-5);
-      imu_calib_.gravity_magnitude =
-          vk::getParam<double>(this, "imu_gravity_magnitude", 9.81);
-      imu_calib_.imu_rate =
-          vk::getParam<double>(this, "imu_rate", 200.0);
-
-      // Load IMU initialization (bias) parameters
-      imu_init_.velocity.setZero();
-      imu_init_.omega_bias.setZero();
-      imu_init_.acc_bias.setZero();
-      imu_init_.velocity_sigma =
-          vk::getParam<double>(this, "imu_velocity_sigma", 0.1);
-      imu_init_.omega_bias_sigma =
-          vk::getParam<double>(this, "imu_omega_bias_sigma", 0.01);
-      imu_init_.acc_bias_sigma =
-          vk::getParam<double>(this, "imu_acc_bias_sigma", 0.1);
-
-      // IMU handler options
-      imu_options_.temporal_stationary_check =
-          vk::getParam<bool>(this, "imu_temporal_stationary_check", false);
-      imu_options_.temporal_window_length_sec_ =
-          vk::getParam<double>(this, "imu_temporal_window_length_sec", 0.5);
-      imu_options_.stationary_acc_sigma_thresh_ =
-          vk::getParam<double>(this, "stationary_acc_sigma_thresh", 0.0);
-      imu_options_.stationary_gyr_sigma_thresh_ =
-          vk::getParam<double>(this, "stationary_gyr_sigma_thresh", 0.0);
-
-      // Create IMU handler
-      imu_handler_ = std::make_shared<svo::ImuHandler>(imu_calib_, imu_init_, imu_options_);
-      last_imu_rotation_ = Eigen::Quaterniond::Identity();
-
-      RCLCPP_INFO(this->get_logger(),
-                  "IMU initialized: delay=%.3fs, rate=%.0fHz, gravity=%.2f",
-                  imu_calib_.delay_imu_cam, imu_calib_.imu_rate,
-                  imu_calib_.gravity_magnitude);
-    }
+    const std::string cam_model = vk::getParam<std::string>(this, "cam_model", "Pinhole");
+    bool ok = vk::camera_loader::loadFromRosNode(this, "", cam_);
+    if (!ok || cam_ == nullptr)
+      throw std::runtime_error("Failed to load camera. cam_model=" + cam_model);
+    RCLCPP_INFO(this->get_logger(), "Created '%s' camera model", cam_model.c_str());
   }
 
-  // Initialize components that need shared_from_this() - must be called after construction
-  void init()
+  // --- Algorithm parameters ---
+  if (dataset_name == "euroc")
   {
-    // Create visualizer (needs shared_from_this)
-    visualizer_ = std::make_unique<svo::Visualizer>(this->shared_from_this());
+    RCLCPP_INFO(this->get_logger(), "Using hardcoded EuRoC algorithm parameters");
+    svo::Config::gridSize() = 18;
+    svo::Config::maxFts() = 400;
+    svo::Config::triangMinCornerScore() = 3.0;
+    svo::Config::nPyrLevels() = 4;
+    svo::Config::fastType() = 12;
+    svo::Config::kltMaxLevel() = 4;
+    svo::Config::kltMinLevel() = 0;
+    svo::Config::reprojThresh() = 4.0;
+    svo::Config::poseOptimThresh() = 4.0;
+    svo::Config::poseOptimNumIter() = 10;
+    svo::Config::qualityMinFts() = 30;
+    svo::Config::qualityMaxFtsDrop() = 80;
+    svo::Config::initMinDisparity() = 50.0;
+    svo::Config::initMinTracked() = 50;
+    svo::Config::initMinInliers() = 40;
+    svo::Config::kfSelectMinDist() = 0.001;
+    svo::Config::maxNKfs() = 180;
+    svo::Config::mapScale() = 5.0;
+    svo::Config::useImu() = true;
+    svo::Config::useThreadedDepthfilter() = false;
+    svo::Config::patchMatchThresholdFactor() = 1.5;
+    svo::Config::subpixNIter() = 20;
+  }
+  else
+  {
+    svo::Config::gridSize() = static_cast<size_t>(
+        vk::getParam<int>(this, "grid_size", static_cast<int>(svo::Config::gridSize())));
+    svo::Config::maxFts() = static_cast<size_t>(
+        vk::getParam<int>(this, "max_fts", static_cast<int>(svo::Config::maxFts())));
+    svo::Config::triangMinCornerScore() = vk::getParam<double>(
+        this, "triang_min_corner_score", svo::Config::triangMinCornerScore());
+    svo::Config::nPyrLevels() = static_cast<size_t>(
+        vk::getParam<int>(this, "n_pyr_levels", static_cast<int>(svo::Config::nPyrLevels())));
+    svo::Config::fastType() = static_cast<size_t>(
+        vk::getParam<int>(this, "fast_type", static_cast<int>(svo::Config::fastType())));
+    svo::Config::reprojThresh() = vk::getParam<double>(
+        this, "reproj_thresh", svo::Config::reprojThresh());
+    svo::Config::poseOptimThresh() = vk::getParam<double>(
+        this, "poseoptim_thresh", svo::Config::poseOptimThresh());
+    svo::Config::qualityMinFts() = static_cast<size_t>(vk::getParam<int>(
+        this, "quality_min_fts", static_cast<int>(svo::Config::qualityMinFts())));
+    svo::Config::qualityMaxFtsDrop() = vk::getParam<int>(
+        this, "quality_max_drop_fts", svo::Config::qualityMaxFtsDrop());
+    svo::Config::kfSelectMinDist() = vk::getParam<double>(
+        this, "kfselect_mindist", svo::Config::kfSelectMinDist());
+    svo::Config::maxNKfs() = static_cast<size_t>(vk::getParam<int>(
+        this, "max_n_kfs", static_cast<int>(svo::Config::maxNKfs())));
+    svo::Config::mapScale() = vk::getParam<double>(
+        this, "map_scale", svo::Config::mapScale());
+    svo::Config::initMinDisparity() = vk::getParam<double>(
+        this, "init_min_disparity", svo::Config::initMinDisparity());
+    svo::Config::initMinTracked() = static_cast<size_t>(vk::getParam<int>(
+        this, "init_min_tracked", static_cast<int>(svo::Config::initMinTracked())));
+    svo::Config::initMinInliers() = static_cast<size_t>(vk::getParam<int>(
+        this, "init_min_inliers", static_cast<int>(svo::Config::initMinInliers())));
+    svo::Config::patchMatchThresholdFactor() = vk::getParam<double>(
+        this, "patch_match_thresh_factor", svo::Config::patchMatchThresholdFactor());
+    svo::Config::kltMinLevel() = static_cast<size_t>(vk::getParam<int>(
+        this, "klt_min_level", static_cast<int>(svo::Config::kltMinLevel())));
+    svo::Config::kltMaxLevel() = static_cast<size_t>(vk::getParam<int>(
+        this, "klt_max_level", static_cast<int>(svo::Config::kltMaxLevel())));
+    svo::Config::subpixNIter() = static_cast<size_t>(vk::getParam<int>(
+        this, "subpix_n_iter", static_cast<int>(svo::Config::subpixNIter())));
+    svo::Config::maxEpiSearchSteps() = static_cast<size_t>(vk::getParam<int>(
+        this, "max_epi_search_steps", static_cast<int>(svo::Config::maxEpiSearchSteps())));
+  }
 
-    // Get initial position and orientation
-    visualizer_->T_world_from_vision_ = Sophus::SE3d(
-      vk::rpy2dcm(
-        Eigen::Vector3d(
-          vk::getParam<double>(this, "init_rx", 0.0), vk::getParam<double>(this, "init_ry", 0.0),
+  // --- Frame throttling ---
+  enable_frame_throttle_ = vk::getParam<bool>(this, "enable_frame_throttle", true);
+  target_fps_ = vk::getParam<double>(this, "target_fps", 15.0);
+
+  // --- IMU ---
+  use_imu_ = vk::getParam<bool>(this, "use_imu", false);
+  if (use_imu_)
+  {
+    RCLCPP_INFO(this->get_logger(), "IMU fusion is ENABLED");
+    set_initial_attitude_from_gravity_ =
+        vk::getParam<bool>(this, "set_initial_attitude_from_gravity", true);
+
+    imu_calib_.delay_imu_cam = vk::getParam<double>(this, "imu_delay_imu_cam", 0.0);
+    imu_calib_.max_imu_delta_t = vk::getParam<double>(this, "imu_max_imu_delta_t", 0.1);
+    imu_calib_.saturation_accel_max = vk::getParam<double>(this, "imu_acc_max", 200.0);
+    imu_calib_.saturation_omega_max = vk::getParam<double>(this, "imu_omega_max", 20.0);
+    imu_calib_.gyro_noise_density = vk::getParam<double>(this, "imu_gyro_noise_density", 1.0e-4);
+    imu_calib_.acc_noise_density = vk::getParam<double>(this, "imu_acc_noise_density", 1.0e-3);
+    imu_calib_.gyro_bias_random_walk_sigma = vk::getParam<double>(this, "imu_gyro_bias_rw", 1.0e-6);
+    imu_calib_.acc_bias_random_walk_sigma = vk::getParam<double>(this, "imu_acc_bias_rw", 1.0e-5);
+    imu_calib_.gravity_magnitude = vk::getParam<double>(this, "imu_gravity_magnitude", 9.81);
+    imu_calib_.imu_rate = vk::getParam<double>(this, "imu_rate", 200.0);
+
+    imu_init_.velocity.setZero();
+    imu_init_.omega_bias.setZero();
+    imu_init_.acc_bias.setZero();
+    imu_init_.velocity_sigma = vk::getParam<double>(this, "imu_velocity_sigma", 0.1);
+    imu_init_.omega_bias_sigma = vk::getParam<double>(this, "imu_omega_bias_sigma", 0.01);
+    imu_init_.acc_bias_sigma = vk::getParam<double>(this, "imu_acc_bias_sigma", 0.1);
+
+    imu_options_.temporal_stationary_check = vk::getParam<bool>(
+        this, "imu_temporal_stationary_check", false);
+    imu_options_.temporal_window_length_sec_ = vk::getParam<double>(
+        this, "imu_temporal_window_length_sec", 0.5);
+    imu_options_.stationary_acc_sigma_thresh_ = vk::getParam<double>(
+        this, "stationary_acc_sigma_thresh", 0.0);
+    imu_options_.stationary_gyr_sigma_thresh_ = vk::getParam<double>(
+        this, "stationary_gyr_sigma_thresh", 0.0);
+
+    imu_handler_ = std::make_shared<svo::ImuHandler>(imu_calib_, imu_init_, imu_options_);
+
+    RCLCPP_INFO(this->get_logger(),
+                "IMU: delay=%.3fs rate=%.0fHz gravity=%.2f",
+                imu_calib_.delay_imu_cam, imu_calib_.imu_rate,
+                imu_calib_.gravity_magnitude);
+  }
+
+  vo_ = new svo::FrameHandlerMono(cam_);
+  vo_->start();
+}
+
+// =============================================================================
+void VoNode::init()
+{
+  visualizer_ = std::make_unique<svo::Visualizer>(this->shared_from_this());
+
+  visualizer_->T_world_from_vision_ = Sophus::SE3d(
+      vk::rpy2dcm(Eigen::Vector3d(
+          vk::getParam<double>(this, "init_rx", 0.0),
+          vk::getParam<double>(this, "init_ry", 0.0),
           vk::getParam<double>(this, "init_rz", 0.0))),
       Eigen::Vector3d(
-        vk::getParam<double>(this, "init_tx", 0.0), vk::getParam<double>(this, "init_ty", 0.0),
-        vk::getParam<double>(this, "init_tz", 0.0)));
+          vk::getParam<double>(this, "init_tx", 0.0),
+          vk::getParam<double>(this, "init_ty", 0.0),
+          vk::getParam<double>(this, "init_tz", 0.0)));
 
-    // Subscribe to camera messages with explicit ROS2 sensor QoS.
-    std::string cam_topic = vk::getParam<std::string>(this, "cam_topic", "camera/image_raw");
-    auto qos = rclcpp::SensorDataQoS().keep_last(20);
-    sub_img_ = this->create_subscription<sensor_msgs::msg::Image>(
-      cam_topic, qos, std::bind(&VoNode::imgCb, this, std::placeholders::_1));
+  sub_remote_key_ = create_subscription<std_msgs::msg::String>(
+      "remote_key", 5,
+      std::bind(&VoNode::remoteKeyCb, this, std::placeholders::_1));
 
-    // Subscribe to IMU topic (if enabled)
-    if (use_imu_)
-    {
-      std::string imu_topic = vk::getParam<std::string>(this, "imu_topic", "/imu/data");
-      sub_imu_ = this->create_subscription<sensor_msgs::msg::Imu>(
+  const std::string cam_topic = vk::getParam<std::string>(this, "cam_topic", "camera/image_raw");
+  sub_img_ = create_subscription<sensor_msgs::msg::Image>(
+      cam_topic, rclcpp::SensorDataQoS().keep_last(1),
+      std::bind(&VoNode::imgCb, this, std::placeholders::_1));
+
+  RCLCPP_INFO(this->get_logger(), "Subscribing to camera: %s", cam_topic.c_str());
+
+  if (use_imu_)
+  {
+    const std::string imu_topic = vk::getParam<std::string>(this, "imu_topic", "/imu/data");
+    sub_imu_ = create_subscription<sensor_msgs::msg::Imu>(
         imu_topic, rclcpp::SensorDataQoS(),
         std::bind(&VoNode::imuCb, this, std::placeholders::_1));
-      RCLCPP_INFO(this->get_logger(), "Subscribed to IMU topic: %s", imu_topic.c_str());
-    }
+    RCLCPP_INFO(this->get_logger(), "Subscribing to IMU: %s", imu_topic.c_str());
+  }
+}
 
-    if (use_async_processing_) {
-      processing_running_ = true;
-      processing_thread_ = std::thread(&VoNode::processingLoop, this);
-    }
+// =============================================================================
+VoNode::~VoNode()
+{
+  quit_ = true;
+  img_cv_.notify_all();
+  sub_img_.reset();
+  sub_imu_.reset();
+  sub_remote_key_.reset();
+  visualizer_.reset();
+  delete vo_;
+  delete cam_;
+  if (user_input_thread_ != nullptr)
+    user_input_thread_->stop();
+}
 
-    RCLCPP_INFO(this->get_logger(), "SVO node initialized, subscribing to: %s", cam_topic.c_str());
+// =============================================================================
+// IMU callback (producer thread — ROS callback executor)
+// =============================================================================
+void VoNode::imuCb(const sensor_msgs::msg::Imu::ConstSharedPtr& msg)
+{
+  const double t = rclcpp::Time(msg->header.stamp).seconds();
+  ++imu_meas_count_;
+
+  if (last_imu_msg_ts_ > 0.0)
+  {
+    const double dt = t - last_imu_msg_ts_;
+    if (dt > 1.0 / imu_calib_.imu_rate * 100.0)
+    {
+      RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
+                           "IMU gap: %.1f ms", dt * 1000.0);
+    }
+  }
+  last_imu_msg_ts_ = t;
+
+  if (imu_timeout_warned_)
+  {
+    RCLCPP_INFO(this->get_logger(), "IMU data resumed");
+    imu_timeout_warned_ = false;
   }
 
-  ~VoNode()
+  const double omega_norm = std::sqrt(
+      msg->angular_velocity.x * msg->angular_velocity.x +
+      msg->angular_velocity.y * msg->angular_velocity.y +
+      msg->angular_velocity.z * msg->angular_velocity.z);
+  const double acc_norm = std::sqrt(
+      msg->linear_acceleration.x * msg->linear_acceleration.x +
+      msg->linear_acceleration.y * msg->linear_acceleration.y +
+      msg->linear_acceleration.z * msg->linear_acceleration.z);
+
+  if (omega_norm > imu_calib_.saturation_omega_max ||
+      acc_norm > imu_calib_.saturation_accel_max)
+    return;
+
+  imu_handler_->addImuMeasurement(
+      svo::ImuMeasurement(t,
+          Eigen::Vector3d(msg->angular_velocity.x,
+                           msg->angular_velocity.y,
+                           msg->angular_velocity.z),
+          Eigen::Vector3d(msg->linear_acceleration.x,
+                           msg->linear_acceleration.y,
+                           msg->linear_acceleration.z)));
+}
+
+// =============================================================================
+// Image callback (producer — throttles, then signals consumer)
+// =============================================================================
+void VoNode::imgCb(const sensor_msgs::msg::Image::ConstSharedPtr& msg)
+{
+  const double timestamp = rclcpp::Time(msg->header.stamp).seconds();
+
+  if (enable_frame_throttle_ && target_fps_ > 0.0)
   {
-    processing_running_ = false;
-    queue_cv_.notify_all();
-    if (processing_thread_.joinable()) processing_thread_.join();
-
-    // Ensure publishers/subscribers are destroyed before ROS shutdown.
-    sub_img_.reset();
-    visualizer_.reset();
-
-    delete vo_;
-    delete cam_;
-    if (user_input_thread_ != nullptr) user_input_thread_->stop();
-  }
-
-  void imuCb(const sensor_msgs::msg::Imu::ConstSharedPtr & msg)
-  {
-    if (!use_imu_ || !imu_handler_)
+    const double min_dt = 1.0 / target_fps_;
+    if (timestamp - last_accepted_ts_ < min_dt)
       return;
-
-    Eigen::Vector3d omega(
-        msg->angular_velocity.x, msg->angular_velocity.y, msg->angular_velocity.z);
-    Eigen::Vector3d acc(
-        msg->linear_acceleration.x, msg->linear_acceleration.y, msg->linear_acceleration.z);
-    double t = rclcpp::Time(msg->header.stamp).seconds();
-
-    svo::ImuMeasurement m(t, omega, acc);
-    imu_handler_->addImuMeasurement(m);
   }
+  last_accepted_ts_ = timestamp;
 
-  void imgCb(const sensor_msgs::msg::Image::ConstSharedPtr & msg)
   {
-    const double timestamp = rclcpp::Time(msg->header.stamp).seconds();
-    if (enable_frame_throttle_ && target_fps_ > 0.0) {
-      const double min_dt = 1.0 / target_fps_;
-      if ((timestamp - last_accepted_ts_) < min_dt) {
-        return;
-      }
-      last_accepted_ts_ = timestamp;
-    }
+    std::lock_guard<std::mutex> lock(img_mutex_);
+    latest_img_ = msg;
+    new_img_ready_ = true;
+  }
+  img_cv_.notify_one();
+}
 
-    if (!use_async_processing_) {
-    cv::Mat img;
-    try {
-      img = cv_bridge::toCvShare(msg, "mono8")->image;
-    } catch (cv_bridge::Exception & e) {
-      RCLCPP_ERROR(this->get_logger(), "cv_bridge exception: %s", e.what());
-      return;
+// =============================================================================
+// Main processing loop (consumer — waits on condition variable)
+// =============================================================================
+void VoNode::run()
+{
+  RCLCPP_INFO(this->get_logger(), "SVO processing loop started");
+
+  while (rclcpp::ok() && !quit_)
+  {
+    sensor_msgs::msg::Image::ConstSharedPtr img;
+    double timestamp = 0.0;
+
+    // Wait for next image
+    {
+      std::unique_lock<std::mutex> lock(img_mutex_);
+      img_cv_.wait_for(lock, std::chrono::milliseconds(100),
+                       [this]() { return new_img_ready_ || quit_; });
+      if (quit_ || !new_img_ready_)
+        continue;
+      img = latest_img_;
+      timestamp = rclcpp::Time(img->header.stamp).seconds();
+      new_img_ready_ = false;
     }
 
     processUserActions();
+    if (quit_)
+      break;
 
-    // === Set IMU Rotation Prior ===
+    // --- IMU prior ---
     if (use_imu_ && imu_handler_)
     {
       if (!vo_->hasStarted() && set_initial_attitude_from_gravity_)
       {
-        // Initialize: align world frame with gravity using accelerometer
         Eigen::Quaterniond R_imu_world;
         if (imu_handler_->getInitialAttitude(timestamp, R_imu_world))
         {
           vo_->setRotationPrior(R_imu_world);
-          last_imu_rotation_ = R_imu_world;  // Store current IMU rotation
-          RCLCPP_INFO(this->get_logger(), "IMU: Initial attitude set from gravity");
+          last_imu_rotation_ = R_imu_world;
         }
       }
       else if (vo_->hasStarted() && vo_->lastFrame() != nullptr)
       {
-        // Incremental IMU rotation prior between consecutive frames
         Eigen::Quaterniond R_imu_last_cur;
-        const double last_ts = vo_->lastFrame()->timestamp_;
         if (imu_handler_->getRelativeRotationPrior(
-                last_ts, timestamp, false, R_imu_last_cur))
+                vo_->lastFrame()->timestamp_, timestamp, false, R_imu_last_cur))
         {
           vo_->setRotationIncrementPrior(R_imu_last_cur);
           last_imu_rotation_ = R_imu_last_cur * last_imu_rotation_;
@@ -435,167 +421,120 @@ public:
       }
     }
 
-    vo_->addImage(img, timestamp);
-      if (enable_visualization_) {
-    visualizer_->publishMinimal(img, vo_->lastFrame(), *vo_, timestamp);
-        if (publish_markers_ && vo_->stage() != FrameHandlerBase::STAGE_PAUSED &&
-          (timestamp - last_marker_publish_ts_ > 0.2))
-        {
-          visualizer_->visualizeMarkers(vo_->lastFrame(), vo_->coreKeyframes(), vo_->map());
-          last_marker_publish_ts_ = timestamp;
-        }
-        if (publish_dense_input_) visualizer_->exportToDense(vo_->lastFrame());
-      }
-      if (vo_->stage() == FrameHandlerMono::STAGE_PAUSED) usleep(100000);
-      return;
+    // --- Image conversion ---
+    cv::Mat img_cv;
+    try
+    {
+      img_cv = cv_bridge::toCvShare(img, "mono8")->image;
+    }
+    catch (const cv_bridge::Exception& e)
+    {
+      RCLCPP_ERROR(this->get_logger(), "cv_bridge: %s", e.what());
+      continue;
     }
 
-    ImageJob job{msg, timestamp};
-    std::unique_lock<std::mutex> lock(queue_mutex_);
-    if (drop_frames_ && image_queue_.size() >= max_queue_size_) {
-      // Real-time policy: discard backlog and keep only the newest frame.
-      image_queue_.clear();
-      RCLCPP_WARN_THROTTLE(
-        this->get_logger(), *this->get_clock(), 2000,
-        "Image processing is lagging; dropping queued frames to keep real-time.");
-    } else if (!drop_frames_ && image_queue_.size() >= max_queue_size_) {
-      // Queue is full and dropping is disabled: skip this incoming frame.
-      return;
-    }
-    image_queue_.push_back(std::move(job));
-    lock.unlock();
-    queue_cv_.notify_one();
-  }
+    // --- SVO ---
+    vo_->addImage(img_cv, timestamp);
 
-  void processingLoop()
-  {
-    while (processing_running_) {
-      ImageJob job;
+    // --- Visualization ---
+    if (enable_visualization_)
+    {
+      visualizer_->publishMinimal(img_cv, vo_->lastFrame(), *vo_, timestamp);
+
+      if (publish_markers_ &&
+          vo_->stage() != svo::FrameHandlerBase::STAGE_PAUSED &&
+          timestamp - last_marker_publish_ts_ > 0.2)
       {
-        std::unique_lock<std::mutex> lock(queue_mutex_);
-        queue_cv_.wait(lock, [this]() {
-          return !processing_running_ || !image_queue_.empty();
-        });
-        if (!processing_running_) {
-          break;
-        }
-        job = std::move(image_queue_.front());
-        image_queue_.pop_front();
+        visualizer_->visualizeMarkers(
+            vo_->lastFrame(), vo_->coreKeyframes(), vo_->map());
+        last_marker_publish_ts_ = timestamp;
       }
 
-      cv::Mat img;
-      try {
-        img = cv_bridge::toCvShare(job.msg, "mono8")->image;
-      } catch (cv_bridge::Exception & e) {
-        RCLCPP_ERROR(this->get_logger(), "cv_bridge exception: %s", e.what());
-        continue;
-      }
+      if (publish_dense_input_)
+        visualizer_->exportToDense(vo_->lastFrame());
+    }
 
-      processUserActions();
+    if (vo_->stage() == svo::FrameHandlerMono::STAGE_PAUSED)
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  }
 
-      // === Set IMU Rotation Prior (same as sync path) ===
-      if (use_imu_ && imu_handler_)
+  RCLCPP_INFO(this->get_logger(), "SVO processing loop finished");
+}
+
+// =============================================================================
+void VoNode::processUserActions()
+{
+  char input = 0;
+  {
+    std::lock_guard<std::mutex> lock(remote_mutex_);
+    if (!remote_input_.empty())
+    {
+      input = remote_input_[0];
+      remote_input_.clear();
+    }
+  }
+
+  if (user_input_thread_ != nullptr)
+  {
+    const char c = user_input_thread_->getInput();
+    if (c != 0)
+      input = c;
+  }
+
+  switch (input)
+  {
+    case 'q':
+      quit_ = true;
+      break;
+    case 'r':
+      vo_->reset();
+      visualizer_->resetTrajectory();
+      if (imu_handler_)
       {
-        if (!vo_->hasStarted() && set_initial_attitude_from_gravity_)
-        {
-          Eigen::Quaterniond R_imu_world;
-          if (imu_handler_->getInitialAttitude(job.timestamp, R_imu_world))
-          {
-            vo_->setRotationPrior(R_imu_world);
-            last_imu_rotation_ = R_imu_world;
-            RCLCPP_INFO(this->get_logger(), "IMU (async): Initial attitude set from gravity");
-          }
-        }
-        else if (vo_->hasStarted() && vo_->lastFrame() != nullptr)
-        {
-          Eigen::Quaterniond R_imu_last_cur;
-          const double last_ts = vo_->lastFrame()->timestamp_;
-          if (imu_handler_->getRelativeRotationPrior(
-                  last_ts, job.timestamp, false, R_imu_last_cur))
-          {
-            vo_->setRotationIncrementPrior(R_imu_last_cur);
-            last_imu_rotation_ = R_imu_last_cur * last_imu_rotation_;
-          }
-        }
+        imu_handler_->reset();
+        last_imu_rotation_ = Eigen::Quaterniond::Identity();
       }
-
-      vo_->addImage(img, job.timestamp);
-      if (enable_visualization_) {
-        visualizer_->publishMinimal(img, vo_->lastFrame(), *vo_, job.timestamp);
-
-        if (publish_markers_ && vo_->stage() != FrameHandlerBase::STAGE_PAUSED &&
-          (job.timestamp - last_marker_publish_ts_ > 0.2))
-        {
-      visualizer_->visualizeMarkers(vo_->lastFrame(), vo_->coreKeyframes(), vo_->map());
-          last_marker_publish_ts_ = job.timestamp;
-        }
-
-    if (publish_dense_input_) visualizer_->exportToDense(vo_->lastFrame());
-      }
-
-    if (vo_->stage() == FrameHandlerMono::STAGE_PAUSED) usleep(100000);
-    }
+      break;
+    case 's':
+      vo_->start();
+      break;
   }
+}
 
-  void processUserActions()
-  {
-    char input = remote_input_.empty() ? 0 : remote_input_.c_str()[0];
-    remote_input_ = "";
+void VoNode::remoteKeyCb(const std_msgs::msg::String::ConstSharedPtr& msg)
+{
+  std::lock_guard<std::mutex> lock(remote_mutex_);
+  remote_input_ = msg->data;
+}
 
-    if (user_input_thread_ != nullptr) {
-      char console_input = user_input_thread_->getInput();
-      if (console_input != 0) input = console_input;
-    }
+}  // namespace svo
 
-    switch (input) {
-      case 'q':
-        quit_ = true;
-        RCLCPP_INFO(this->get_logger(), "SVO user input: QUIT");
-        break;
-      case 'r':
-        vo_->reset();
-        visualizer_->resetTrajectory();
-        if (imu_handler_) {
-          imu_handler_->reset();
-          last_imu_rotation_ = Eigen::Quaterniond::Identity();
-        }
-        RCLCPP_INFO(this->get_logger(), "SVO user input: RESET");
-        break;
-      case 's':
-        vo_->start();
-        RCLCPP_INFO(this->get_logger(), "SVO user input: START");
-        break;
-      default:;
-    }
-  }
-
-  void remoteKeyCb(const std_msgs::msg::String::SharedPtr key_input)
-  {
-    remote_input_ = key_input->data;
-  }
-
-  bool shouldQuit() const { return quit_; }
-};
-
-}  
-
-int main(int argc, char ** argv)
+// =============================================================================
+int main(int argc, char** argv)
 {
   rclcpp::init(argc, argv);
 
   auto node = std::make_shared<svo::VoNode>();
-
-  // Initialize components that need shared_from_this()
   node->init();
 
-  RCLCPP_INFO(node->get_logger(), "SVO node created");
+  RCLCPP_INFO(node->get_logger(), "SVO node ready");
 
-  rclcpp::executors::MultiThreadedExecutor executor(
-  rclcpp::ExecutorOptions(), 4);
+  // IMU and remote-key callbacks run in the ROS executor (MultiThreadedExecutor).
+  // The SVO processing loop runs in its own thread and waits on a condition
+  // variable for each new image. This keeps IMU callbacks non-blocking.
+  std::thread svo_thread([&node]() { node->run(); });
+
+  rclcpp::executors::MultiThreadedExecutor executor(rclcpp::ExecutorOptions(), 4);
   executor.add_node(node);
   executor.spin();
 
-  RCLCPP_INFO(node->get_logger(), "SVO terminated.");
+  node->quitFlag() = true;
+  node->imgCv().notify_all();
+
+  if (svo_thread.joinable())
+    svo_thread.join();
+
+  RCLCPP_INFO(node->get_logger(), "SVO shut down");
   rclcpp::shutdown();
   return 0;
 }

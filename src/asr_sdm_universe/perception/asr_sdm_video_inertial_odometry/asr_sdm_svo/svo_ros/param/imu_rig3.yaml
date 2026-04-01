@@ -1,53 +1,66 @@
-# IMU Parameters for SVO - Rig3
+# IMU Parameters for SVO - Rig3 (单目相机 + IMU)
 #
-# Based on standard IMU noise model (Kalman filter prior):
-#   - gyro_noise_density: gyroscope white noise (rad/s/sqrt(Hz))
-#   - acc_noise_density: accelerometer white noise (m/s^2/sqrt(Hz))
-#   - gyro_bias_random_walk_sigma: gyroscope bias random walk (rad/s/sqrt(s))
-#   - acc_bias_random_walk_sigma: accelerometer bias random walk (m/s^2/sqrt(s))
-#
-# Adjust these values based on your IMU datasheet:
-#   - Realsense D435i: gyro ~0.004 rad/s/sqrt(Hz), acc ~300 ug/sqrt(Hz)
-#   - Euroc MAV datasets: ADIS16448 IMU
+# 使用说明：
+#   1. 将 use_imu 设为 true 启用 IMU 融合
+#   2. 填写与 bag 文件匹配的 imu_topic
+#   3. 如果有 IMU-Camera 外参标定结果，填写 T_cam_imu（4x4矩阵，行主序）
+#      否则使用单位矩阵（假设 IMU 与相机固联，旋转估计仍然有效）
+#   4. 根据 IMU 型号填写噪声参数（参考 IMU 数据手册）
+#      - Realsense D435i: gyro ~0.004 rad/s/sqrt(Hz), acc ~300 ug/sqrt(Hz)
+#      - Euroc MAV (ADIS16448): gyro ~1.8e-4 rad/s/sqrt(Hz), acc ~2.0e-3 m/s^2/sqrt(Hz)
 #
 
 /asr_sdm_svo:
   ros__parameters:
 
-    # === Enable IMU fusion ===
-    use_imu: false                    # Set to true to enable IMU rotation prior
-    imu_topic: "/imu/data"           # ROS 2 IMU topic (must match bag file)
-    set_initial_attitude_from_gravity: true  # Align world frame with gravity at startup
+    # === 基本配置 ===
+    use_imu: false                          # 设为 true 启用 IMU 旋转先验
+    imu_topic: "/imu/data"                  # ROS 2 IMU topic（必须与 bag 文件一致）
+    set_initial_attitude_from_gravity: true  # 启动时用加速度计对齐世界坐标系
 
-    # === Timing & Calibration ===
-    imu_delay_imu_cam: 0.0            # Time delay from IMU measurement to camera (seconds)
-                                      # Positive = IMU leads camera
-    imu_max_imu_delta_t: 0.1         # Max time gap between IMU measurements (s)
+    # === 外参标定：Camera -> IMU ===
+    # T_cam_imu: 4x4 矩阵（行主序），表示 T_imu_cam0（IMU 到相机的变换）
+    # 未标定时用单位矩阵。已标定时填写实际值（从 Kalibr 等工具获得）
+    # 格式: [R00,R01,R02,t0, R10,R11,R12,t1, R20,R21,R22,t2, 0,0,0,1]
+    T_cam_imu:
+      [1.0, 0.0, 0.0, 0.0,
+       0.0, 1.0, 0.0, 0.0,
+       0.0, 0.0, 1.0, 0.0,
+       0.0, 0.0, 0.0, 1.0]
 
-    # === IMU Physical Limits ===
-    imu_acc_max: 200.0               # Accelerometer saturation (m/s^2)
-    imu_omega_max: 20.0              # Gyroscope saturation (rad/s)
+    # === 时序与标定 ===
+    imu_delay_imu_cam: 0.0        # IMU 相对于相机的时间偏移（秒）
+                                    # 正值 = IMU 领先相机（更常见）；负值 = IMU 滞后相机
+    imu_max_imu_delta_t: 0.1      # IMU 测量之间允许的最大时间间隔（秒）
+                                    # 超过此值认为数据丢失，不进行预积分
 
-    # === IMU Noise Parameters (for covariance / weighting) ===
-    imu_gyro_noise_density: 1.0e-5    # Gyroscope white noise sigma (rad/s/sqrt(Hz))
-    imu_acc_noise_density: 1.0e-4      # Accelerometer white noise sigma (m/s^2/sqrt(Hz))
-    imu_gyro_bias_rw: 1.0e-6         # Gyroscope bias random walk (rad/s/sqrt(s))
-    imu_acc_bias_rw: 1.0e-5          # Accelerometer bias random walk (m/s^2/sqrt(s))
+    # === IMU 物理限制 ===
+    imu_acc_max: 200.0            # 加速度计饱和值（m/s^2），超过此值的数据将被丢弃
+    imu_omega_max: 20.0           # 陀螺仪饱和值（rad/s），超过此值的数据将被丢弃
 
-    # === Gravity ===
-    imu_gravity_magnitude: 9.81      # Gravity magnitude (m/s^2)
-                                       # Use local gravity: g = |acc| when IMU is stationary
+    # === IMU 噪声参数（根据 IMU 型号填写）===
+    # 陀螺仪白噪声密度（rad/s/sqrt(Hz)）
+    imu_gyro_noise_density: 1.0e-4
+    # 加速度计白噪声密度（m/s^2/sqrt(Hz)）
+    imu_acc_noise_density: 1.0e-3
+    # 陀螺仪偏置随机游走（rad/s/sqrt(s)）
+    imu_gyro_bias_rw: 1.0e-6
+    # 加速度计偏置随机游走（m/s^2/sqrt(s)）
+    imu_acc_bias_rw: 1.0e-5
 
-    # === IMU Sampling Rate ===
-    imu_rate: 200.0                  # IMU sample rate (Hz)
+    # === 重力 ===
+    imu_gravity_magnitude: 9.81   # 重力加速度大小（m/s^2）
 
-    # === IMU Initialization (bias estimation) ===
-    imu_velocity_sigma: 0.1            # Initial velocity uncertainty (m/s)
-    imu_omega_bias_sigma: 0.01        # Initial gyro bias uncertainty (rad/s)
-    imu_acc_bias_sigma: 0.1           # Initial accelerometer bias uncertainty (m/s^2)
+    # === IMU 采样率 ===
+    imu_rate: 200.0               # IMU 标称采样率（Hz）
 
-    # === Temporal Stationary Detection (optional) ===
-    imu_temporal_stationary_check: false  # Enable IMU-based stationary detection
-    imu_temporal_window_length_sec: 0.5     # Time window for stationary check (s)
-    stationary_acc_sigma_thresh: 0.0        # Accelerometer stddev threshold for stationary (m/s^2/sqrt(Hz))
-    stationary_gyr_sigma_thresh: 0.0       # Gyroscope stddev threshold for stationary (rad/s/sqrt(Hz))
+    # === IMU 初始化（偏置估计初始值）===
+    imu_velocity_sigma: 0.1        # 初始速度不确定度（m/s）
+    imu_omega_bias_sigma: 0.01     # 初始陀螺仪偏置不确定度（rad/s）
+    imu_acc_bias_sigma: 0.1        # 初始加速度计偏置不确定度（m/s^2）
+
+    # === 静止检测（可选）===
+    imu_temporal_stationary_check: false  # 启用基于 IMU 的静止检测
+    imu_temporal_window_length_sec: 0.5    # 静止检测时间窗口长度（秒）
+    stationary_acc_sigma_thresh: 0.0       # 加速度计静止阈值（m/s^2/sqrt(Hz)）
+    stationary_gyr_sigma_thresh: 0.0        # 陀螺仪静止阈值（rad/s/sqrt(Hz)）
