@@ -7,6 +7,7 @@
 #include <sensor_msgs/image_encodings.hpp>
 
 #include <algorithm>
+#include <cmath>
 #include <iostream>
 #include <set>
 
@@ -41,10 +42,21 @@ namespace msckf_vio
 
 // Constructor - takes a ROS2 node pointer
 ImageProcessor::ImageProcessor(rclcpp::Node * n)
-: nh_(n),
+: prev_features_ptr(std::make_shared<GridFeatures>()),
+  curr_features_ptr(std::make_shared<GridFeatures>()),
   is_first_img(true),
-  prev_features_ptr(std::make_shared<GridFeatures>()),
-  curr_features_ptr(std::make_shared<GridFeatures>())
+  next_feature_id(0),
+  before_tracking(0),
+  after_tracking(0),
+  after_matching(0),
+  after_ransac(0),
+  nh_(n),
+  cam0_R_p_c_(cv::Matx33f::eye()),
+  imu_dtime_(0.0),
+  imu_n_samples_(0),
+  imu_mean_ang_vel_imu_(0.f, 0.f, 0.f),
+  imu_mean_lin_acc_imu_(0.f, 0.f, 0.f),
+  imu_time_ahead_(0.0)
 {
   return;
 }
@@ -783,17 +795,48 @@ void ImageProcessor::trackFeatures()
   int curr_feature_num = 0;
   for (const auto & item : *curr_features_ptr) curr_feature_num += item.second.size();
 
-  RCLCPP_INFO_THROTTLE(
-    nh_->get_logger(), *nh_->get_clock(), 500,
-    "candidates: %d; track: %d; match: %d; ransac: %d/%d=%f", before_tracking, after_tracking,
-    after_matching, curr_feature_num, prev_feature_num,
-    static_cast<double>(curr_feature_num) / (static_cast<double>(prev_feature_num) + 1e-5));
-  // printf(
-  //     "\033[0;32m candidates: %d; raw track: %d; stereo match: %d; ransac: %d/%d=%f\033[0m\n",
-  //     before_tracking, after_tracking, after_matching,
-  //     curr_feature_num, prev_feature_num,
-  //     static_cast<double>(curr_feature_num)/
-  //     (static_cast<double>(prev_feature_num)+1e-5));
+  // IMU preintegration diagnostics (printed every frame):
+  //   - cam0_R_p_c_: rotation from previous frame to current frame (computed from IMU)
+  //   - rotation_angle: ||rot_vector|| = arccos((trace(R)-1)/2)  [rad]
+  //   - imu_mean_ang_vel_imu_: mean angular velocity in IMU frame  [rad/s]
+  //   - imu_mean_lin_acc_imu_: mean linear acceleration in IMU frame [m/s^2]
+  //   - imu_dtime_: time delta between the two frames              [s]
+  //   - imu_n_samples_: number of IMU messages used for integration
+  //   - imu_time_ahead_: seconds from first IMU in window to prev_img_time
+  //       positive = IMU arrives before the previous image (normal)
+  //       negative = IMU arrives after the previous image (sync issue)
+  double trace_R = cam0_R_p_c_(0,0) + cam0_R_p_c_(1,1) + cam0_R_p_c_(2,2);
+  double rotation_angle = std::acos(std::min(1.0, std::max(-1.0, (trace_R - 1.0) * 0.5))) * 180.0 / CV_PI;
+  double ang_vel_mag = cv::norm(imu_mean_ang_vel_imu_);
+  double lin_acc_mag = cv::norm(imu_mean_lin_acc_imu_);
+
+  // Log every frame so we can verify IMU-Image time synchronization at a glance.
+  //   - n=0 + dt=0      => no IMU data for this frame (bag may not have IMU, or IMU topic mismatch)
+  //   - n>0 + dt≈0.5s   => ~20Hz IMU, looks reasonable for typical MEMS
+  //   - time_ahead < 0   => IMU arrives after the image (check bag timestamp ordering)
+  RCLCPP_INFO(
+    nh_->get_logger(),
+    "track: %d/%d, ransac: %d/%d | "
+    "IMU: gyro=[%+7.3f %+7.3f %+7.3f] |%+6.3f| rad/s | "
+    "acc=[%+8.3f %+8.3f %+8.3f] |%+7.3f| m/s^2 | "
+    "dt=%.3fs n=%d t_ahead=%+.3fs rot=%+7.2f deg | "
+    "prev_ts=%.3f curr_ts=%.3f",
+    after_tracking, before_tracking,
+    curr_feature_num, prev_feature_num,
+    static_cast<double>(imu_mean_ang_vel_imu_[0]),
+    static_cast<double>(imu_mean_ang_vel_imu_[1]),
+    static_cast<double>(imu_mean_ang_vel_imu_[2]),
+    ang_vel_mag,
+    static_cast<double>(imu_mean_lin_acc_imu_[0]),
+    static_cast<double>(imu_mean_lin_acc_imu_[1]),
+    static_cast<double>(imu_mean_lin_acc_imu_[2]),
+    lin_acc_mag,
+    imu_dtime_,
+    imu_n_samples_,
+    imu_time_ahead_,
+    rotation_angle,
+    rclcpp::Time(cam0_prev_img_ptr->header.stamp).seconds(),
+    rclcpp::Time(cam0_curr_img_ptr->header.stamp).seconds());
 
   return;
 }
@@ -1161,7 +1204,35 @@ void ImageProcessor::integrateImuData(Matx33f & cam0_R_p_c, Matx33f & cam1_R_p_c
   cam1_R_p_c = cam1_R_p_c.t();
   // --------------------------------------------------------------------
 
-  // Delete the useless and used imu messages.
+  // Delete the used imu messages and store diagnostics for logging.
+  imu_dtime_ = dtime;
+  imu_n_samples_ = static_cast<int>(end_iter - begin_iter);
+  imu_mean_ang_vel_imu_ = mean_ang_vel;   // raw mean in IMU frame (before R_cam0_imu.t())
+  cam0_R_p_c_ = cam0_R_p_c;               // save for caller (already set above, store again for clarity)
+
+  // ----------------- 核心计算 4：平均线加速度（IMU 系） -----------------
+  // 用于诊断：判断传感器是静止还是运动状态。
+  Vec3f mean_lin_acc(0.0f, 0.0f, 0.0f);
+  for (auto iter = begin_iter; iter < end_iter; ++iter)
+    mean_lin_acc += Vec3f(
+        static_cast<float>(iter->linear_acceleration.x),
+        static_cast<float>(iter->linear_acceleration.y),
+        static_cast<float>(iter->linear_acceleration.z));
+  if (end_iter - begin_iter > 0) mean_lin_acc *= 1.0f / (end_iter - begin_iter);
+  // ----------------------------------------------------------------------
+
+  // ----------------- 核心计算 5：首条 IMU 与上一帧图像的时间偏移 -----------------
+  //   > 0 表示 IMU 时间戳在上一帧图像之前（IMU 先到，正常情况）
+  //   < 0 表示 IMU 在上一帧图像之后到达（时间同步可能有问题）
+  double time_ahead = 0.0;
+  if (begin_iter != end_iter) {
+    time_ahead = (rclcpp::Time(begin_iter->header.stamp) -
+                  rclcpp::Time(cam0_prev_img_ptr->header.stamp)).seconds();
+  }
+  // -------------------------------------------------------------------------
+
+  imu_mean_lin_acc_imu_ = mean_lin_acc;
+  imu_time_ahead_ = time_ahead;
   imu_msg_buffer.erase(imu_msg_buffer.begin(), end_iter);
   return;
 }

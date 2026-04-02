@@ -213,6 +213,14 @@ private:
 
   rclcpp::Node* nh_;
 
+  // IMU preintegration results (exposed for logging in trackFeatures)
+  cv::Matx33f cam0_R_p_c_;
+  double imu_dtime_;
+  int imu_n_samples_;
+  cv::Vec3f imu_mean_ang_vel_imu_;
+  cv::Vec3f imu_mean_lin_acc_imu_;
+  double imu_time_ahead_;
+
   std::unique_ptr<image_transport::ImageTransport> it_;
   std::unique_ptr<message_filters::Subscriber<sensor_msgs::msg::Image>> cam0_img_sub_;
   std::unique_ptr<message_filters::Subscriber<sensor_msgs::msg::Image>> cam1_img_sub_;

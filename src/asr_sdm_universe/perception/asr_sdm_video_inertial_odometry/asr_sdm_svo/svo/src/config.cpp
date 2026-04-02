@@ -116,7 +116,8 @@ Config::Config() :
     quality_min_fts(50),            // Minimum features for good tracking quality
     quality_max_drop_fts(40),       // Maximum feature drop indicating tracking failure
     patch_match_thresh_factor(1.0), // Scale factor for ZMSSD acceptance threshold (>=1.0 more permissive)
-    fast_type(12)                   // FAST type selector: 7 / 8 / 9 / 10 / 11 / 12
+    fast_type(12),                   // FAST type selector: 7 / 8 / 9 / 10 / 11 / 12
+    max_epi_search_steps(5000)       // Allow up to 5000 steps (supports px_length up to 3500px)
 {}
 
 /**

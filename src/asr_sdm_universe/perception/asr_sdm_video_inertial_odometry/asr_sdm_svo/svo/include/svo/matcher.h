@@ -95,6 +95,8 @@ public:
     const Frame & ref_frame, const Frame & cur_frame, const Feature & ref_ftr,
     const double d_estimate, const double d_min, const double d_max, double & depth);
 
+  void setOptions(const Options & opts) { options_ = opts; }
+
   void createPatchFromPatchWithBorder();
 };
 

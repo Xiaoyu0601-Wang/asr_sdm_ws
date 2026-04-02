@@ -1,6 +1,56 @@
 /asr_sdm_svo:
   ros__parameters:
-  
+    # -------------------------------------------------------------------------
+    # Continuity-first profile for ROS2 runtime.
+    # Tuned for downward-looking camera on a moving platform.
+    # Key changes from original SVO:
+    #   - Pinhole camera model (NOT ATAN) — ATAN causes patch-warp failure
+    #   - pyramid=4 for better fast-motion tolerance
+    #   - fast_type=10 (strict) with SSE2 SIMD for consistent detection
+    #   - quality_min_fts=20, quality_max_drop_fts=80 (balanced, not too aggressive)
+    #   - triang_min_corner_score=15 (raise from 8 to filter out weak corners)
+    #   - patch_match_thresh_factor=1.0 (original strictness, not 2.0)
+    #   - kfselect_mindist=0.05 (moderate, prevents keyframe spam)
+    # -------------------------------------------------------------------------
+
+    # Feature Detection
     grid_size: 30
-    max_n_kfs: 10
+    max_fts: 120
+    n_pyr_levels: 4                # was 3: raise to 4 for better fast-motion tolerance
+    triang_min_corner_score: 15.0  # was 8.0: raise to filter out weak FAST corners
+    fast_type: 10                  # was 9: use FAST-10 (strict, good quality) with SSE2
+
+    # Tracking Quality (balanced — detect problems early instead of running blind)
+    reproj_thresh: 4.0             # was 6.0: moderate tolerance
+    poseoptim_thresh: 4.0          # was 6.0: moderate tolerance
+    quality_min_fts: 20            # was 8: raise so system notices when tracking degrades
+    quality_max_drop_fts: 80       # was 200: raise so significant drops are flagged
+
+    # Initialization (reduce from EuRoC defaults for faster startup)
+    init_min_disparity: 20.0       # was 50.0: lower threshold so init completes in ~3 frames
+    init_min_tracked: 30           # was 50: more lenient
+    init_min_inliers: 30          # was 40: more lenient
+
+    # Depth Filter (patch matching acceptance)
+    patch_match_thresh_factor: 1.0 # was 2.0: restore original strictness to avoid
+                                   # accepting poorly-matched depth seeds
+
+    # Keyframe Selection
+    kfselect_mindist: 0.05        # was 0.02: moderate — not too sparse, not too dense
+    max_n_kfs: 80
+    map_scale: 1.0                # was 3.5: scene depth is ~1.4m, scale 3.5 breaks affine warp
+                                  # in reprojection matching. Use 1.0 to let SVO learn actual scale.
+
+    # KLT Tracker
+    klt_min_level: 0               # was 0
+    klt_max_level: 4               # was 4
+    subpix_n_iter: 15              # was 15
+
+    # Epipolar Search (for depth filter / fast-motion tolerance)
+    # px_length/0.7 steps needed; increase to support large inter-frame displacement.
+    # Current px_length=700~7400 => needs 1000~10571 steps.
+    # Set to 15000 to safely support px_length up to ~10500 (margin of 1.5x).
+    max_epi_search_steps: 15000
+
+    # Bundle Adjustment (disabled for speed)
     loba_num_iter: 0

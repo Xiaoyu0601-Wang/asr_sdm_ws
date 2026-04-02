@@ -86,6 +86,7 @@ void FrameHandlerMono::initialize()
       &MapPointCandidates::newCandidatePoint, &map_.point_candidates_, _1, _2);
   
   depth_filter_ = new DepthFilter(feature_detector, depth_filter_cb);
+  depth_filter_->applyConfigOptions();
   if(svo::Config::useThreadedDepthfilter())
     depth_filter_->startThread();  // Run depth filter in background thread
   else

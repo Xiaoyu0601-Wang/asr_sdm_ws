@@ -106,6 +106,10 @@ public:
   /// so it is not being deleted while you use it.
   void getSeedsCopy(const FramePtr & frame, std::list<Seed> & seeds);
 
+  /// Apply Config singleton values to the internal Matcher.
+  /// Must be called after construction, before processing any frames.
+  void applyConfigOptions();
+
   /// Return a reference to the seeds. This is NOT THREAD SAFE!
   std::list<Seed> & getSeeds() { return seeds_; }
 

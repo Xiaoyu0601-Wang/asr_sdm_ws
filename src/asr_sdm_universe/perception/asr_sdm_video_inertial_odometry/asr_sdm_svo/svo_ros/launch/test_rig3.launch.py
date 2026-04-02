@@ -16,7 +16,7 @@ def generate_launch_description():
     # Get the package share directory
     svo_ros_dir = get_package_share_directory('svo_ros')
 
-    camera_yaml_path = os.path.join(svo_ros_dir, 'param', 'realsense_camera_atan.yaml')
+    camera_yaml_path = os.path.join(svo_ros_dir, 'param', 'camera_pinhole.yaml')
     vo_yaml_path = os.path.join(svo_ros_dir, 'param', 'vo_rig3_stable.yaml')
 
     # Declare launch arguments
@@ -38,6 +38,30 @@ def generate_launch_description():
         description='FAST detector type: 7 / 8 / 9 / 10 / 11 / 12'
     )
 
+    max_queue_size_arg = DeclareLaunchArgument(
+        'max_queue_size',
+        default_value='1',
+        description='Max image queue size for processing thread'
+    )
+
+    drop_frames_arg = DeclareLaunchArgument(
+        'drop_frames',
+        default_value='true',
+        description='Drop oldest frames when queue is full'
+    )
+
+    enable_frame_throttle_arg = DeclareLaunchArgument(
+        'enable_frame_throttle',
+        default_value='false',
+        description='Enable input frame throttling before queueing'
+    )
+
+    target_fps_arg = DeclareLaunchArgument(
+        'target_fps',
+        default_value='15.0',
+        description='Target accepted input FPS when throttling is enabled'
+    )
+
 
     svo_node = Node(
         package='svo_ros',
@@ -56,6 +80,17 @@ def generate_launch_description():
                 'init_ry': 0.0,
                 'init_rz': 0.0,
                 'fast_type': LaunchConfiguration('fast_type'),
+                'max_queue_size': LaunchConfiguration('max_queue_size'),
+                'drop_frames': LaunchConfiguration('drop_frames'),
+                'enable_frame_throttle': LaunchConfiguration('enable_frame_throttle'),
+                'target_fps': LaunchConfiguration('target_fps'),
+                'use_async_processing': False,
+                'enable_visualization': False,
+                'publish_markers': False,
+                'publish_dense_input': False,
+                'publish_every_nth_img': 2,
+                'publish_every_nth_dense_input': 4,
+                'publish_map_every_frame': False,
             },
         ],
     )
@@ -75,6 +110,10 @@ def generate_launch_description():
         cam_topic_arg,
         rviz_arg,
         fast_type_arg,
+        max_queue_size_arg,
+        drop_frames_arg,
+        enable_frame_throttle_arg,
+        target_fps_arg,
         svo_node,
         rviz_node,
     ])

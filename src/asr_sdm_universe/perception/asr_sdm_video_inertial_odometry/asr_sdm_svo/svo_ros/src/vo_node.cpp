@@ -1,6 +1,5 @@
 #include <Eigen/Core>
 #include <cv_bridge/cv_bridge.hpp>
-#include <image_transport/image_transport.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <sensor_msgs/msg/image.hpp>
@@ -20,6 +19,11 @@
 #include <vikit/user_input_thread.h>
 
 #include <string>
+#include <atomic>
+#include <condition_variable>
+#include <deque>
+#include <mutex>
+#include <thread>
 
 namespace svo
 {
@@ -32,19 +36,40 @@ public:
   std::unique_ptr<svo::Visualizer> visualizer_;
   bool publish_markers_;
   bool publish_dense_input_;
+  bool enable_visualization_;
+  bool use_async_processing_{false};
   std::shared_ptr<vk::UserInputThread> user_input_thread_;
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr sub_remote_key_;
   std::string remote_input_;
   vk::AbstractCamera * cam_;
   bool quit_;
-  std::shared_ptr<image_transport::ImageTransport> it_;
-  image_transport::Subscriber it_sub_;
+  rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_img_;
+
+  struct ImageJob
+  {
+    sensor_msgs::msg::Image::ConstSharedPtr msg;
+    double timestamp;
+  };
+
+  std::mutex queue_mutex_;
+  std::condition_variable queue_cv_;
+  std::deque<ImageJob> image_queue_;
+  std::thread processing_thread_;
+  std::atomic<bool> processing_running_{false};
+  std::atomic<bool> drop_frames_{true};
+  size_t max_queue_size_{2};
+  double last_marker_publish_ts_{0.0};
+  bool enable_frame_throttle_{true};
+  double target_fps_{15.0};
+  double last_accepted_ts_{0.0};
 
   VoNode() : Node("svo"), vo_(nullptr), cam_(nullptr), quit_(false)
   {
     // Declare and get parameters
     publish_markers_ = vk::getParam<bool>(this, "publish_markers", true);
     publish_dense_input_ = vk::getParam<bool>(this, "publish_dense_input", false);
+    enable_visualization_ = vk::getParam<bool>(this, "enable_visualization", false);
+    use_async_processing_ = vk::getParam<bool>(this, "use_async_processing", false);
     remote_input_ = "";
 
     // Start user input thread in parallel thread that listens to console keys
@@ -153,6 +178,12 @@ public:
           this, "max_n_kfs", static_cast<int>(svo::Config::maxNKfs())));
         svo::Config::mapScale() = vk::getParam<double>(
           this, "map_scale", svo::Config::mapScale());
+        svo::Config::initMinDisparity() = vk::getParam<double>(
+          this, "init_min_disparity", svo::Config::initMinDisparity());
+        svo::Config::initMinTracked() = static_cast<size_t>(vk::getParam<int>(
+          this, "init_min_tracked", static_cast<int>(svo::Config::initMinTracked())));
+        svo::Config::initMinInliers() = static_cast<size_t>(vk::getParam<int>(
+          this, "init_min_inliers", static_cast<int>(svo::Config::initMinInliers())));
         svo::Config::patchMatchThresholdFactor() = vk::getParam<double>(
           this, "patch_match_thresh_factor", svo::Config::patchMatchThresholdFactor());
 
@@ -165,6 +196,10 @@ public:
         // Subpixel refinement iterations
         svo::Config::subpixNIter() = static_cast<size_t>(vk::getParam<int>(
           this, "subpix_n_iter", static_cast<int>(svo::Config::subpixNIter())));
+
+        // Epipolar search max steps (supports large px_length from fast motion / downward-looking cameras)
+        svo::Config::maxEpiSearchSteps() = static_cast<size_t>(vk::getParam<int>(
+          this, "max_epi_search_steps", static_cast<int>(svo::Config::maxEpiSearchSteps())));
       }
 
       svo::Config::gridSize() = static_cast<size_t>(grid);
@@ -180,14 +215,14 @@ public:
         this->get_logger(),
         "SVO Config(final): grid=%zu max_fts=%zu pyr_levels=%zu fast_type=%d tri_score=%.2f | reproj=%.2f poseopt=%.2f | "
         "quality_min=%zu quality_max_drop=%d | kf_min_dist=%.4f max_kfs=%zu map_scale=%.2f | "
-        "klt_levels=[%zu..%zu] zmssd_factor=%.2f subpix_iter=%zu",
+        "klt_levels=[%zu..%zu] zmssd_factor=%.2f subpix_iter=%zu epi_search_steps=%zu",
         svo::Config::gridSize(), svo::Config::maxFts(), svo::Config::nPyrLevels(), svo::Config::fastType(),
         svo::Config::triangMinCornerScore(), svo::Config::reprojThresh(),
         svo::Config::poseOptimThresh(), svo::Config::qualityMinFts(),
         svo::Config::qualityMaxFtsDrop(), svo::Config::kfSelectMinDist(),
         svo::Config::maxNKfs(), svo::Config::mapScale(), svo::Config::kltMinLevel(),
         svo::Config::kltMaxLevel(), svo::Config::patchMatchThresholdFactor(),
-        svo::Config::subpixNIter());
+        svo::Config::subpixNIter(), svo::Config::maxEpiSearchSteps());
     } catch (const std::exception & e) {
       RCLCPP_WARN(this->get_logger(), "Parameter override failed: %s", e.what());
     }
@@ -199,6 +234,11 @@ public:
     // Subscribe to remote input
     sub_remote_key_ = this->create_subscription<std_msgs::msg::String>(
       "remote_key", 5, std::bind(&VoNode::remoteKeyCb, this, std::placeholders::_1));
+
+    max_queue_size_ = static_cast<size_t>(vk::getParam<int>(this, "max_queue_size", 2));
+    drop_frames_ = vk::getParam<bool>(this, "drop_frames", true);
+    enable_frame_throttle_ = vk::getParam<bool>(this, "enable_frame_throttle", true);
+    target_fps_ = vk::getParam<double>(this, "target_fps", 15.0);
   }
 
   // Initialize components that need shared_from_this() - must be called after construction
@@ -217,16 +257,30 @@ public:
         vk::getParam<double>(this, "init_tx", 0.0), vk::getParam<double>(this, "init_ty", 0.0),
         vk::getParam<double>(this, "init_tz", 0.0)));
 
-    // Subscribe to cam msgs (needs shared_from_this)
+    // Subscribe to camera messages with explicit ROS2 sensor QoS.
     std::string cam_topic = vk::getParam<std::string>(this, "cam_topic", "camera/image_raw");
-    it_ = std::make_shared<image_transport::ImageTransport>(shared_from_this());
-    it_sub_ = it_->subscribe(cam_topic, 5, std::bind(&VoNode::imgCb, this, std::placeholders::_1));
+    auto qos = rclcpp::SensorDataQoS().keep_last(20);
+    sub_img_ = this->create_subscription<sensor_msgs::msg::Image>(
+      cam_topic, qos, std::bind(&VoNode::imgCb, this, std::placeholders::_1));
+
+    if (use_async_processing_) {
+      processing_running_ = true;
+      processing_thread_ = std::thread(&VoNode::processingLoop, this);
+    }
 
     RCLCPP_INFO(this->get_logger(), "SVO node initialized, subscribing to: %s", cam_topic.c_str());
   }
 
   ~VoNode()
   {
+    processing_running_ = false;
+    queue_cv_.notify_all();
+    if (processing_thread_.joinable()) processing_thread_.join();
+
+    // Ensure publishers/subscribers are destroyed before ROS shutdown.
+    sub_img_.reset();
+    visualizer_.reset();
+
     delete vo_;
     delete cam_;
     if (user_input_thread_ != nullptr) user_input_thread_->stop();
@@ -234,6 +288,16 @@ public:
 
   void imgCb(const sensor_msgs::msg::Image::ConstSharedPtr & msg)
   {
+    const double timestamp = rclcpp::Time(msg->header.stamp).seconds();
+    if (enable_frame_throttle_ && target_fps_ > 0.0) {
+      const double min_dt = 1.0 / target_fps_;
+      if ((timestamp - last_accepted_ts_) < min_dt) {
+        return;
+      }
+      last_accepted_ts_ = timestamp;
+    }
+
+    if (!use_async_processing_) {
     cv::Mat img;
     try {
       img = cv_bridge::toCvShare(msg, "mono8")->image;
@@ -241,18 +305,82 @@ public:
       RCLCPP_ERROR(this->get_logger(), "cv_bridge exception: %s", e.what());
       return;
     }
+
     processUserActions();
-
-    double timestamp = rclcpp::Time(msg->header.stamp).seconds();
     vo_->addImage(img, timestamp);
+      if (enable_visualization_) {
     visualizer_->publishMinimal(img, vo_->lastFrame(), *vo_, timestamp);
+        if (publish_markers_ && vo_->stage() != FrameHandlerBase::STAGE_PAUSED &&
+          (timestamp - last_marker_publish_ts_ > 0.2))
+        {
+          visualizer_->visualizeMarkers(vo_->lastFrame(), vo_->coreKeyframes(), vo_->map());
+          last_marker_publish_ts_ = timestamp;
+        }
+        if (publish_dense_input_) visualizer_->exportToDense(vo_->lastFrame());
+      }
+      if (vo_->stage() == FrameHandlerMono::STAGE_PAUSED) usleep(100000);
+      return;
+    }
 
-    if (publish_markers_ && vo_->stage() != FrameHandlerBase::STAGE_PAUSED)
+    ImageJob job{msg, timestamp};
+    std::unique_lock<std::mutex> lock(queue_mutex_);
+    if (drop_frames_ && image_queue_.size() >= max_queue_size_) {
+      // Real-time policy: discard backlog and keep only the newest frame.
+      image_queue_.clear();
+      RCLCPP_WARN_THROTTLE(
+        this->get_logger(), *this->get_clock(), 2000,
+        "Image processing is lagging; dropping queued frames to keep real-time.");
+    } else if (!drop_frames_ && image_queue_.size() >= max_queue_size_) {
+      // Queue is full and dropping is disabled: skip this incoming frame.
+      return;
+    }
+    image_queue_.push_back(std::move(job));
+    lock.unlock();
+    queue_cv_.notify_one();
+  }
+
+  void processingLoop()
+  {
+    while (processing_running_) {
+      ImageJob job;
+      {
+        std::unique_lock<std::mutex> lock(queue_mutex_);
+        queue_cv_.wait(lock, [this]() {
+          return !processing_running_ || !image_queue_.empty();
+        });
+        if (!processing_running_) {
+          break;
+        }
+        job = std::move(image_queue_.front());
+        image_queue_.pop_front();
+      }
+
+      cv::Mat img;
+      try {
+        img = cv_bridge::toCvShare(job.msg, "mono8")->image;
+      } catch (cv_bridge::Exception & e) {
+        RCLCPP_ERROR(this->get_logger(), "cv_bridge exception: %s", e.what());
+        continue;
+      }
+
+      processUserActions();
+
+      vo_->addImage(img, job.timestamp);
+      if (enable_visualization_) {
+        visualizer_->publishMinimal(img, vo_->lastFrame(), *vo_, job.timestamp);
+
+        if (publish_markers_ && vo_->stage() != FrameHandlerBase::STAGE_PAUSED &&
+          (job.timestamp - last_marker_publish_ts_ > 0.2))
+        {
       visualizer_->visualizeMarkers(vo_->lastFrame(), vo_->coreKeyframes(), vo_->map());
+          last_marker_publish_ts_ = job.timestamp;
+        }
 
     if (publish_dense_input_) visualizer_->exportToDense(vo_->lastFrame());
+      }
 
     if (vo_->stage() == FrameHandlerMono::STAGE_PAUSED) usleep(100000);
+    }
   }
 
   void processUserActions()
@@ -303,14 +431,10 @@ int main(int argc, char ** argv)
 
   RCLCPP_INFO(node->get_logger(), "SVO node created");
 
-  rclcpp::executors::SingleThreadedExecutor executor;
+  rclcpp::executors::MultiThreadedExecutor executor(
+    rclcpp::ExecutorOptions(), 4);
   executor.add_node(node);
-
-  rclcpp::Rate rate(100);
-  while (rclcpp::ok() && !node->shouldQuit()) {
-    executor.spin_some();
-    rate.sleep();
-  }
+  executor.spin();
 
   RCLCPP_INFO(node->get_logger(), "SVO terminated.");
   rclcpp::shutdown();
