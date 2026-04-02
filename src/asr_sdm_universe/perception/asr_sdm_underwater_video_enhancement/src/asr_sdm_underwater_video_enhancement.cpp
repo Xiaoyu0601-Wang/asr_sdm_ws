@@ -124,7 +124,7 @@ Mat UnderWaterVideoEnhancementNode::imageRestoration(const Mat & src, const Mat 
   J = min(J, 255);
 
   // Color Correction
-  vector<Mat> ch;
+  std::vector<Mat> ch;
   split(J, ch);
   ch[2] *= 1.3f;  // improve red color
   ch[1] *= 1.1f;  // improve yellow color

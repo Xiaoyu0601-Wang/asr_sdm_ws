@@ -6,6 +6,8 @@
 
 #include <sensor_msgs/msg/image.hpp>
 
+#include <vector>
+
 #ifdef HAVE_CV_BRIDGE_HPP
 #include <cv_bridge/cv_bridge.hpp>
 #else
