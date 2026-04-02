@@ -300,10 +300,11 @@ void Visualizer::visualizeMarkers(
 
   // Only publish markers if there are subscribers
   if (pub_frames_->get_subscription_count() > 0 || pub_points_->get_subscription_count() > 0) {
-    // Current camera frustum marker (blue)
-    // Publish in world frame to stay consistent with point markers (which are in world).
+    // Current camera frustum (blue): must use T_world_cam overload — the frame_id-only overload
+    // draws geometry at the origin of "world", so the frustum never moves with the pose.
+    const SE3d T_world_cam(T_world_from_vision_ * frame->T_f_w_.inverse());
     vk::output_helper::publishCameraMarker(
-      pub_frames_, "world", "cams", stamp, 1, 0.3, Eigen::Vector3d(0., 0., 1.));
+      pub_frames_, T_world_cam, "cams", stamp, 5000, 0.3, Eigen::Vector3d(0., 0., 1.));
 
     // Add point to trajectory trail (dark blue)
     vk::output_helper::publishPointMarker(
