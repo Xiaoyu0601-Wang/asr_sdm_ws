@@ -57,6 +57,7 @@ set(SOURCEFILES
   src/depth_filter.cpp
   src/config.cpp
   src/sparse_img_align.cpp
+  src/imu_handler.cpp
 )
 
 # Add g2o if available

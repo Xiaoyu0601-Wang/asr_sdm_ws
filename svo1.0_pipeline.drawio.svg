@@ -1,145 +1,566 @@
-<mxfile host="65bd71144e">
-    <diagram id="svo-core-vo" name="SVO Core VO Pipeline">
-        <mxGraphModel dx="2658" dy="1190" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
-            <root>
-                <mxCell id="0"/>
-                <mxCell id="1" parent="0"/>
-                <mxCell id="legend" value="Legend&#xa;灰色：输入&#xa;蓝色：主流程模块&#xa;绿色：地图更新&#xa;橙色：深度滤波&#xa;蓝色虚线：可选(Local BA)&#xa;紫色：关键帧决策" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#CCCCCC;" parent="1" vertex="1">
-                    <mxGeometry x="1220" y="650" width="230" height="140" as="geometry"/>
-                </mxCell>
-                <mxCell id="n_input" value="Image&#xa;Input" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6D7E95;strokeColor=#2C3E50;fontColor=#FFFFFF;fontStyle=1;" parent="1" vertex="1">
-                    <mxGeometry x="80" y="110" width="200" height="80" as="geometry"/>
-                </mxCell>
-                <mxCell id="n_pyramid" value="Pyramid&#xa;Creation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3C78D8;strokeColor=#1B4F72;fontColor=#FFFFFF;fontStyle=1;" parent="1" vertex="1">
-                    <mxGeometry x="310" y="110" width="200" height="80" as="geometry"/>
-                </mxCell>
-                <mxCell id="n_stage" value="阶段状态机&#xa;FIRST/SECOND/DEFAULT/RELOCALIZING&#xa;FrameHandlerBase" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6FA8DC;strokeColor=#1B4F72;fontColor=#FFFFFF;" parent="1" vertex="1">
-                    <mxGeometry x="525" y="110" width="250" height="80" as="geometry"/>
-                </mxCell>
-                <mxCell id="n_first" value="FIRST_FRAME 初始化&#xa;选第一关键帧&#xa;KLT/Homography Init&#xa;initialization.cpp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B4A7D6;strokeColor=#4A235A;fontColor=#FFFFFF;" parent="1" vertex="1">
-                    <mxGeometry x="835" y="105" width="180" height="90" as="geometry"/>
-                </mxCell>
-                <mxCell id="n_second" value="SECOND_FRAME 初始化&#xa;KLT跟踪+单应分解&#xa;三角化初始地图&#xa;initialization.cpp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B4A7D6;strokeColor=#4A235A;fontColor=#FFFFFF;" parent="1" vertex="1">
-                    <mxGeometry x="835" y="230" width="180" height="100" as="geometry"/>
-                </mxCell>
-                <mxCell id="n_reloc" value="RELOCALIZING&#xa;重定位/恢复&#xa;SparseImgAlign(ref_kf)&#xa;frame_handler_mono.cpp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E06666;strokeColor=#990000;fontColor=#FFFFFF;" parent="1" vertex="1">
-                    <mxGeometry x="560" y="10" width="180" height="70" as="geometry"/>
-                </mxCell>
-                <mxCell id="n_default" value="DEFAULT_FRAME 正常跟踪&#xa;processFrame()&#xa;frame_handler_mono.cpp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6FA8DC;strokeColor=#1B4F72;fontColor=#FFFFFF;" parent="1" vertex="1">
-                    <mxGeometry x="525" y="280" width="250" height="70" as="geometry"/>
-                </mxCell>
-                <mxCell id="n_sparse_align" value="Sparse&#xa;Img Align" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3C78D8;strokeColor=#1B4F72;fontColor=#FFFFFF;fontStyle=1;" parent="1" vertex="1">
-                    <mxGeometry x="535" y="395" width="230" height="80" as="geometry"/>
-                </mxCell>
-                <mxCell id="n_reproject" value="Reproject&#xa;+ Align" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3C78D8;strokeColor=#1B4F72;fontColor=#FFFFFF;fontStyle=1;" parent="1" vertex="1">
-                    <mxGeometry x="520" y="510" width="260" height="90" as="geometry"/>
-                </mxCell>
-                <mxCell id="n_pose_opt" value="Pose&#xa;Optimizer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3C78D8;strokeColor=#1B4F72;fontColor=#FFFFFF;fontStyle=1;" parent="1" vertex="1">
-                    <mxGeometry x="845" y="520" width="160" height="70" as="geometry"/>
-                </mxCell>
-                <mxCell id="n_structure_opt" value="结构优化(3D点)&#xa;optimizeStructure()&#xa;point_optimizer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6FA8DC;strokeColor=#1B4F72;fontColor=#FFFFFF;" parent="1" vertex="1">
-                    <mxGeometry x="840" y="395" width="170" height="70" as="geometry"/>
-                </mxCell>
-                <mxCell id="n_kf" value="关键帧决策&#xa;needNewKf(depth_mean)&#xa;tracking_quality 检查&#xa;frame_handler_mono.cpp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B4A7D6;strokeColor=#4A235A;fontColor=#FFFFFF;" parent="1" vertex="1">
-                    <mxGeometry x="1105" y="385" width="200" height="90" as="geometry"/>
-                </mxCell>
-                <mxCell id="n_df_addframe" value="非关键帧：更新深度滤波&#xa;DepthFilter::addFrame()&#xa;depth_filter.cpp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F6B26B;strokeColor=#B45F06;fontColor=#000000;" parent="1" vertex="1">
-                    <mxGeometry x="1100" y="530" width="210" height="70" as="geometry"/>
-                </mxCell>
-                <mxCell id="n_kf_prep" value="关键帧准备&#xa;1) addFrameRef()&#xa;2) candidate-&gt;map point&#xa;point_candidates_" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6FA8DC;strokeColor=#1B4F72;fontColor=#FFFFFF;" parent="1" vertex="1">
-                    <mxGeometry x="1095" y="270" width="220" height="90" as="geometry"/>
-                </mxCell>
-                <mxCell id="n_ba" value="(可选) 局部BA&#xa;setCoreKfs()+localBA()&#xa;bundle_adjustment.cpp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6FA8DC;strokeColor=#1B4F72;fontColor=#FFFFFF;dashed=1;" parent="1" vertex="1">
-                    <mxGeometry x="1105" y="150" width="200" height="80" as="geometry"/>
-                </mxCell>
-                <mxCell id="n_df_addkf" value="关键帧：初始化Seeds&#xa;DepthFilter::addKeyframe()&#xa;depth_filter.cpp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F6B26B;strokeColor=#B45F06;fontColor=#000000;" parent="1" vertex="1">
-                    <mxGeometry x="1360" y="280" width="200" height="70" as="geometry"/>
-                </mxCell>
-                <mxCell id="n_map_update" value="关键帧管理/地图更新&#xa;Map::addKeyframe()&#xa;safeDeleteFrame()+removeKeyframe()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#93C47D;strokeColor=#274E13;fontColor=#FFFFFF;" parent="1" vertex="1">
-                    <mxGeometry x="1330" y="155" width="260" height="70" as="geometry"/>
-                </mxCell>
-                <mxCell id="ds_frame" value="Frame&#xa;frame.h/.cpp&#xa;图像+金字塔+位姿" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#93C47D;strokeColor=#274E13;fontColor=#FFFFFF;" parent="1" vertex="1">
-                    <mxGeometry x="50" y="650" width="150" height="80" as="geometry"/>
-                </mxCell>
-                <mxCell id="ds_feature" value="Feature&#xa;feature.h&#xa;2D观测/层级" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#93C47D;strokeColor=#274E13;fontColor=#FFFFFF;" parent="1" vertex="1">
-                    <mxGeometry x="230" y="650" width="160" height="80" as="geometry"/>
-                </mxCell>
-                <mxCell id="ds_point" value="Point&#xa;point.h/.cpp&#xa;3D点/质量" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#93C47D;strokeColor=#274E13;fontColor=#FFFFFF;" parent="1" vertex="1">
-                    <mxGeometry x="410" y="650" width="160" height="80" as="geometry"/>
-                </mxCell>
-                <mxCell id="ds_map" value="Map&#xa;map.h/.cpp&#xa;关键帧+地图点" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#93C47D;strokeColor=#274E13;fontColor=#FFFFFF;" parent="1" vertex="1">
-                    <mxGeometry x="590" y="650" width="160" height="80" as="geometry"/>
-                </mxCell>
-                <mxCell id="bg_depth" value="DepthFilter 线程(可选)&#xa;depth_filter.cpp&#xa;Bayesian 深度估计" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F6B26B;strokeColor=#B45F06;" parent="1" vertex="1">
-                    <mxGeometry x="1340" y="390" width="240" height="90" as="geometry"/>
-                </mxCell>
-                <mxCell id="bg_seed" value="Seed(逆深度)&#xa;均值/方差/β分布&#xa;收敛-&gt;候选地图点" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F6B26B;strokeColor=#B45F06;" parent="1" vertex="1">
-                    <mxGeometry x="1340" y="510" width="240" height="90" as="geometry"/>
-                </mxCell>
-                <mxCell id="e1" style="endArrow=block;html=1;strokeColor=#1B4F72;" parent="1" source="n_input" target="n_pyramid" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="e2" style="endArrow=block;html=1;strokeColor=#1B4F72;" parent="1" source="n_pyramid" target="n_stage" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="e3" style="endArrow=block;html=1;strokeColor=#4A235A;dashed=1;" parent="1" source="n_stage" target="n_first" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="e4" style="endArrow=block;html=1;strokeColor=#4A235A;dashed=1;" parent="1" source="n_stage" target="n_second" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="e5" style="endArrow=none;html=1;strokeColor=#FFFFFF;" parent="1" source="n_stage" target="n_default" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="e6" style="endArrow=block;html=1;strokeColor=#990000;dashed=1;" parent="1" source="n_stage" target="n_reloc" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="e7" style="endArrow=block;html=1;strokeColor=#1B4F72;" parent="1" source="n_default" target="n_sparse_align" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="e8" style="endArrow=block;html=1;strokeColor=#1B4F72;" parent="1" source="n_sparse_align" target="n_reproject" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="e9" style="endArrow=block;html=1;strokeColor=#1B4F72;" parent="1" source="n_reproject" target="n_pose_opt" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="e10" style="endArrow=block;html=1;strokeColor=#1B4F72;" parent="1" source="n_pose_opt" target="n_structure_opt" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="e11" style="endArrow=block;html=1;strokeColor=#4A235A;" parent="1" source="n_structure_opt" target="n_kf" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="e12" style="endArrow=block;html=1;strokeColor=#B45F06;dashed=1;" parent="1" source="n_kf" target="n_df_addframe" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="e13" style="endArrow=block;html=1;strokeColor=#1B4F72;" parent="1" source="n_kf" target="n_kf_prep" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="e14" style="endArrow=block;html=1;strokeColor=#1B4F72;dashed=1;" parent="1" source="n_kf_prep" target="n_ba" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="e15" style="endArrow=block;html=1;strokeColor=#B45F06;" parent="1" source="n_kf_prep" target="n_df_addkf" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="e16" style="endArrow=block;html=1;strokeColor=#274E13;" parent="1" source="n_df_addkf" target="n_map_update" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="e17" style="endArrow=block;html=1;strokeColor=#274E13;" parent="1" source="ds_frame" target="ds_feature" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="e18" style="endArrow=block;html=1;strokeColor=#274E13;" parent="1" source="ds_feature" target="ds_point" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="e19" style="endArrow=block;html=1;strokeColor=#274E13;" parent="1" source="ds_point" target="ds_map" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="e20" style="endArrow=block;html=1;strokeColor=#B45F06;dashed=1;" parent="1" source="n_df_addkf" target="bg_depth" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="e21" style="endArrow=block;html=1;strokeColor=#B45F06;" parent="1" source="bg_depth" target="bg_seed" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-            </root>
-        </mxGraphModel>
-    </diagram>
-</mxfile>
+<svg host="65bd71144e" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="1541px" height="781px" viewBox="-0.5 -0.5 1541 781" content="&lt;mxfile&gt;&lt;diagram id=&quot;svo-core-vo&quot; name=&quot;SVO Core VO Pipeline&quot;&gt;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&lt;/diagram&gt;&lt;/mxfile&gt;" style="background-color: rgb(255, 255, 255);">
+    <defs/>
+    <g>
+        <rect x="1170" y="640" width="230" height="140" rx="21" ry="21" fill="#6a00ff" stroke="#3700cc" pointer-events="all"/>
+        <g transform="translate(-0.5 -0.5)">
+            <switch>
+                <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 228px; height: 1px; padding-top: 710px; margin-left: 1171px;">
+                        <div data-drawio-colors="color: #ffffff; " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(255, 255, 255); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">
+                                Legend
+                                <br/>
+                                灰色：输入
+                                <br/>
+                                蓝色：主流程模块
+                                <br/>
+                                绿色：地图更新
+                                <br/>
+                                橙色：深度滤波
+                                <br/>
+                                蓝色虚线：可选(Local BA)
+                                <br/>
+                                紫色：关键帧决策
+                            </div>
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="1285" y="714" fill="#ffffff" font-family="Helvetica" font-size="12px" text-anchor="middle">
+                    Legend...
+                </text>
+            </switch>
+        </g>
+        <rect x="30" y="100" width="200" height="80" rx="12" ry="12" fill="#6d7e95" stroke="#2c3e50" pointer-events="all"/>
+        <g transform="translate(-0.5 -0.5)">
+            <switch>
+                <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 198px; height: 1px; padding-top: 140px; margin-left: 31px;">
+                        <div data-drawio-colors="color: #FFFFFF; " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(255, 255, 255); line-height: 1.2; pointer-events: all; font-weight: bold; white-space: normal; overflow-wrap: normal;">
+                                Image
+                                <br/>
+                                Input
+                            </div>
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="130" y="144" fill="#FFFFFF" font-family="Helvetica" font-size="12px" text-anchor="middle" font-weight="bold">
+                    Image...
+                </text>
+            </switch>
+        </g>
+        <rect x="260" y="100" width="200" height="80" rx="12" ry="12" fill="#3c78d8" stroke="#1b4f72" pointer-events="all"/>
+        <g transform="translate(-0.5 -0.5)">
+            <switch>
+                <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 198px; height: 1px; padding-top: 140px; margin-left: 261px;">
+                        <div data-drawio-colors="color: #FFFFFF; " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(255, 255, 255); line-height: 1.2; pointer-events: all; font-weight: bold; white-space: normal; overflow-wrap: normal;">
+                                Pyramid
+                                <br/>
+                                Creation
+                            </div>
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="360" y="144" fill="#FFFFFF" font-family="Helvetica" font-size="12px" text-anchor="middle" font-weight="bold">
+                    Pyramid...
+                </text>
+            </switch>
+        </g>
+        <rect x="475" y="100" width="250" height="80" rx="12" ry="12" fill="#6fa8dc" stroke="#1b4f72" pointer-events="all"/>
+        <g transform="translate(-0.5 -0.5)">
+            <switch>
+                <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 248px; height: 1px; padding-top: 140px; margin-left: 476px;">
+                        <div data-drawio-colors="color: #FFFFFF; " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(255, 255, 255); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">
+                                阶段状态机
+                                <br/>
+                                FIRST/SECOND/DEFAULT/RELOCALIZING
+                                <br/>
+                                FrameHandlerBase
+                            </div>
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="600" y="144" fill="#FFFFFF" font-family="Helvetica" font-size="12px" text-anchor="middle">
+                    阶段状态机FIRST/SECOND/DEFAULT/RELOCALIZING...
+                </text>
+            </switch>
+        </g>
+        <rect x="785" y="95" width="180" height="90" rx="13.5" ry="13.5" fill="#b4a7d6" stroke="#4a235a" pointer-events="all"/>
+        <g transform="translate(-0.5 -0.5)">
+            <switch>
+                <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 178px; height: 1px; padding-top: 140px; margin-left: 786px;">
+                        <div data-drawio-colors="color: #FFFFFF; " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(255, 255, 255); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">
+                                FIRST_FRAME 初始化
+                                <br/>
+                                选第一关键帧
+                                <br/>
+                                KLT/Homography Init
+                                <br/>
+                                initialization.cpp
+                            </div>
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="875" y="144" fill="#FFFFFF" font-family="Helvetica" font-size="12px" text-anchor="middle">
+                    FIRST_FRAME 初始化...
+                </text>
+            </switch>
+        </g>
+        <rect x="785" y="220" width="180" height="100" rx="15" ry="15" fill="#b4a7d6" stroke="#4a235a" pointer-events="all"/>
+        <g transform="translate(-0.5 -0.5)">
+            <switch>
+                <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 178px; height: 1px; padding-top: 270px; margin-left: 786px;">
+                        <div data-drawio-colors="color: #FFFFFF; " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(255, 255, 255); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">
+                                SECOND_FRAME 初始化
+                                <br/>
+                                KLT跟踪+单应分解
+                                <br/>
+                                三角化初始地图
+                                <br/>
+                                initialization.cpp
+                            </div>
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="875" y="274" fill="#FFFFFF" font-family="Helvetica" font-size="12px" text-anchor="middle">
+                    SECOND_FRAME 初始化...
+                </text>
+            </switch>
+        </g>
+        <rect x="510" y="0" width="180" height="70" rx="10.5" ry="10.5" fill="#e06666" stroke="#990000" pointer-events="all"/>
+        <g transform="translate(-0.5 -0.5)">
+            <switch>
+                <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 178px; height: 1px; padding-top: 35px; margin-left: 511px;">
+                        <div data-drawio-colors="color: #FFFFFF; " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(255, 255, 255); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">
+                                RELOCALIZING
+                                <br/>
+                                重定位/恢复
+                                <br/>
+                                SparseImgAlign(ref_kf)
+                                <br/>
+                                frame_handler_mono.cpp
+                            </div>
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="600" y="39" fill="#FFFFFF" font-family="Helvetica" font-size="12px" text-anchor="middle">
+                    RELOCALIZING...
+                </text>
+            </switch>
+        </g>
+        <rect x="475" y="270" width="250" height="70" rx="10.5" ry="10.5" fill="#6fa8dc" stroke="#1b4f72" pointer-events="all"/>
+        <g transform="translate(-0.5 -0.5)">
+            <switch>
+                <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 248px; height: 1px; padding-top: 305px; margin-left: 476px;">
+                        <div data-drawio-colors="color: #FFFFFF; " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(255, 255, 255); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">
+                                DEFAULT_FRAME 正常跟踪
+                                <br/>
+                                processFrame()
+                                <br/>
+                                frame_handler_mono.cpp
+                            </div>
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="600" y="309" fill="#FFFFFF" font-family="Helvetica" font-size="12px" text-anchor="middle">
+                    DEFAULT_FRAME 正常跟踪...
+                </text>
+            </switch>
+        </g>
+        <rect x="485" y="385" width="230" height="80" rx="12" ry="12" fill="#3c78d8" stroke="#1b4f72" pointer-events="all"/>
+        <g transform="translate(-0.5 -0.5)">
+            <switch>
+                <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 228px; height: 1px; padding-top: 425px; margin-left: 486px;">
+                        <div data-drawio-colors="color: #FFFFFF; " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(255, 255, 255); line-height: 1.2; pointer-events: all; font-weight: bold; white-space: normal; overflow-wrap: normal;">
+                                Sparse
+                                <br/>
+                                Img Align
+                            </div>
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="600" y="429" fill="#FFFFFF" font-family="Helvetica" font-size="12px" text-anchor="middle" font-weight="bold">
+                    Sparse...
+                </text>
+            </switch>
+        </g>
+        <rect x="470" y="500" width="260" height="90" rx="13.5" ry="13.5" fill="#3c78d8" stroke="#1b4f72" pointer-events="all"/>
+        <g transform="translate(-0.5 -0.5)">
+            <switch>
+                <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 258px; height: 1px; padding-top: 545px; margin-left: 471px;">
+                        <div data-drawio-colors="color: #FFFFFF; " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(255, 255, 255); line-height: 1.2; pointer-events: all; font-weight: bold; white-space: normal; overflow-wrap: normal;">
+                                Reproject
+                                <br/>
+                                + Align
+                            </div>
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="600" y="549" fill="#FFFFFF" font-family="Helvetica" font-size="12px" text-anchor="middle" font-weight="bold">
+                    Reproject...
+                </text>
+            </switch>
+        </g>
+        <rect x="795" y="510" width="160" height="70" rx="10.5" ry="10.5" fill="#3c78d8" stroke="#1b4f72" pointer-events="all"/>
+        <g transform="translate(-0.5 -0.5)">
+            <switch>
+                <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 158px; height: 1px; padding-top: 545px; margin-left: 796px;">
+                        <div data-drawio-colors="color: #FFFFFF; " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(255, 255, 255); line-height: 1.2; pointer-events: all; font-weight: bold; white-space: normal; overflow-wrap: normal;">
+                                Pose
+                                <br/>
+                                Optimizer
+                            </div>
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="875" y="549" fill="#FFFFFF" font-family="Helvetica" font-size="12px" text-anchor="middle" font-weight="bold">
+                    Pose...
+                </text>
+            </switch>
+        </g>
+        <rect x="790" y="385" width="170" height="70" rx="10.5" ry="10.5" fill="#6fa8dc" stroke="#1b4f72" pointer-events="all"/>
+        <g transform="translate(-0.5 -0.5)">
+            <switch>
+                <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 168px; height: 1px; padding-top: 420px; margin-left: 791px;">
+                        <div data-drawio-colors="color: #FFFFFF; " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(255, 255, 255); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">
+                                结构优化(3D点)
+                                <br/>
+                                optimizeStructure()
+                                <br/>
+                                point_optimizer
+                            </div>
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="875" y="424" fill="#FFFFFF" font-family="Helvetica" font-size="12px" text-anchor="middle">
+                    结构优化(3D点)...
+                </text>
+            </switch>
+        </g>
+        <rect x="1055" y="375" width="200" height="90" rx="13.5" ry="13.5" fill="#b4a7d6" stroke="#4a235a" pointer-events="all"/>
+        <g transform="translate(-0.5 -0.5)">
+            <switch>
+                <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 198px; height: 1px; padding-top: 420px; margin-left: 1056px;">
+                        <div data-drawio-colors="color: #FFFFFF; " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(255, 255, 255); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">
+                                关键帧决策
+                                <br/>
+                                needNewKf(depth_mean)
+                                <br/>
+                                tracking_quality 检查
+                                <br/>
+                                frame_handler_mono.cpp
+                            </div>
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="1155" y="424" fill="#FFFFFF" font-family="Helvetica" font-size="12px" text-anchor="middle">
+                    关键帧决策needNewKf(depth_mean)...
+                </text>
+            </switch>
+        </g>
+        <rect x="1050" y="520" width="210" height="70" rx="10.5" ry="10.5" fill="#f6b26b" stroke="#b45f06" pointer-events="all"/>
+        <g transform="translate(-0.5 -0.5)">
+            <switch>
+                <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 208px; height: 1px; padding-top: 555px; margin-left: 1051px;">
+                        <div data-drawio-colors="color: #000000; " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">
+                                非关键帧：更新深度滤波
+                                <br/>
+                                DepthFilter::addFrame()
+                                <br/>
+                                depth_filter.cpp
+                            </div>
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="1155" y="559" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">
+                    非关键帧：更新深度滤波DepthFilter::addFrame()...
+                </text>
+            </switch>
+        </g>
+        <rect x="1045" y="260" width="220" height="90" rx="13.5" ry="13.5" fill="#6fa8dc" stroke="#1b4f72" pointer-events="all"/>
+        <g transform="translate(-0.5 -0.5)">
+            <switch>
+                <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 218px; height: 1px; padding-top: 305px; margin-left: 1046px;">
+                        <div data-drawio-colors="color: #FFFFFF; " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(255, 255, 255); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">
+                                关键帧准备
+                                <br/>
+                                1) addFrameRef()
+                                <br/>
+                                2) candidate-&gt;map point
+                                <br/>
+                                point_candidates_
+                            </div>
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="1155" y="309" fill="#FFFFFF" font-family="Helvetica" font-size="12px" text-anchor="middle">
+                    关键帧准备1) addFrameRef()...
+                </text>
+            </switch>
+        </g>
+        <rect x="1055" y="140" width="200" height="80" rx="12" ry="12" fill="#6fa8dc" stroke="#1b4f72" stroke-dasharray="3 3" pointer-events="all"/>
+        <g transform="translate(-0.5 -0.5)">
+            <switch>
+                <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 198px; height: 1px; padding-top: 180px; margin-left: 1056px;">
+                        <div data-drawio-colors="color: #FFFFFF; " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(255, 255, 255); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">
+                                (可选) 局部BA
+                                <br/>
+                                setCoreKfs()+localBA()
+                                <br/>
+                                bundle_adjustment.cpp
+                            </div>
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="1155" y="184" fill="#FFFFFF" font-family="Helvetica" font-size="12px" text-anchor="middle">
+                    (可选) 局部BA...
+                </text>
+            </switch>
+        </g>
+        <rect x="1310" y="270" width="200" height="70" rx="10.5" ry="10.5" fill="#f6b26b" stroke="#b45f06" pointer-events="all"/>
+        <g transform="translate(-0.5 -0.5)">
+            <switch>
+                <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 198px; height: 1px; padding-top: 305px; margin-left: 1311px;">
+                        <div data-drawio-colors="color: #000000; " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">
+                                关键帧：初始化Seeds
+                                <br/>
+                                DepthFilter::addKeyframe()
+                                <br/>
+                                depth_filter.cpp
+                            </div>
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="1410" y="309" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">
+                    关键帧：初始化Seeds...
+                </text>
+            </switch>
+        </g>
+        <rect x="1280" y="145" width="260" height="70" rx="10.5" ry="10.5" fill="#93c47d" stroke="#274e13" pointer-events="all"/>
+        <g transform="translate(-0.5 -0.5)">
+            <switch>
+                <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 258px; height: 1px; padding-top: 180px; margin-left: 1281px;">
+                        <div data-drawio-colors="color: #FFFFFF; " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(255, 255, 255); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">
+                                关键帧管理/地图更新
+                                <br/>
+                                Map::addKeyframe()
+                                <br/>
+                                safeDeleteFrame()+removeKeyframe()
+                            </div>
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="1410" y="184" fill="#FFFFFF" font-family="Helvetica" font-size="12px" text-anchor="middle">
+                    关键帧管理/地图更新...
+                </text>
+            </switch>
+        </g>
+        <rect x="0" y="640" width="150" height="80" rx="12" ry="12" fill="#93c47d" stroke="#274e13" pointer-events="all"/>
+        <g transform="translate(-0.5 -0.5)">
+            <switch>
+                <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 148px; height: 1px; padding-top: 680px; margin-left: 1px;">
+                        <div data-drawio-colors="color: #FFFFFF; " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(255, 255, 255); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">
+                                Frame
+                                <br/>
+                                frame.h/.cpp
+                                <br/>
+                                图像+金字塔+位姿
+                            </div>
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="75" y="684" fill="#FFFFFF" font-family="Helvetica" font-size="12px" text-anchor="middle">
+                    Frame...
+                </text>
+            </switch>
+        </g>
+        <rect x="180" y="640" width="160" height="80" rx="12" ry="12" fill="#93c47d" stroke="#274e13" pointer-events="all"/>
+        <g transform="translate(-0.5 -0.5)">
+            <switch>
+                <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 158px; height: 1px; padding-top: 680px; margin-left: 181px;">
+                        <div data-drawio-colors="color: #FFFFFF; " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(255, 255, 255); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">
+                                Feature
+                                <br/>
+                                feature.h
+                                <br/>
+                                2D观测/层级
+                            </div>
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="260" y="684" fill="#FFFFFF" font-family="Helvetica" font-size="12px" text-anchor="middle">
+                    Feature...
+                </text>
+            </switch>
+        </g>
+        <rect x="360" y="640" width="160" height="80" rx="12" ry="12" fill="#93c47d" stroke="#274e13" pointer-events="all"/>
+        <g transform="translate(-0.5 -0.5)">
+            <switch>
+                <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 158px; height: 1px; padding-top: 680px; margin-left: 361px;">
+                        <div data-drawio-colors="color: #FFFFFF; " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(255, 255, 255); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">
+                                Point
+                                <br/>
+                                point.h/.cpp
+                                <br/>
+                                3D点/质量
+                            </div>
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="440" y="684" fill="#FFFFFF" font-family="Helvetica" font-size="12px" text-anchor="middle">
+                    Point...
+                </text>
+            </switch>
+        </g>
+        <rect x="540" y="640" width="160" height="80" rx="12" ry="12" fill="#93c47d" stroke="#274e13" pointer-events="all"/>
+        <g transform="translate(-0.5 -0.5)">
+            <switch>
+                <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 158px; height: 1px; padding-top: 680px; margin-left: 541px;">
+                        <div data-drawio-colors="color: #FFFFFF; " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(255, 255, 255); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">
+                                Map
+                                <br/>
+                                map.h/.cpp
+                                <br/>
+                                关键帧+地图点
+                            </div>
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="620" y="684" fill="#FFFFFF" font-family="Helvetica" font-size="12px" text-anchor="middle">
+                    Map...
+                </text>
+            </switch>
+        </g>
+        <rect x="1290" y="380" width="240" height="90" rx="13.5" ry="13.5" fill="#f6b26b" stroke="#b45f06" pointer-events="all"/>
+        <g transform="translate(-0.5 -0.5)">
+            <switch>
+                <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 238px; height: 1px; padding-top: 425px; margin-left: 1291px;">
+                        <div data-drawio-colors="color: rgb(0, 0, 0); " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">
+                                DepthFilter 线程(可选)
+                                <br/>
+                                depth_filter.cpp
+                                <br/>
+                                Bayesian 深度估计
+                            </div>
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="1410" y="429" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="12px" text-anchor="middle">
+                    DepthFilter 线程(可选)...
+                </text>
+            </switch>
+        </g>
+        <rect x="1290" y="500" width="240" height="90" rx="13.5" ry="13.5" fill="#f6b26b" stroke="#b45f06" pointer-events="all"/>
+        <g transform="translate(-0.5 -0.5)">
+            <switch>
+                <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 238px; height: 1px; padding-top: 545px; margin-left: 1291px;">
+                        <div data-drawio-colors="color: rgb(0, 0, 0); " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">
+                                Seed(逆深度)
+                                <br/>
+                                均值/方差/β分布
+                                <br/>
+                                收敛-&gt;候选地图点
+                            </div>
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="1410" y="549" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="12px" text-anchor="middle">
+                    Seed(逆深度)...
+                </text>
+            </switch>
+        </g>
+        <path d="M 230 140 L 251.88 140" fill="none" stroke="#1b4f72" stroke-miterlimit="10" pointer-events="stroke"/>
+        <path d="M 258.88 140 L 251.88 143.5 L 251.88 136.5 Z" fill="#1b4f72" stroke="#1b4f72" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 460 140 L 466.88 140" fill="none" stroke="#1b4f72" stroke-miterlimit="10" pointer-events="stroke"/>
+        <path d="M 473.88 140 L 466.88 143.5 L 466.88 136.5 Z" fill="#1b4f72" stroke="#1b4f72" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 725 140 L 776.88 140" fill="none" stroke="#4a235a" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/>
+        <path d="M 783.88 140 L 776.88 143.5 L 776.88 136.5 Z" fill="#4a235a" stroke="#4a235a" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 684.62 180 L 777.66 223.99" fill="none" stroke="#4a235a" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/>
+        <path d="M 783.99 226.98 L 776.16 227.15 L 779.16 220.82 Z" fill="#4a235a" stroke="#4a235a" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 600 180 L 600 270" fill="none" stroke="#ffffff" stroke-miterlimit="10" pointer-events="stroke"/>
+        <path d="M 600 100 L 600 78.12" fill="none" stroke="#990000" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/>
+        <path d="M 600 71.12 L 603.5 78.12 L 596.5 78.12 Z" fill="#990000" stroke="#990000" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 600 340 L 600 376.88" fill="none" stroke="#1b4f72" stroke-miterlimit="10" pointer-events="stroke"/>
+        <path d="M 600 383.88 L 596.5 376.88 L 603.5 376.88 Z" fill="#1b4f72" stroke="#1b4f72" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 600 465 L 600 491.88" fill="none" stroke="#1b4f72" stroke-miterlimit="10" pointer-events="stroke"/>
+        <path d="M 600 498.88 L 596.5 491.88 L 603.5 491.88 Z" fill="#1b4f72" stroke="#1b4f72" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 730 545 L 786.88 545" fill="none" stroke="#1b4f72" stroke-miterlimit="10" pointer-events="stroke"/>
+        <path d="M 793.88 545 L 786.88 548.5 L 786.88 541.5 Z" fill="#1b4f72" stroke="#1b4f72" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 875 510 L 875 463.12" fill="none" stroke="#1b4f72" stroke-miterlimit="10" pointer-events="stroke"/>
+        <path d="M 875 456.12 L 878.5 463.12 L 871.5 463.12 Z" fill="#1b4f72" stroke="#1b4f72" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 960 420 L 1046.88 420" fill="none" stroke="#4a235a" stroke-miterlimit="10" pointer-events="stroke"/>
+        <path d="M 1053.88 420 L 1046.88 423.5 L 1046.88 416.5 Z" fill="#4a235a" stroke="#4a235a" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 1155 465 L 1155 511.88" fill="none" stroke="#b45f06" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/>
+        <path d="M 1155 518.88 L 1151.5 511.88 L 1158.5 511.88 Z" fill="#b45f06" stroke="#b45f06" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 1155 375 L 1155 358.12" fill="none" stroke="#1b4f72" stroke-miterlimit="10" pointer-events="stroke"/>
+        <path d="M 1155 351.12 L 1158.5 358.12 L 1151.5 358.12 Z" fill="#1b4f72" stroke="#1b4f72" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 1155 260 L 1155 228.12" fill="none" stroke="#1b4f72" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/>
+        <path d="M 1155 221.12 L 1158.5 228.12 L 1151.5 228.12 Z" fill="#1b4f72" stroke="#1b4f72" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 1265 305 L 1301.88 305" fill="none" stroke="#b45f06" stroke-miterlimit="10" pointer-events="stroke"/>
+        <path d="M 1308.88 305 L 1301.88 308.5 L 1301.88 301.5 Z" fill="#b45f06" stroke="#b45f06" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 1410 270 L 1410 223.12" fill="none" stroke="#274e13" stroke-miterlimit="10" pointer-events="stroke"/>
+        <path d="M 1410 216.12 L 1413.5 223.12 L 1406.5 223.12 Z" fill="#274e13" stroke="#274e13" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 150 680 L 171.88 680" fill="none" stroke="#274e13" stroke-miterlimit="10" pointer-events="stroke"/>
+        <path d="M 178.88 680 L 171.88 683.5 L 171.88 676.5 Z" fill="#274e13" stroke="#274e13" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 340 680 L 351.88 680" fill="none" stroke="#274e13" stroke-miterlimit="10" pointer-events="stroke"/>
+        <path d="M 358.88 680 L 351.88 683.5 L 351.88 676.5 Z" fill="#274e13" stroke="#274e13" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 520 680 L 531.88 680" fill="none" stroke="#274e13" stroke-miterlimit="10" pointer-events="stroke"/>
+        <path d="M 538.88 680 L 531.88 683.5 L 531.88 676.5 Z" fill="#274e13" stroke="#274e13" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 1410 340 L 1410 371.88" fill="none" stroke="#b45f06" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/>
+        <path d="M 1410 378.88 L 1406.5 371.88 L 1413.5 371.88 Z" fill="#b45f06" stroke="#b45f06" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 1410 470 L 1410 491.88" fill="none" stroke="#b45f06" stroke-miterlimit="10" pointer-events="stroke"/>
+        <path d="M 1410 498.88 L 1406.5 491.88 L 1413.5 491.88 Z" fill="#b45f06" stroke="#b45f06" stroke-miterlimit="10" pointer-events="all"/>
+    </g>
+    <switch>
+        <g requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"/>
+        <a transform="translate(0,-5)" xlink:href="https://www.diagrams.net/doc/faq/svg-export-text-problems" target="_blank">
+            <text text-anchor="middle" font-size="10px" x="50%" y="100%">
+                Text is not SVG - cannot display
+            </text>
+        </a>
+    </switch>
+</svg>

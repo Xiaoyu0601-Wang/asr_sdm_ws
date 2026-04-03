@@ -2,6 +2,7 @@
 #define SVO_FRAME_HANDLER_H_
 
 #include <svo/frame_handler_base.h>
+#include <svo/imu_types.h>
 #include <svo/initialization.h>
 #include <svo/reprojector.h>
 #include <vikit/abstract_camera.h>
@@ -50,6 +51,24 @@ public:
     const int keyframe_id, const Sophus::SE3d & T_kf_f, const cv::Mat & img,
     const double timestamp);
 
+  // -------------------------------------------------------------------------
+  // IMU Prior Support
+  // -------------------------------------------------------------------------
+  /// Set initial IMU world orientation from gravity (called at startup).
+  void setRotationPrior(const Quaterniond & R_world_from_imu);
+
+  /// Set incremental rotation from IMU (called between frames).
+  void setRotationIncrementPrior(const Quaterniond & R_imu_last_from_imu_cur);
+
+  /// Get the current IMU rotation prior quaternion.
+  const Quaterniond & rotationPrior() const { return rotation_prior_; }
+
+  /// Lambda for IMU rotation prior regularization in pose optimizer.
+  double rotationPriorLambda() const { return rotation_prior_lambda_; }
+
+  /// Get the incremental IMU rotation between frames.
+  const Quaterniond& rotationIncrement() const { return rotation_increment_; }
+
 protected:
   vk::AbstractCamera * cam_;     //!< Camera model, can be ATAN, Pinhole or Ocam (see vikit).
   Reprojector reprojector_;      //!< Projects points from other keyframes into the current frame
@@ -63,7 +82,12 @@ protected:
     klt_homography_init_;  //!< Used to estimate pose of the first two keyframes by estimating a
                            //!< homography.
   DepthFilter * depth_filter_;  //!< Depth estimation algorithm runs in a parallel thread and is
-                                //!< used to initialize new 3D points.
+                               //!< used to initialize new 3D points.
+
+  // IMU rotation prior (set externally via setRotationPrior / setRotationIncrementPrior)
+  Quaterniond rotation_prior_;           //!< Gravity-aligned IMU world orientation (from initial attitude)
+  Quaterniond rotation_increment_;       //!< Incremental IMU rotation between last and current frame
+  double rotation_prior_lambda_;         //!< Regularization strength for IMU rotation prior
 
   /// Initialize the visual odometry algorithm.
   virtual void initialize();

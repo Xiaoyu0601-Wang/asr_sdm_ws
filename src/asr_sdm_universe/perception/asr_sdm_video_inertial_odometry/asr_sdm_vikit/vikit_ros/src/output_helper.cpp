@@ -21,6 +21,8 @@
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 
+#include <Eigen/Geometry>
+
 #include <vikit/output_helper.h>
 
 namespace vk
@@ -494,6 +496,124 @@ void publishCameraMarker(
   marker.pose.orientation.z = -0.21462883;
   marker.pose.orientation.w = 0.9091823;
   marker.id--;
+  pub->publish(marker);
+}
+
+namespace
+{
+void applyWorldPose(
+  const Sophus::SE3d & T_world_cam, const Eigen::Isometry3d & T_local,
+  visualization_msgs::msg::Marker & marker)
+{
+  const Eigen::Isometry3d Twc(T_world_cam.matrix());
+  const Eigen::Isometry3d T_world = Twc * T_local;
+  const Eigen::Quaterniond q(T_world.rotation());
+  marker.pose.position.x = static_cast<float>(T_world.translation().x());
+  marker.pose.position.y = static_cast<float>(T_world.translation().y());
+  marker.pose.position.z = static_cast<float>(T_world.translation().z());
+  marker.pose.orientation.x = static_cast<float>(q.x());
+  marker.pose.orientation.y = static_cast<float>(q.y());
+  marker.pose.orientation.z = static_cast<float>(q.z());
+  marker.pose.orientation.w = static_cast<float>(q.w());
+}
+
+Eigen::Isometry3d isoFromPQ(
+  double px, double py, double pz, double qw, double qx, double qy, double qz)
+{
+  Eigen::Isometry3d T = Eigen::Isometry3d::Identity();
+  T.translation() << px, py, pz;
+  T.linear() = Eigen::Quaterniond(qw, qx, qy, qz).normalized().toRotationMatrix();
+  return T;
+}
+}  // namespace
+
+void publishCameraMarker(
+  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr pub,
+  const Sophus::SE3d & T_world_cam, const string & ns, const rclcpp::Time & timestamp, int base_id,
+  double marker_scale, const Vector3d & color)
+{
+  const double sqrt2_2 = sqrt(2) / 2;
+  const double r_w = 1.0;
+  const double z_plane = (r_w / 2.0) * marker_scale;
+
+  visualization_msgs::msg::Marker marker;
+  marker.header.frame_id = "world";
+  marker.header.stamp = timestamp;
+  marker.ns = ns;
+  marker.action = 0;
+  marker.type = visualization_msgs::msg::Marker::CUBE;
+  marker.scale.x = r_w * marker_scale;
+  marker.scale.y = 0.04 * marker_scale;
+  marker.scale.z = 0.04 * marker_scale;
+  marker.color.r = static_cast<float>(color[0]);
+  marker.color.g = static_cast<float>(color[1]);
+  marker.color.b = static_cast<float>(color[2]);
+  marker.color.a = 1.f;
+
+  int id = base_id;
+
+  applyWorldPose(
+    T_world_cam, isoFromPQ(0, (r_w / 4.0) * marker_scale, z_plane, 1, 0, 0, 0), marker);
+  marker.id = id--;
+  pub->publish(marker);
+
+  applyWorldPose(
+    T_world_cam, isoFromPQ(0, -(r_w / 4.0) * marker_scale, z_plane, 1, 0, 0, 0), marker);
+  marker.id = id--;
+  pub->publish(marker);
+
+  marker.scale.x = (r_w / 2.0) * marker_scale;
+  applyWorldPose(
+    T_world_cam,
+    isoFromPQ(
+      (r_w / 2.0) * marker_scale, 0, z_plane, sqrt2_2, 0, 0, sqrt2_2),
+    marker);
+  marker.id = id--;
+  pub->publish(marker);
+
+  applyWorldPose(
+    T_world_cam,
+    isoFromPQ(
+      -(r_w / 2.0) * marker_scale, 0, z_plane, sqrt2_2, 0, 0, sqrt2_2),
+    marker);
+  marker.id = id--;
+  pub->publish(marker);
+
+  marker.scale.x = (3.0 * r_w / 4.0) * marker_scale;
+  applyWorldPose(
+    T_world_cam,
+    isoFromPQ(
+      (r_w / 4.0) * marker_scale, (r_w / 8.0) * marker_scale, 0.5 * z_plane, 0.9091823, 0.08198092,
+      -0.34727674, 0.21462883),
+    marker);
+  marker.id = id--;
+  pub->publish(marker);
+
+  applyWorldPose(
+    T_world_cam,
+    isoFromPQ(
+      -(r_w / 4.0) * marker_scale, (r_w / 8.0) * marker_scale, 0.5 * z_plane, 0.9091823, 0.08198092,
+      0.34727674, -0.21462883),
+    marker);
+  marker.id = id--;
+  pub->publish(marker);
+
+  applyWorldPose(
+    T_world_cam,
+    isoFromPQ(
+      -(r_w / 4.0) * marker_scale, -(r_w / 8.0) * marker_scale, 0.5 * z_plane, 0.9091823,
+      -0.08198092, 0.34727674, 0.21462883),
+    marker);
+  marker.id = id--;
+  pub->publish(marker);
+
+  applyWorldPose(
+    T_world_cam,
+    isoFromPQ(
+      (r_w / 4.0) * marker_scale, -(r_w / 8.0) * marker_scale, 0.5 * z_plane, 0.9091823,
+      -0.08198092, -0.34727674, -0.21462883),
+    marker);
+  marker.id = id--;
   pub->publish(marker);
 }
 

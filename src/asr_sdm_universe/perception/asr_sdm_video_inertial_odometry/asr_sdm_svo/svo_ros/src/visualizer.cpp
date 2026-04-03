@@ -1,7 +1,3 @@
-// =============================================================================
-
-// =============================================================================
-
 #include <cv_bridge/cv_bridge.hpp>
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
@@ -61,6 +57,10 @@ Visualizer::Visualizer(rclcpp::Node::SharedPtr node)
   // Camera pose with 6x6 covariance matrix
   pub_pose_ =
     node_->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>("svo/pose", 10);
+
+  // Trajectory polyline (nav_msgs/Path) — ORB-SLAM style path in world frame
+  pub_trajectory_ = node_->create_publisher<nav_msgs::msg::Path>("svo/trajectory", 10);
+  trajectory_msg_.header.frame_id = "world";
 
   // SLAM status information (stage, tracking quality, num matches, etc.)
   pub_info_ = node_->create_publisher<asr_sdm_perception_msgs::msg::Info>("svo/info", 10);
@@ -138,7 +138,7 @@ void Visualizer::publishMinimal(
   // ---------------------------------------------------------------------------
   if (frame == NULL) {
     // Still publish image when paused so user can see what camera sees
-    if (pub_images_.getNumSubscribers() > 0 && slam.stage() == FrameHandlerBase::STAGE_PAUSED) {
+    if (slam.stage() == FrameHandlerBase::STAGE_PAUSED) {
       cv_bridge::CvImage img_msg;
       img_msg.header = header_msg;
       img_msg.image = img;
@@ -152,7 +152,7 @@ void Visualizer::publishMinimal(
   // Publish Annotated Debug Image
   // ---------------------------------------------------------------------------
   // Publishes every nth frame with tracked features drawn
-  if (img_pub_nth_ > 0 && trace_id_ % img_pub_nth_ == 0 && pub_images_.getNumSubscribers() > 0) {
+  if (img_pub_nth_ > 0 && trace_id_ % img_pub_nth_ == 0) {
     // Scale factor for pyramid level (level 0 = 1x, level 1 = 2x, etc.)
     const int scale = (1 << img_pub_level_);
 
@@ -219,9 +219,7 @@ void Visualizer::publishMinimal(
   // Publish Camera Pose with Covariance
   // ---------------------------------------------------------------------------
   // Only publish during normal tracking (STAGE_DEFAULT_FRAME)
-  if (
-    pub_pose_->get_subscription_count() > 0 &&
-    slam.stage() == FrameHandlerBase::STAGE_DEFAULT_FRAME) {
+  if (slam.stage() == FrameHandlerBase::STAGE_DEFAULT_FRAME) {
     Eigen::Quaterniond q;
     Eigen::Vector3d p;
     Eigen::Matrix<double, 6, 6> Cov;
@@ -258,6 +256,25 @@ void Visualizer::publishMinimal(
     // Copy 6x6 covariance matrix (row-major to flat array)
     for (size_t i = 0; i < 36; ++i) msg_pose->pose.covariance[i] = Cov(i % 6, i / 6);
     pub_pose_->publish(*msg_pose);
+
+    // Trajectory in world frame (independent of publish_world_in_cam_frame convention)
+    SE3d T_world_from_cam_traj(T_world_from_vision_ * frame->T_f_w_.inverse());
+    Eigen::Quaterniond q_traj(T_world_from_cam_traj.rotationMatrix());
+    geometry_msgs::msg::PoseStamped pose_stamped;
+    pose_stamped.header.stamp = header_msg.stamp;
+    pose_stamped.header.frame_id = "world";
+    pose_stamped.pose.position.x = T_world_from_cam_traj.translation().x();
+    pose_stamped.pose.position.y = T_world_from_cam_traj.translation().y();
+    pose_stamped.pose.position.z = T_world_from_cam_traj.translation().z();
+    pose_stamped.pose.orientation.x = q_traj.x();
+    pose_stamped.pose.orientation.y = q_traj.y();
+    pose_stamped.pose.orientation.z = q_traj.z();
+    pose_stamped.pose.orientation.w = q_traj.w();
+    trajectory_msg_.header.stamp = header_msg.stamp;
+    trajectory_msg_.poses.push_back(pose_stamped);
+    if (trajectory_msg_.poses.size() > kMaxTrajectorySize)
+      trajectory_msg_.poses.erase(trajectory_msg_.poses.begin());
+    pub_trajectory_->publish(trajectory_msg_);
   }
 }
 
@@ -283,10 +300,11 @@ void Visualizer::visualizeMarkers(
 
   // Only publish markers if there are subscribers
   if (pub_frames_->get_subscription_count() > 0 || pub_points_->get_subscription_count() > 0) {
-    // Current camera frustum marker (blue)
-    // Publish in world frame to stay consistent with point markers (which are in world).
+    // Current camera frustum (blue): must use T_world_cam overload — the frame_id-only overload
+    // draws geometry at the origin of "world", so the frustum never moves with the pose.
+    const SE3d T_world_cam(T_world_from_vision_ * frame->T_f_w_.inverse());
     vk::output_helper::publishCameraMarker(
-      pub_frames_, "world", "cams", stamp, 1, 0.3, Eigen::Vector3d(0., 0., 1.));
+      pub_frames_, T_world_cam, "cams", stamp, 5000, 0.3, Eigen::Vector3d(0., 0., 1.));
 
     // Add point to trajectory trail (dark blue)
     vk::output_helper::publishPointMarker(
@@ -298,6 +316,53 @@ void Visualizer::visualizeMarkers(
 
     // Clean up markers for deleted map points
     removeDeletedPts(map);
+
+    // -------------------------------------------------------------------------
+    // Trajectory line: continuous LINE_STRIP of camera path
+    // -------------------------------------------------------------------------
+    // Initialize on first call
+    if (trajectory_line_msg_.points.empty()) {
+      trajectory_line_msg_.header.frame_id = "world";
+      trajectory_line_msg_.ns = "trajectory_line";
+      trajectory_line_msg_.id = 9999;
+      trajectory_line_msg_.type = visualization_msgs::msg::Marker::LINE_STRIP;
+      trajectory_line_msg_.action = visualization_msgs::msg::Marker::ADD;
+      trajectory_line_msg_.scale.x = 0.008;
+      trajectory_line_msg_.color.r = 0.2;
+      trajectory_line_msg_.color.g = 0.8;
+      trajectory_line_msg_.color.b = 1.0;
+      trajectory_line_msg_.color.a = 1.0;
+      trajectory_line_msg_.lifetime = rclcpp::Duration(0, 0);
+    }
+    trajectory_line_msg_.header.stamp = stamp;
+
+    Eigen::Vector3d cam_pos = T_world_from_vision_ * frame->pos();
+    geometry_msgs::msg::Point p;
+    p.x = cam_pos.x();
+    p.y = cam_pos.y();
+    p.z = cam_pos.z();
+    trajectory_line_msg_.points.push_back(p);
+    if (trajectory_line_msg_.points.size() > kMaxTrajectoryLinePts)
+      trajectory_line_msg_.points.erase(trajectory_line_msg_.points.begin());
+    pub_frames_->publish(trajectory_line_msg_);
+
+    // -------------------------------------------------------------------------
+    // Current pose arrow: indicates camera forward direction (red arrow)
+    // -------------------------------------------------------------------------
+    // Arrow direction = camera Z-axis in world frame (forward direction)
+    Eigen::Vector3d fwd_dir = (T_world_from_vision_ * frame->T_f_w_.inverse()).rotationMatrix().col(2);
+    vk::output_helper::publishArrowMarker(
+      pub_frames_,
+      cam_pos,
+      fwd_dir,
+      0.15,                          // scale: arrow length
+      "camera_pose",
+      stamp,
+      8888,
+      0,
+      0.006,                         // shaft diameter
+      Eigen::Vector3d(1.0, 0.0, 0.0)  // red
+    );
   }
 }
 
@@ -309,12 +374,9 @@ void Visualizer::visualizeMarkers(
 // =============================================================================
 void Visualizer::publishMapRegion(set<FramePtr> frames)
 {
-  if (pub_points_->get_subscription_count() > 0) {
-    // Get current timestamp to avoid publishing same point multiple times
-    int ts = vk::Timer::getCurrentTime();
-    for (set<FramePtr>::iterator it = frames.begin(); it != frames.end(); ++it)
-      displayKeyframeWithMps(*it, ts);
-  }
+  int ts = vk::Timer::getCurrentTime();
+  for (set<FramePtr>::iterator it = frames.begin(); it != frames.end(); ++it)
+    displayKeyframeWithMps(*it, ts);
 }
 
 // =============================================================================
@@ -325,14 +387,11 @@ void Visualizer::publishMapRegion(set<FramePtr> frames)
 // =============================================================================
 void Visualizer::removeDeletedPts(const Map & map)
 {
-  if (pub_points_->get_subscription_count() > 0) {
-    for (list<Point *>::const_iterator it = map.trash_points_.begin();
-         it != map.trash_points_.end(); ++it)
-      // Action 2 = DELETE marker with this ID
-      vk::output_helper::publishPointMarker(
-        pub_points_, Eigen::Vector3d(), "pts", node_->now(), (*it)->id_, 2, 0.006,
-        Eigen::Vector3d());
-  }
+  for (list<Point *>::const_iterator it = map.trash_points_.begin();
+       it != map.trash_points_.end(); ++it)
+    vk::output_helper::publishPointMarker(
+      pub_points_, Eigen::Vector3d(), "pts", node_->now(), (*it)->id_, 2, 0.006,
+      Eigen::Vector3d());
 }
 
 // =============================================================================
@@ -349,11 +408,10 @@ void Visualizer::displayKeyframeWithMps(const FramePtr & frame, int ts)
   // Compute keyframe pose in world frame
   SE3d T_world_cam(T_world_from_vision_ * frame->T_f_w_.inverse());
 
-  // Publish keyframe marker (small coordinate frame)
-  // ID = frame->id_ * 10 to avoid collision with point IDs
-  vk::output_helper::publishFrameMarker(
-    pub_frames_, T_world_cam.rotationMatrix(), T_world_cam.translation(), "kfs", node_->now(),
-    frame->id_ * 10, 0, 0.015);
+  // Keyframe wireframe frustum in world (blue) — ORB-style keyframe cameras
+  vk::output_helper::publishCameraMarker(
+    pub_frames_, T_world_cam, "kfs", node_->now(),
+    100000 + static_cast<int>(frame->id_) * 24, 0.14, Eigen::Vector3d(0.15, 0.35, 1.0));
 
   // Publish all map points observed in this keyframe
   for (Features::iterator it = frame->fts_.begin(); it != frame->fts_.end(); ++it) {
@@ -439,4 +497,4 @@ void Visualizer::exportToDense(const FramePtr & frame)
   }
 }
 
-}  
+}  // end namespace svo

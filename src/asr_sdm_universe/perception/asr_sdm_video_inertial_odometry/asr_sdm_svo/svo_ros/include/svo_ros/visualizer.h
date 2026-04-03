@@ -6,6 +6,7 @@
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <nav_msgs/msg/odometry.hpp>
+#include <nav_msgs/msg/path.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <std_msgs/msg/color_rgba.hpp>
@@ -44,6 +45,7 @@ public:
   size_t dense_pub_nth_;
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr pub_frames_;
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr pub_points_;
+  rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr pub_trajectory_;
   rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pub_pose_;
   rclcpp::Publisher<asr_sdm_perception_msgs::msg::Info>::SharedPtr pub_info_;
   rclcpp::Publisher<asr_sdm_perception_msgs::msg::DenseInput>::SharedPtr pub_dense_;
@@ -53,6 +55,12 @@ public:
   bool publish_map_every_frame_;
   rclcpp::Duration publish_points_display_time_;
   SE3d T_world_from_vision_;
+  nav_msgs::msg::Path trajectory_msg_;
+  static constexpr size_t kMaxTrajectorySize = 5000;
+
+  // Accumulated trajectory line (LINE_STRIP) for continuous path visualization
+  visualization_msgs::msg::Marker trajectory_line_msg_;
+  static constexpr size_t kMaxTrajectoryLinePts = 2000;
 
   Visualizer(rclcpp::Node::SharedPtr node);
 
@@ -71,6 +79,11 @@ public:
   void displayKeyframeWithMps(const FramePtr & frame, int ts);
 
   void exportToDense(const FramePtr & frame);
+
+  void resetTrajectory() {
+    trajectory_msg_.poses.clear();
+    trajectory_line_msg_.points.clear();
+  }
 };
 
 }  
