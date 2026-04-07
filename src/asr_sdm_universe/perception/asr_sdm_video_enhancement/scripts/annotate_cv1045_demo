@@ -1,0 +1,223 @@
+#!/usr/bin/env python3
+
+import argparse
+import json
+from dataclasses import dataclass
+from pathlib import Path
+
+import cv2
+
+
+@dataclass(frozen=True)
+class OverlayMetrics:
+    psnr: float
+    ssim: float
+    uciqe: float
+    uiqm: float
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Create annotated cv_1045 demo videos with frame/fps/quality metrics."
+    )
+    parser.add_argument(
+        "--blur-video",
+        default="/home/cortin/Downloads/test/blur/cv_1045.mp4",
+        help="Path to the blur cv_1045 video.",
+    )
+    parser.add_argument(
+        "--enhanced-video",
+        default="/home/cortin/Downloads/test/output/cv_1045.mp4",
+        help="Path to the enhanced cv_1045 video.",
+    )
+    parser.add_argument(
+        "--summary-json",
+        default="/home/cortin/enhancement_code/asr_sdm_ws/tmp_eval_cv1045/cv_1045_previous_settings_summary_fast.json",
+        help="Path to the cv_1045 summary JSON file.",
+    )
+    parser.add_argument(
+        "--output-dir",
+        default="/home/cortin/Downloads/test/demo_overlay",
+        help="Directory where the annotated demo videos will be written.",
+    )
+    return parser.parse_args()
+
+
+def load_summary(summary_path: Path):
+    data = json.loads(summary_path.read_text())
+    metrics = data["metrics"]
+    reference_method = data.get("reference_method", "cv_1045_LANet")
+
+    blur_metrics = OverlayMetrics(
+        psnr=float(metrics["psnr_input_ref"]["mean"]),
+        ssim=float(metrics["ssim_input_ref"]["mean"]),
+        uciqe=float(metrics["uciqe_input"]["mean"]),
+        uiqm=float(metrics["uiqm_input"]["mean"]),
+    )
+    enhanced_metrics = OverlayMetrics(
+        psnr=float(metrics["psnr_enhanced_ref"]["mean"]),
+        ssim=float(metrics["ssim_enhanced_ref"]["mean"]),
+        uciqe=float(metrics["uciqe_enhanced"]["mean"]),
+        uiqm=float(metrics["uiqm_enhanced"]["mean"]),
+    )
+    return reference_method, blur_metrics, enhanced_metrics
+
+
+def draw_overlay(frame, title: str, reference_method: str, frame_index: int, total_frames: int,
+                 fps: float, width: int, height: int, metrics: OverlayMetrics):
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_scale = 0.65
+    thickness = 2
+    line_gap = 10
+    padding = 14
+    margin = 18
+    alpha = 0.55
+
+    lines = [
+        title,
+        f"Ref: {reference_method}",
+        f"Frame: {frame_index}/{total_frames}",
+        f"FPS: {fps:.1f}",
+        f"Size: {width}x{height}",
+        f"PSNR: {metrics.psnr:.4f}",
+        f"SSIM: {metrics.ssim:.4f}",
+        f"UCIQE: {metrics.uciqe:.4f}",
+        f"UIQM: {metrics.uiqm:.4f}",
+    ]
+
+    text_sizes = [cv2.getTextSize(text, font, font_scale, thickness)[0] for text in lines]
+    line_height = max(size[1] for size in text_sizes)
+    box_width = max(size[0] for size in text_sizes) + padding * 2
+    box_height = len(lines) * line_height + (len(lines) - 1) * line_gap + padding * 2
+
+    x0 = frame.shape[1] - margin - box_width
+    y0 = margin
+    x1 = frame.shape[1] - margin
+    y1 = margin + box_height
+
+    overlay = frame.copy()
+    cv2.rectangle(overlay, (x0, y0), (x1, y1), (20, 20, 20), -1)
+    cv2.addWeighted(overlay, alpha, frame, 1.0 - alpha, 0.0, dst=frame)
+
+    baseline_y = y0 + padding + line_height
+    for idx, line in enumerate(lines):
+        y = baseline_y + idx * (line_height + line_gap)
+        cv2.putText(frame, line, (x0 + padding, y), font, font_scale, (0, 0, 0), 4, cv2.LINE_AA)
+        cv2.putText(frame, line, (x0 + padding, y), font, font_scale, (255, 255, 255), thickness, cv2.LINE_AA)
+
+    return frame
+
+
+def annotate_video(input_path: Path, output_path: Path, title: str, reference_method: str,
+                   metrics: OverlayMetrics):
+    capture = cv2.VideoCapture(str(input_path))
+    if not capture.isOpened():
+        raise RuntimeError(f"failed to open input video: {input_path}")
+
+    fps = capture.get(cv2.CAP_PROP_FPS)
+    if fps <= 0.0:
+        fps = 30.0
+    total_frames = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
+    width = int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    if width <= 0 or height <= 0:
+        capture.release()
+        raise RuntimeError(f"failed to read frame size from: {input_path}")
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    writer = cv2.VideoWriter(
+        str(output_path),
+        cv2.VideoWriter_fourcc(*"mp4v"),
+        fps,
+        (width, height),
+        True,
+    )
+    if not writer.isOpened():
+        capture.release()
+        raise RuntimeError(f"failed to open output video: {output_path}")
+
+    frame_index = 0
+    while True:
+        ok, frame = capture.read()
+        if not ok:
+            break
+        frame_index += 1
+        annotated = draw_overlay(
+            frame, title, reference_method, frame_index, total_frames, fps, width, height, metrics)
+        writer.write(annotated)
+
+    capture.release()
+    writer.release()
+
+    return {
+        "input": str(input_path),
+        "output": str(output_path),
+        "frames_written": frame_index,
+        "fps": fps,
+        "width": width,
+        "height": height,
+    }
+
+
+def main():
+    args = parse_args()
+    blur_video = Path(args.blur_video)
+    enhanced_video = Path(args.enhanced_video)
+    summary_json = Path(args.summary_json)
+    output_dir = Path(args.output_dir)
+
+    for path in (blur_video, enhanced_video, summary_json):
+        if not path.exists():
+            raise FileNotFoundError(path)
+
+    reference_method, blur_metrics, enhanced_metrics = load_summary(summary_json)
+
+    blur_capture = cv2.VideoCapture(str(blur_video))
+    enhanced_capture = cv2.VideoCapture(str(enhanced_video))
+    if not blur_capture.isOpened():
+        raise RuntimeError(f"failed to open blur video for validation: {blur_video}")
+    if not enhanced_capture.isOpened():
+        blur_capture.release()
+        raise RuntimeError(f"failed to open enhanced video for validation: {enhanced_video}")
+
+    blur_size = (
+        int(blur_capture.get(cv2.CAP_PROP_FRAME_WIDTH)),
+        int(blur_capture.get(cv2.CAP_PROP_FRAME_HEIGHT)),
+    )
+    enhanced_size = (
+        int(enhanced_capture.get(cv2.CAP_PROP_FRAME_WIDTH)),
+        int(enhanced_capture.get(cv2.CAP_PROP_FRAME_HEIGHT)),
+    )
+    blur_capture.release()
+    enhanced_capture.release()
+    if blur_size != enhanced_size:
+        raise RuntimeError(
+            f"input videos must share the same resolution, got blur={blur_size} enhanced={enhanced_size}")
+
+    blur_output = output_dir / "cv_1045_blur_annotated.mp4"
+    enhanced_output = output_dir / "cv_1045_enhanced_annotated.mp4"
+
+    blur_result = annotate_video(
+        blur_video,
+        blur_output,
+        "Origin",
+        reference_method,
+        blur_metrics,
+    )
+    enhanced_result = annotate_video(
+        enhanced_video,
+        enhanced_output,
+        "Enhanced",
+        reference_method,
+        enhanced_metrics,
+    )
+
+    print(json.dumps({
+        "blur_demo": blur_result,
+        "enhanced_demo": enhanced_result,
+        "summary_json": str(summary_json),
+    }, ensure_ascii=False, indent=2))
+
+
+if __name__ == "__main__":
+    main()

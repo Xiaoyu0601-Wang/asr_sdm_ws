@@ -1,16 +1,20 @@
 #ifndef ASR_SDM_VIDEO_ENHANCEMENT_HPP_
 #define ASR_SDM_VIDEO_ENHANCEMENT_HPP_
 
+#include "asr_sdm_video_enhancement/enhancement_processor.hpp"
+
 #include <cv_bridge/cv_bridge.hpp>  // ubuntu 24.04 -> cv_bridge.hpp; ubuntu 22.04 -> cv_bridge.h
-#include <opencv2/opencv.hpp>
+#include <image_transport/image_transport.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <sensor_msgs/msg/image.hpp>
+#include <sensor_msgs/msg/compressed_image.hpp>
+
+#include <chrono>
+#include <string>
 
 namespace asr_sdm_video_enhancement
 {
-using namespace cv;
-using sensor_msgs::msg::Image;
+using sensor_msgs::msg::CompressedImage;
 using std::placeholders::_1;
 
 class VideoEnhancementNode : public rclcpp::Node
@@ -20,25 +24,18 @@ public:
 
 private:
   // Parameter
-  int airlight;
-  double scale;
+  EnhancementConfig config_;
+  bool overlay_fps_text_ = false;
+  EnhancementProcessor processor_;
 
   // Subscriber
-  rclcpp::Subscription<Image>::SharedPtr sub_image_;
+  rclcpp::Subscription<CompressedImage>::SharedPtr sub_image_;
 
   // Publisher
-  rclcpp::Publisher<Image>::SharedPtr pub_image_;
+  image_transport::Publisher pub_image_;
 
   // Callback
-  void onImageCallback(const Image::SharedPtr msg);
-
-  // Function
-  double avePixel(const Mat & src);
-  Mat calcYchannel(const Mat & src);
-  Mat calcTransmission(const Mat & src, const Mat & Mmed, int airlight);
-  Mat dehazing(const Mat & src, const Mat & transmission, int airlight);
-  Mat processFrame(const Mat & frame, int airlight);
-  void gammaCorrection(const Mat & src, Mat & dst, float gamma);
+  void onImageCallback(const CompressedImage::SharedPtr msg);
 
   // FPS
   std::chrono::steady_clock::time_point last_frame_time_;
