@@ -2,7 +2,7 @@
 
 ## Dependency
 ```sh
-sudo apt-get -y install ros-jazzy-sophus libgoogle-glog-dev
+sudo apt-get -y install ros-$ROS_DISTRO-sophus libgoogle-glog-dev
 ```
 
 ## Build
@@ -23,7 +23,7 @@ This section shows how to run the SVO visual odometry node with the included ros
 
 Prerequisites
 `rm -rf build install log`
-`source /opt/ros/jazzy/setup.bash`
+`source /opt/ros/$ROS_DISTRO/setup.bash`
 - Workspace has been built: `colcon build --packages-up-to svo_ros --cmake-args -DCMAKE_BUILD_TYPE=Release`
 - Source the workspace: `source install/setup.bash`
 - The demo bag exists at: `datasheet/airground_rig_s3_ros2/airground_rig_s3_ros2.db3`
