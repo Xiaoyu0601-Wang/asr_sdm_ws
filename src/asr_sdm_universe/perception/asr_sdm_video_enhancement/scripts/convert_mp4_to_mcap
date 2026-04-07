@@ -1,0 +1,212 @@
+#!/usr/bin/env python3
+
+import argparse
+import math
+import pathlib
+import sys
+import time
+
+import cv2
+import rosbag2_py
+from cv_bridge import CvBridge
+from rclpy.serialization import serialize_message
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Convert an MP4 file into a rosbag2 directory stored with MCAP."
+    )
+    parser.add_argument(
+        "--input",
+        default="/home/cortin/water.mp4",
+        help="Input MP4 file path.",
+    )
+    parser.add_argument(
+        "--output",
+        required=True,
+        help="Output rosbag2 directory path.",
+    )
+    parser.add_argument(
+        "--topic",
+        default="/asr_sdm_video_enhancement/input/image",
+        help="Image topic name written into the bag.",
+    )
+    parser.add_argument(
+        "--target-fps",
+        type=float,
+        default=10.0,
+        help="Target publish FPS when the source FPS is higher.",
+    )
+    parser.add_argument(
+        "--frame-id",
+        default="camera",
+        help="frame_id written into each Image header.",
+    )
+    parser.add_argument(
+        "--resize-width",
+        type=int,
+        default=0,
+        help="Resize output width. Set 0 to keep original width.",
+    )
+    parser.add_argument(
+        "--resize-height",
+        type=int,
+        default=0,
+        help="Resize output height. Set 0 to keep original height.",
+    )
+    return parser.parse_args()
+
+
+def resolve_output_size(frame_shape, resize_width, resize_height):
+    height, width = frame_shape[:2]
+    if resize_width <= 0 and resize_height <= 0:
+        return width, height
+    if resize_width > 0 and resize_height > 0:
+        return resize_width, resize_height
+    if resize_width > 0:
+        new_height = int(round(height * resize_width / width))
+        return resize_width, new_height
+    new_width = int(round(width * resize_height / height))
+    return new_width, resize_height
+
+
+def maybe_resize(frame, resize_width, resize_height):
+    target_width, target_height = resolve_output_size(
+        frame.shape, resize_width, resize_height
+    )
+    if (target_width, target_height) == (frame.shape[1], frame.shape[0]):
+        return frame
+    return cv2.resize(frame, (target_width, target_height), interpolation=cv2.INTER_LINEAR)
+
+
+def compute_sampling_policy(source_fps, target_fps):
+    if not math.isfinite(source_fps) or source_fps <= 0.0:
+        return target_fps, False
+    if source_fps > target_fps:
+        return target_fps, True
+    return source_fps, False
+
+
+def compute_desired_source_index(
+    published_frame_count, publish_fps, source_fps, use_time_based_sampling, next_source_index
+):
+    if not use_time_based_sampling:
+        return next_source_index
+    playback_time = published_frame_count / publish_fps
+    desired_index = int(math.floor(playback_time * source_fps + 1e-6))
+    return max(desired_index, next_source_index)
+
+
+def read_next_frame(cap, desired_source_index, next_source_index):
+    while next_source_index < desired_source_index:
+        if not cap.grab():
+            return None, next_source_index
+        next_source_index += 1
+
+    ok, frame = cap.read()
+    if not ok:
+        return None, next_source_index
+    next_source_index += 1
+    return frame, next_source_index
+
+
+def stamp_message(msg, stamp_ns, frame_id):
+    msg.header.stamp.sec = stamp_ns // 1_000_000_000
+    msg.header.stamp.nanosec = stamp_ns % 1_000_000_000
+    msg.header.frame_id = frame_id
+
+
+def main():
+    args = parse_args()
+    if args.target_fps <= 0.0:
+        print("--target-fps must be greater than 0.", file=sys.stderr)
+        return 1
+
+    input_path = pathlib.Path(args.input)
+    output_path = pathlib.Path(args.output)
+
+    if not input_path.is_file():
+        print(f"Input file does not exist: {input_path}", file=sys.stderr)
+        return 1
+
+    if output_path.exists():
+        print(f"Output path already exists: {output_path}", file=sys.stderr)
+        return 1
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    cap = cv2.VideoCapture(str(input_path))
+    if not cap.isOpened():
+        print(f"Failed to open input video: {input_path}", file=sys.stderr)
+        return 1
+
+    source_fps = cap.get(cv2.CAP_PROP_FPS)
+    publish_fps, use_time_based_sampling = compute_sampling_policy(
+        source_fps, args.target_fps
+    )
+    if publish_fps <= 0.0:
+        print("Could not determine a valid publish FPS.", file=sys.stderr)
+        return 1
+
+    if not math.isfinite(source_fps) or source_fps <= 0.0:
+        print(
+            f"Warning: invalid source FPS from {input_path}, using sequential {publish_fps:.3f} FPS export.",
+            file=sys.stderr,
+        )
+
+    writer = rosbag2_py.SequentialWriter()
+    writer.open(
+        rosbag2_py.StorageOptions(uri=str(output_path), storage_id="mcap"),
+        rosbag2_py.ConverterOptions(
+            input_serialization_format="cdr",
+            output_serialization_format="cdr",
+        ),
+    )
+    writer.create_topic(
+        rosbag2_py.TopicMetadata(
+            0,
+            args.topic,
+            "sensor_msgs/msg/Image",
+            "cdr",
+            [],
+        )
+    )
+
+    bridge = CvBridge()
+    start_time_ns = time.time_ns()
+    published_frame_count = 0
+    next_source_index = 0
+
+    try:
+        while True:
+            desired_source_index = compute_desired_source_index(
+                published_frame_count,
+                publish_fps,
+                source_fps,
+                use_time_based_sampling,
+                next_source_index,
+            )
+            frame, next_source_index = read_next_frame(
+                cap, desired_source_index, next_source_index
+            )
+            if frame is None:
+                break
+
+            frame = maybe_resize(frame, args.resize_width, args.resize_height)
+            msg = bridge.cv2_to_imgmsg(frame, encoding="bgr8")
+            stamp_ns = start_time_ns + int((published_frame_count / publish_fps) * 1e9)
+            stamp_message(msg, stamp_ns, args.frame_id)
+
+            writer.write(args.topic, serialize_message(msg), stamp_ns)
+            published_frame_count += 1
+    finally:
+        cap.release()
+        writer.close()
+
+    print(
+        f"Wrote {published_frame_count} frames from {input_path} to {output_path} at {publish_fps:.3f} FPS."
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
