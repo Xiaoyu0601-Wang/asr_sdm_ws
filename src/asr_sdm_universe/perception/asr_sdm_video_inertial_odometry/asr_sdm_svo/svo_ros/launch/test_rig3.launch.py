@@ -19,6 +19,7 @@ def generate_launch_description():
     camera_yaml_path = os.path.join(svo_ros_dir, 'param', 'camera_pinhole.yaml')
     vo_yaml_path = os.path.join(svo_ros_dir, 'param', 'vo_rig3_stable.yaml')
     imu_yaml_path = os.path.join(svo_ros_dir, 'param', 'imu_rig3.yaml')
+    imu_calib_yaml_path = os.path.join(svo_ros_dir, 'param', 'imu_rig3_calib.yaml')
 
     # Declare launch arguments
     cam_topic_arg = DeclareLaunchArgument(
@@ -115,6 +116,7 @@ def generate_launch_description():
                 # IMU configuration (loaded from imu_rig3.yaml)
                 'use_imu': LaunchConfiguration('use_imu'),
                 'imu_topic': LaunchConfiguration('imu_topic'),
+                'calib_file': imu_calib_yaml_path,
             },
         ],
     )

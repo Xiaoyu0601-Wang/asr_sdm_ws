@@ -18,8 +18,11 @@ class FrameHandlerMono : public FrameHandlerBase
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  FrameHandlerMono(vk::AbstractCamera * cam);
+  FrameHandlerMono(vk::AbstractCamera * cam, bool use_imu = false);
   virtual ~FrameHandlerMono();
+
+  /// Set whether IMU rotation prior is enabled.
+  void setUseImu(bool use_imu) { use_imu_ = use_imu; }
 
   /// Provide an image.
   void addImage(const cv::Mat & img, double timestamp);
@@ -85,8 +88,10 @@ protected:
                                //!< used to initialize new 3D points.
 
   // IMU rotation prior (set externally via setRotationPrior / setRotationIncrementPrior)
-  Quaterniond rotation_prior_;           //!< Gravity-aligned IMU world orientation (from initial attitude)
-  Quaterniond rotation_increment_;       //!< Incremental IMU rotation between last and current frame
+  bool use_imu_ = false;                 //!< Whether IMU fusion is enabled
+  Quaterniond rotation_prior_;             //!< Gravity-aligned IMU world orientation (from initial attitude)
+  Quaterniond rotation_increment_;        //!< Incremental IMU rotation between last and current frame
+  Quaterniond last_rotation_prior_;      //!< Previous frame's rotation_prior_ for tracking
   double rotation_prior_lambda_;         //!< Regularization strength for IMU rotation prior
 
   /// Initialize the visual odometry algorithm.

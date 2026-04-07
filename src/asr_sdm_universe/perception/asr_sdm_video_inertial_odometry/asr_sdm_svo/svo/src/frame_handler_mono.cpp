@@ -59,14 +59,16 @@ namespace svo {
  * 
  * @param cam Camera model (pinhole, atan, etc.)
  */
-FrameHandlerMono::FrameHandlerMono(vk::AbstractCamera* cam) :
+FrameHandlerMono::FrameHandlerMono(vk::AbstractCamera* cam, bool use_imu) :
   FrameHandlerBase(),
   cam_(cam),
   reprojector_(cam_, map_),
   depth_filter_(NULL),
+  use_imu_(use_imu),
   rotation_prior_(Quaterniond::Identity()),
   rotation_increment_(Quaterniond::Identity()),
-  rotation_prior_lambda_(0.0)
+  last_rotation_prior_(Quaterniond::Identity()),
+  rotation_prior_lambda_(use_imu ? 5.0 : 0.0)
 {
   initialize();
 }
@@ -159,7 +161,18 @@ void FrameHandlerMono::addImage(const cv::Mat& img, const double timestamp)
 FrameHandlerMono::UpdateResult FrameHandlerMono::processFirstFrame()
 {
   // Set world origin at first frame
-  new_frame_->T_f_w_ = SE3(Matrix3d::Identity(), Vector3d::Zero());
+  // If IMU is enabled, use gravity-aligned initial attitude from IMU
+  if (use_imu_ && rotation_prior_lambda_ > 0.0)
+  {
+    // R_cam_world = R_imu_world^{-1} (camera orientation from gravity-aligned IMU)
+    const Eigen::Matrix3d R_imu_world = rotation_prior_.toRotationMatrix();
+    Eigen::Matrix3d R_cam_world = R_imu_world.transpose();
+    new_frame_->T_f_w_ = SE3(R_cam_world, Vector3d::Zero());
+  }
+  else
+  {
+    new_frame_->T_f_w_ = SE3(Matrix3d::Identity(), Vector3d::Zero());
+  }
   
   // Initialize KLT tracker with first frame features
   if(klt_homography_init_.addFirstFrame(new_frame_) == initialization::FAILURE)
@@ -228,11 +241,11 @@ FrameHandlerBase::UpdateResult FrameHandlerMono::processSecondFrame()
 FrameHandlerBase::UpdateResult FrameHandlerMono::processFrame()
 {
   // Initialize pose: use constant velocity + IMU rotation prior if available
-  if (rotation_prior_lambda_ > 0.0 && last_frame_ != nullptr)
+  if (use_imu_ && rotation_prior_lambda_ > 0.0 && last_frame_ != nullptr)
   {
     // Apply IMU rotation prior to initialize pose.
-    // R_cam_world = R_imu_world^{-1} * R_imu_cur (IMU cur is approximately equal to identity on first use)
-    // For the first frame with IMU prior, R_imu_cur ≈ Identity, so R_cam_world ≈ R_imu_world^{-1}
+    // R_imu_world = accumulated world orientation from IMU (gravity-aligned)
+    // R_imu_world^{-1} gives camera orientation in world frame
     const Eigen::Matrix3d R_imu_world = rotation_prior_.toRotationMatrix();
     Eigen::Matrix3d R_cam_world = R_imu_world.transpose();
     new_frame_->T_f_w_ = SE3(R_cam_world, last_frame_->T_f_w_.translation());
@@ -276,7 +289,7 @@ FrameHandlerBase::UpdateResult FrameHandlerMono::processFrame()
   SVO_START_TIMER("pose_optimizer");
   size_t sfba_n_edges_final;
   double sfba_thresh, sfba_error_init, sfba_error_final;
-  if (rotation_prior_lambda_ > 0.0 && !rotation_prior_.isApprox(Quaterniond::Identity(), 1e-6))
+  if (use_imu_ && rotation_prior_lambda_ > 0.0 && !rotation_prior_.isApprox(Quaterniond::Identity(), 1e-6))
   {
     // R_imu_last_from_imu_cur: incremental IMU rotation between last frame and current frame.
     // This is accumulated in vo_node and stored back in rotation_prior_ by setRotationIncrementPrior.
@@ -467,9 +480,12 @@ void FrameHandlerMono::resetAll()
   core_kfs_.clear();
   overlap_kfs_.clear();
   depth_filter_->reset();
-  rotation_prior_ = Quaterniond::Identity();
+  // IMU state: only reset the lambda, keep rotation_prior_ and use_imu_ state
+  // so that IMU fusion can continue across resets without requiring re-enable
+  if (use_imu_)
+    rotation_prior_lambda_ = 5.0;
   rotation_increment_ = Quaterniond::Identity();
-  rotation_prior_lambda_ = 0.0;
+  last_rotation_prior_ = Quaterniond::Identity();
 }
 
 // =============================================================================
@@ -478,13 +494,16 @@ void FrameHandlerMono::resetAll()
 void FrameHandlerMono::setRotationPrior(const Quaterniond& R_world_from_imu)
 {
   rotation_prior_ = R_world_from_imu;
+  last_rotation_prior_ = R_world_from_imu;
   rotation_prior_lambda_ = 5.0;  // Strong regularization for initial alignment
 }
 
 void FrameHandlerMono::setRotationIncrementPrior(const Quaterniond& R_imu_last_from_imu_cur)
 {
-  if (last_frame_ == nullptr)
-    return;
+  // Accumulate IMU rotations: each new increment updates the world orientation
+  // R_world_imu(new) = R_imu_last_from_imu_cur * R_world_imu(last)
+  // Then we invert it to get R_world_from_imu for the camera
+  rotation_prior_ = R_imu_last_from_imu_cur * rotation_prior_;
   rotation_increment_ = R_imu_last_from_imu_cur;
   rotation_prior_lambda_ = 0.05;  // Weak regularization (IMU only provides rotation)
 }

@@ -27,8 +27,7 @@ add_executable(img_detector_node
 target_include_directories(img_detector_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
-  ${OpenCV_INCLUDE_DIRS}          
-  /opt/ros/humble/include/        
+  ${OpenCV_INCLUDE_DIRS}
 )
 
 

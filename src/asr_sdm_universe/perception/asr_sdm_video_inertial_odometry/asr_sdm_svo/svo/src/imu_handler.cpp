@@ -120,7 +120,18 @@ bool ImuHandler::getMeasurements(
 
   if (!it2_set || it1 == measurements_.end())
   {
-    SVO_WARN_STREAM("ImuHandler: Not enough IMU measurements for the time interval.");
+    if (measurements_.empty())
+    {
+      SVO_WARN_STREAM("ImuHandler: IMU buffer is EMPTY, cannot find any measurements for t1="
+          << t1 << " t2=" << t2);
+    }
+    else
+    {
+      SVO_WARN_STREAM("ImuHandler: Not enough IMU measurements for t1=" << t1
+          << " t2=" << t2 << ". Buffer size=" << measurements_.size()
+          << ". Buffer front(ts)=" << measurements_.front().timestamp_
+          << " Buffer back(ts)=" << measurements_.back().timestamp_);
+    }
     return false;
   }
 

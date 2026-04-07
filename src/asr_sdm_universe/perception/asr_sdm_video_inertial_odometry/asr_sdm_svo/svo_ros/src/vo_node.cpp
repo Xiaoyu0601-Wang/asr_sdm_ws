@@ -243,7 +243,7 @@ VoNode::VoNode()
                 imu_calib_.gravity_magnitude);
   }
 
-  vo_ = new svo::FrameHandlerMono(cam_);
+  vo_ = new svo::FrameHandlerMono(cam_, use_imu_);
   vo_->start();
 }
 
@@ -305,6 +305,15 @@ void VoNode::imuCb(const sensor_msgs::msg::Imu::ConstSharedPtr& msg)
 {
   const double t = rclcpp::Time(msg->header.stamp).seconds();
   ++imu_meas_count_;
+
+  if (imu_meas_count_ <= 5)
+  {
+    RCLCPP_INFO(this->get_logger(),
+        "IMU callback #%d: ts=%.6f (raw: %u.%u) wclk=%.3f",
+        imu_meas_count_, t,
+        msg->header.stamp.sec, msg->header.stamp.nanosec,
+        this->get_clock()->now().seconds());
+  }
 
   if (last_imu_msg_ts_ > 0.0)
   {
@@ -375,6 +384,12 @@ void VoNode::imgCb(const sensor_msgs::msg::Image::ConstSharedPtr& msg)
 void VoNode::run()
 {
   RCLCPP_INFO(this->get_logger(), "SVO processing loop started");
+
+  if (use_imu_ && imu_handler_)
+  {
+    RCLCPP_INFO(this->get_logger(), "Waiting for IMU data to accumulate...");
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+  }
 
   while (rclcpp::ok() && !quit_)
   {

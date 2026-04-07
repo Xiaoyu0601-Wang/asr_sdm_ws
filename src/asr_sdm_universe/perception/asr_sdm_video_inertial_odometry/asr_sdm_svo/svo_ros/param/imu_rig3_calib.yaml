@@ -1,0 +1,22 @@
+# IMU 标定参数 - Rig3
+# 此文件被 C++ 代码直接通过 YAML::LoadFile() 读取，不需要 ros__parameters 格式
+
+imu_params:
+  delay_imu_cam: 0.0
+  max_imu_delta_t: 0.1
+  acc_max: 200.0
+  omega_max: 20.0
+  sigma_omega_c: 1.0e-4
+  sigma_acc_c: 1.0e-3
+  sigma_omega_bias_c: 1.0e-6
+  sigma_acc_bias_c: 1.0e-5
+  g: 9.81
+  imu_rate: 200.0
+
+imu_initialization:
+  velocity: [0.0, 0.0, 0.0]
+  omega_bias: [0.0, 0.0, 0.0]
+  acc_bias: [0.0, 0.0, 0.0]
+  velocity_sigma: 0.1
+  omega_bias_sigma: 0.01
+  acc_bias_sigma: 0.1
