@@ -2,17 +2,19 @@
 
 ## Dependency
 ```sh
-sudo apt-get -y install ros-$ROS_DISTRO-sophus libgoogle-glog-dev
+sudo apt-get -y install ros-jazzy-sophus libgoogle-glog-dev
 ```
 
 ## Build
 ```sh
-colcon build --symlink-install --parallel-workers 8
+colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install --parallel-workers 8
 ```
+
+> **Note:** SVO is a compute-intensive visual odometry algorithm. Always use `Release` build for performance. Debug builds will run significantly slower.
 
 # Run Instructions
 
-### Run using ROS2 (Rolling/Jazzy)
+### Run using ROS2 Jazzy
 
 
 
@@ -21,7 +23,8 @@ This section shows how to run the SVO visual odometry node with the included ros
 
 Prerequisites
 `rm -rf build install log`
-- Workspace has been built: `colcon build --packages-up-to svo_ros`
+`source /opt/ros/jazzy/setup.bash`
+- Workspace has been built: `colcon build --packages-up-to svo_ros --cmake-args -DCMAKE_BUILD_TYPE=Release`
 - Source the workspace: `source install/setup.bash`
 - The demo bag exists at: `datasheet/airground_rig_s3_ros2/airground_rig_s3_ros2.db3`
 - RViz2 config file: `src/asr_sdm_universe/perception/asr_sdm_video_inertial_odometry/asr_sdm_svo/svo_ros/rviz_config.rviz`
@@ -37,7 +40,7 @@ ros2 launch svo_ros test_rig3.launch.py fast_type:=9
 ros2 launch svo_ros test_rig3.launch.py fast_type:=10
 ros2 launch svo_ros test_rig3.launch.py fast_type:=11
 ros2 launch svo_ros test_rig3.launch.py fast_type:=12
-ros2 launch svo_ros test_rig3.launch.py use_imu:=true imu_topic:=/imu/data
+# ros2 launch svo_ros test_rig3.launch.py use_imu:=true imu_topic:=/imu/data
 丢帧（默认），队列 2：
 ros2 launch svo_ros test_rig3.launch.py fast_type:=10 max_queue_size:=2 drop_frames:=true
 不丢帧（满了就阻塞回调）：
