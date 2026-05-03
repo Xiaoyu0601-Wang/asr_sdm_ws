@@ -1,0 +1,6 @@
+five_aplus_node:
+  ros__parameters:
+    input_topic: /camera/camera/color/image_raw
+    output_topic: /five_aplus/image
+    num_threads: 0
+    normalize_output: true
